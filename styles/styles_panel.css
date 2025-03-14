@@ -1,0 +1,413 @@
+/* General styles */
+* {
+    margin: 0; /* Removes default margins */
+    padding: 0; /* Removes default padding */
+    box-sizing: border-box; /* Ensures padding and border are included in element size */
+    font-family: 'Poppins', sans-serif; /* Applies the "Poppins" font to all elements */
+}
+
+body {
+    display: flex; /* Enables flexbox layout */
+    height: 100vh; /* Full viewport height */
+    background: #f5f5f5; /* Light gray background */
+}
+
+/* Main container */
+.container {
+    display: flex; /* Flexbox layout for inner elements */
+    width: 100%; /* Full width of the viewport */
+}
+
+/* Sidebar menu */
+.sidebar {
+    width: 18vw; /* Sidebar width relative to viewport */
+    background: rgb(49, 48, 48); /* Dark gray background */
+    color: white; /* White text color */
+    padding: 20px; /* Inner spacing */
+    display: flex; /* Flexbox layout for vertical stacking */
+    flex-direction: column; /* Aligns children in a column */
+}
+
+.sidebar h2 {
+    margin-bottom: 1vh; /* Space below the title */
+    text-align: center; /* Centers the title */
+    font-size: 1.5rem; /* Large font size */
+    font-weight: 600; /* Semi-bold text */
+}
+
+/* Menu buttons with pink underline on hover */
+.menu-item {
+    background: none; /* Removes default background */
+    border: none; /* Removes border */
+    color: white; /* White text */
+    padding: 15px; /* Internal spacing */
+    text-align: left; /* Aligns text to the left */
+    width: 100%; /* Full width */
+    cursor: pointer; /* Pointer cursor on hover */
+    font-size: 1rem; /* Standard font size */
+    font-family: 'Poppins', sans-serif; /* Ensures consistent font usage */
+    position: relative; /* Needed for positioning pseudo-elements */
+    transition: background 0.3s; /* Smooth background transition */
+}
+
+/* Underline effect on menu items */
+.menu-item::after {
+    content: ''; /* Creates an empty pseudo-element for the underline */
+    position: absolute; /* Positioned relative to .menu-item */
+    left: 0; /* Aligns the underline to the left */
+    bottom: 0; /* Positions the underline at the bottom */
+    width: 100%; /* Full width of the button */
+    height: 2px; /* Line thickness */
+    background-color: rgb(255, 51, 95); /* Pink underline color */
+    transform: scaleX(0);     /* Hides the underline initially */
+    transform-origin: bottom left; /* Animation starts from the bottom left */
+    transition: transform 0.3s ease; /* Smooth scaling animation */
+}
+
+.menu-item:hover::after {
+    transform: scaleX(1); /* Expands the underline on hover */
+}
+
+/* Dynamic content section */
+.content {
+    flex-grow: 1; /* Allows the content to expand and fill the remaining space */
+    padding: 40px; /* Inner spacing */
+    overflow-y: auto; /* Enables vertical scrolling if content exceeds height */
+}
+
+/* Hidden elements (role-based visibility) */
+.hidden {
+    display: none; /* Completely hides elements from the page */
+}
+
+/* Responsive logo in the sidebar */
+.logo {
+    width: 100%; /* Logo scales to the full width of the sidebar */
+    max-width: 12vw; /* Maximum width set to 12% of the viewport */
+    height: auto; /* Preserves the logo's aspect ratio */
+    margin: 3vh auto 5vh; /* Vertical spacing and horizontal centering */
+    display: block; /* Ensures it can be centered using margin auto */
+}
+
+/* Refresh logo container */
+.refresh-container {
+    display: flex; /* Enables flexbox for alignment */
+    justify-content: flex-end; /* Aligns the refresh logo to the right */
+    margin-bottom: 20px; /* Space below the container */
+}
+
+/* Refresh logo styling */
+.refresh-logo {
+    width: 40px; /* Fixed width */
+    height: 40px; /* Fixed height */
+    display: flex; /* Centers content using flexbox */
+    align-items: center; /* Vertical centering */
+    justify-content: center; /* Horizontal centering */
+    font-size: 30px; /* Icon size */
+    cursor: pointer; /* Pointer cursor on hover */
+    border-radius: 50%; /* Circular shape */
+    background: linear-gradient(145deg, #ffffff, #e6e6e6); /* Soft gradient background */
+    box-shadow: 3px 3px 8px #bebebe, -3px -3px 8px #ffffff; /* Neumorphic shadow effect */
+    transition: transform 0.3s ease; /* Smooth transform animations */
+}
+
+/* Rotate effect on hover for the refresh logo */
+.refresh-logo:hover {
+    transform: rotate(180deg); /* Rotates the logo 180 degrees on hover */
+}
+
+/* Comment list */
+.comment-list {
+    margin-top: 2vh; /* Space above the comment list */
+    display: flex; /* Flexbox layout for vertical alignment */
+    flex-direction: column; /* Stacks comments vertically */
+    gap: 2vh; /* Space between comments */
+}
+
+/* Individual comment preview */
+.comentario-preview {
+    background: #fff; /* White background for contrast */
+    border-radius: 1vw; /* Rounded corners */
+    padding: 2vh; /* Internal spacing */
+    box-shadow: 0 0.5vw 1vw rgba(0, 0, 0, 0.1); /* Light shadow for depth */
+    cursor: pointer; /* Pointer cursor on hover */
+    transition: transform 0.2s; /* Smooth scaling animation */
+    justify-content: space-between; /* Evenly distributes content */
+}
+
+.comentario-preview:hover {
+    transform: translateY(-0.5vh); /* Slight upward lift on hover */
+}
+
+/* Extra space between the title and first input field */
+.titulo-detalle {
+    margin-top: 10vh; /* Large space above the title */
+    margin-bottom: 5vh; /* Space between the title and the first field */
+}
+
+/* Comment detail section */
+.detalle-comentario p {
+    margin-bottom: 4vh; /* Increased space between paragraphs */
+}
+
+/* Large spacer between "City of Residence" and "Comment" */
+.separador {
+    height: 1vh; /* Additional vertical separation */
+}
+
+/* Large comment frame */
+.comentario-marco {
+    border: 0.5vh solid #444; /* Thick dark border */
+    padding: 2vh 1vw 8vh; /* Reduced top padding, larger bottom padding */
+    border-radius: 1vw; /* Rounded corners */
+    background: #fff; /* White background */
+    box-shadow: 0 1vw 2vw rgba(0, 0, 0, 0.1); /* Soft shadow effect */
+    max-width: 80vw; /* Maximum width of the frame */
+    margin: 4vh 0; /* Vertical spacing above and below */
+}
+
+/* Main comment detail container */
+.detalle-comentario-container {
+    position: relative; /* Relative positioning for nested elements */
+    padding: 2vw; /* Internal spacing */
+    background: white; /* White background */
+    border-radius: 1vw; /* Rounded edges */
+    box-shadow: 0 1vw 2vw rgba(0, 0, 0, 0.1); /* Light shadow for depth */
+}
+
+/* Return arrow button */
+.btn-retorno {
+    position: absolute; /* Positioned relative to the container */
+    top: 1vw; /* Distance from the top edge */
+    left: 1vw; /* Distance from the left edge */
+    background: rgb(49, 48, 48); /* Dark background */
+    color: white; /* White icon color */
+    font-size: 2vw; /* Large arrow size */
+    border: none; /* No border */
+    border-radius: 50%; /* Circular shape */
+    width: 3vw; /* Button size */
+    height: 3vw; /* Button size */
+    display: flex; /* Flexbox for centering */
+    align-items: center; /* Vertical centering */
+    justify-content: center; /* Horizontal centering */
+    cursor: pointer; /* Pointer cursor on hover */
+    transition: background 0.3s ease, transform 0.3s ease; /* Smooth hover effects */
+}
+
+.btn-retorno:hover {
+    background: rgb(118, 109, 111); /* Lighten color on hover */
+}
+
+/* Table styling */
+.tabla-items {
+    width: 75vw; /* Table width relative to the viewport */
+    margin: 5vh auto; /* Centered with vertical margin */
+    border-collapse: collapse; /* Collapse cell borders */
+    box-shadow: 0 1vh 2vh rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    border-radius: 1vw; /* Rounded table corners */
+    overflow: hidden; /* Prevents overflow outside the border radius */
+}
+
+/* Table header */
+.tabla-items thead {
+    background: rgb(49, 48, 48); /* Dark background for headers */
+    color: white; /* White text */
+}
+
+/* Header cells */
+.tabla-items th {
+    padding: 2vh 2vw; /* Vertical and horizontal padding */
+    text-align: left; /* Left-aligns content */
+    font-size: 1.2vw; /* Larger text size for headers */
+}
+
+/* Table rows */
+.tabla-items td {
+    padding: 2vh 2vw; /* Consistent padding */
+    font-size: 1vw; /* Smaller font size for data */
+    border-bottom: 0.5vh solid #ddd; /* Bottom border for row separation */
+}
+
+/* Hover effect for rows */
+.fila-item:hover {
+    background: rgba(177, 177, 177, 0.61); /* Light gray background on hover */
+    color: white; /* White text */
+    cursor: pointer; /* Pointer cursor */
+    transition: background 0.3s ease; /* Smooth background transition */
+}
+
+/* Main item detail container */
+.detalle-item-container {
+    max-width: 80vw; /* Maximum width relative to viewport */
+    margin-bottom: 2vh; /* Space below the container */
+    padding: 5vh; /* Internal padding */
+    background: #fff; /* White background */
+    border-radius: 2vw; /* Large rounded corners */
+    box-shadow: 0 0.5vh 1vh rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
+}
+
+/* Return button */
+.btn-retorno {
+    font-size: 2vw; /* Font size scales with viewport width */
+    cursor: pointer; /* Changes cursor to pointer */
+    background: #313030; /* Dark background color */
+    color: white; /* White text */
+    border: none; /* No border */
+    border-radius: 50%; /* Circular button */
+    padding: 1vw; /* Responsive padding */
+    transition: background 0.3s ease; /* Smooth background transition */
+}
+
+.btn-retorno:hover {
+    background: #767073; /* Lighter background on hover */
+}
+
+/* Two-column layout */
+.detalle-grid {
+    display: grid; /* Grid layout */
+    grid-template-columns: 1fr 1fr; /* Two equal columns */
+    gap: 2vw; /* Space between columns */
+}
+
+/* Field labels */
+label {
+    font-weight: bold; /* Bold text */
+    display: block; /* Display label as block element */
+    margin-bottom: 1vh; /* Bottom margin scales with viewport height */
+}
+
+/* Non-editable fields */
+.campo-no-editable {
+    padding: 1vw; /* Internal spacing */
+    border: 0.1vw solid #ccc; /* Light gray border */
+    border-radius: 1.5vw; /* Rounded corners */
+    background: #e9ecef; /* Light gray background */
+}
+
+/* Editable fields */
+.campo {
+    margin-bottom: 2vh; /* Bottom margin scales with viewport height */
+}
+
+input, select, textarea {
+    width: 100%; /* Full width */
+    padding: 1vw; /* Internal spacing */
+    border: 0.1vw solid #ccc; /* Light gray border */
+    border-radius: 1.5vw; /* Rounded corners */
+    font-size: 1.0vw; /* Responsive font size */
+    transition: border 0.3s ease; /* Smooth border transition */
+}
+
+input:focus, select:focus, textarea:focus {
+    border-color: #313030; /* Dark border on focus */
+    outline: none; /* Removes default focus outline */
+}
+
+/* Update button */
+.btn-actualizar {
+    background: #313030; /* Dark background */
+    color: white; /* White text */
+    padding: 1.5vh 2vw; /* Responsive padding */
+    border: none; /* No border */
+    border-radius: 1.5vw; /* Rounded corners */
+    font-size: 1vw; /* Responsive font size */
+    cursor: pointer; /* Changes cursor to pointer */
+    transition: background 0.3s ease; /* Smooth background transition */
+}
+
+.btn-actualizar:hover {
+    background: #767073; /* Lighter background on hover */
+}
+
+/* Span two columns */
+.campo-doble {
+    grid-column: span 2; /* Occupies both columns */
+}
+
+/* Currency input container */
+.campo-moneda {
+    display: flex; /* Flexbox layout */
+    align-items: center; /* Vertically centers content */
+    border: 1px solid #ccc; /* Light gray border */
+    border-radius: 1.5vw; /* Rounded corners */
+    font-size: 1.0vw; /* Responsive font size */
+}
+
+/* Fixed prefix */
+.prefijo {
+    color: #888; /* Gray text */
+    margin-right: 0.1vw; /* Small right margin */
+    margin-left: 1vw; /* Left margin */
+    white-space: nowrap; /* Prevents line break */
+}
+
+/* Ensure input takes remaining space */
+.campo-moneda input {
+    border: none; /* No border */
+    outline: none; /* Removes focus outline */
+    flex: 1; /* Takes up remaining space */
+}
+
+/* Price table */
+.tabla-precios {
+    width: 70vw; /* 70% of viewport width */
+    margin: 5vh auto; /* Centered with vertical margin */
+    border-collapse: collapse; /* Collapses borders */
+    box-shadow: 0 1vh 2vh rgba(0, 0, 0, 0.1); /* Light shadow */
+    border-radius: 1vw; /* Rounded corners */
+    overflow: hidden; /* Ensures border-radius applies */
+}
+
+/* Table header */
+.tabla-precios thead {
+    background: rgb(49, 48, 48); /* Dark background */
+    color: white; /* White text */
+}
+
+/* Header cells */
+.tabla-precios th {
+    padding: 2vh 2vw; /* Responsive padding */
+    text-align: left; /* Left-aligned text */
+    font-size: 1.2vw; /* Responsive font size */
+}
+
+/* Table rows */
+.tabla-precios td {
+    padding: 2vh 2vw; /* Responsive padding */
+    font-size: 1vw; /* Responsive font size */
+    border-bottom: 0.5vh solid #ddd; /* Light gray bottom border */
+}
+
+/* Hover effect for rows */
+.fila-precios:hover {
+    background: rgba(177, 177, 177, 0.61); /* Light pink background */
+    color: white; /* White text */
+    cursor: pointer; /* Pointer cursor */
+    transition: background 0.3s ease; /* Smooth background transition */
+}
+
+/* Toggle container for price history */
+.toggle-container {
+    display: flex; /* Flexbox layout */
+    justify-content: space-between; /* Space between title and icon */
+    align-items: center; /* Vertical center alignment */
+    cursor: pointer; /* Pointer cursor */
+    margin-bottom: 1rem; /* Bottom margin */
+}
+
+#toggle-icon {
+    font-size: 1.5rem; /* Icon size */
+}
+
+#toggle-gastos-icon {
+    font-size: 1.5rem; /* Icon size */
+}
+
+/* Hidden content */
+.oculto {
+    display: none; /* Hides content */
+}
+
+
+
+

@@ -1,0 +1,138 @@
+/* General body styling */
+body {
+    font-family: 'Poppins', sans-serif; /* Sets the main font to "Poppins" with a sans-serif fallback */
+    margin: 0; /* Removes default margin */
+    padding: 0; /* Removes default padding */
+    box-sizing: border-box; /* Ensures padding and border are included in the element's total width and height */
+    background-color: rgb(30, 30, 30); /* Sets a dark background color */
+    display: flex; /* Enables Flexbox for easy centering */
+    justify-content: center; /* Centers content horizontally */
+    align-items: center; /* Centers content vertically */
+    min-height: 100vh; /* Ensures the body takes at least the full height of the viewport */
+    color: white; /* Sets the default text color to white */
+    overflow: hidden; /* Hides any content that overflows the viewport */
+}
+
+/* Login form container */
+.login-container {
+    background: rgb(80, 79, 79); /* Sets a dark gray background for the container */
+    padding: 5vh 4vw; /* Adds vertical (5% of viewport height) and horizontal (4% of viewport width) padding */
+    border-radius: 2vw; /* Rounds the corners based on 2% of the viewport width */
+    box-shadow: 0 1vw 2vw rgba(81, 75, 75, 0.1); /* Adds a soft shadow below the container */
+    max-width: 28vw; /* Limits the container's maximum width to 28% of the viewport width */
+    width: 100%; /* Ensures the container is responsive and adapts to smaller screens */
+    text-align: center; /* Centers all text within the container */
+}
+
+/* Logo */
+.logo {
+    width: 15vw; /* Sets the logo width to 15% of the viewport width */
+    max-width: 20vw; /* Ensures the logo does not exceed 20% of the viewport width */
+    margin-bottom: 1.0vh; /* Reduces the bottom margin for a more compact layout */
+}
+
+/* Main title */
+.login-container h2 {
+    margin-bottom: -0.5vh; /* Reduces space below the title */
+    font-size: 2.0vw; /* Adjusts font size based on 2% of the viewport width */
+    font-weight: bold; /* Applies bold font style */
+}
+
+/* "Empresa Matriz" text */
+.empresa-matriz {
+    font-size: 1.2vw; /* Reduces font size to 1.2% of the viewport width */
+    font-weight: normal; /* Uses normal font weight (not bold) */
+    margin-bottom: 7.0vh; /* Increases bottom margin for better spacing */
+    margin-top: -0.4vh; /* Slightly adjusts the top margin to fine-tune positioning */
+    color: rgba(255, 255, 255, 0.8); /* Uses a softer white for better readability */
+}
+
+/* Label styling */
+label {
+    display: block; /* Ensures each label appears on a new line */
+    text-align: left; /* Aligns label text to the left */
+    margin: 0.8vh 0 0.3vh; /* Sets vertical margins for better spacing */
+    font-weight: normal; /* Uses normal font weight (not bold) */
+    font-size: 1.2vw; /* Adjusts label font size to 1.2% of the viewport width */
+}
+
+/* Input container */
+.input-container {
+    width: 80%; /* Limits the input container width to 80% of its parent */
+    margin: 0 auto; /* Centers the input container horizontally */
+}
+
+/* Input field styling */
+input {
+    width: 100%; /* Makes the input fields stretch to the full container width */
+    font-family: 'Poppins', sans-serif; /* Applies the Poppins font for consistency */
+    padding: 1vh 0; /* Adds vertical padding for better input height */
+    margin-bottom: 4.0vh; /* Reduces the space between input fields */
+    border: none; /* Removes the default border */
+    border-bottom: 0.3vh solid white; /* Adds a thin white underline */
+    border-radius: 0; /* Removes rounded corners */
+    background: transparent; /* Makes the background transparent */
+    color: white; /* Sets the input text color to white */
+    font-size: 1.2vw; /* Sets a smaller font size relative to the viewport width */
+    box-sizing: border-box; /* Includes padding and border in the total element size */
+    outline: none; /* Removes the default focus outline */
+    transition: box-shadow 0.3s ease, border-bottom 0.3s ease; /* Smooth transition on focus */
+}
+
+/* Custom placeholder styling */
+input::placeholder {
+    color: rgba(255, 255, 255, 0.7); /* Sets a soft white placeholder with 70% opacity */
+}
+
+/* Focus effect */
+input:focus {
+    outline: none; /* Ensures no outline appears on focus */
+    box-shadow: none; /* Removes any box shadow on focus */
+    border-bottom: 0.3vh solid rgb(255, 51, 95); /* Changes the underline color to pink on focus */
+}
+
+/* Submit button styling */
+.btn-login {
+    background: rgb(255, 51, 95); /* Sets a bright pink background */
+    color: white; /* Sets the button text color to white */
+    padding: 1.5vh 2vw; /* Reduces padding for a more compact button */
+    border: none; /* Removes the default border */
+    border-radius: 1.2vw; /* Applies smooth rounded corners */
+    cursor: pointer; /* Changes the cursor to a pointer on hover */
+    font-size: 1.3vw; /* Sets a smaller font size relative to the viewport width */
+    font-weight: normal; /* Keeps the font weight normal */
+    width: 70%; /* Makes the button occupy 70% of the container width */
+    margin-top: 3vh; /* Adds space above the button */
+    margin-bottom: 1.5vh; /* Adds space below the button */
+    transition: background 0.3s ease; /* Smooth transition when changing background */
+}
+
+/* Hover effect for the submit button */
+.btn-login:hover {
+    background: rgb(210, 26, 90); /* Darkens the button color on hover */
+}
+
+/* Polygon background image styling */
+.decorativo-1 {
+    height: 320vh; /* Sets the height to 320% of the viewport height for large coverage */
+    width: 280%; /* Expands the width to 280% of the container */
+    position: absolute; /* Allows free positioning relative to the nearest positioned ancestor */
+    top: -70vh; /* Moves the element 70% of the viewport height above its normal position */
+    left: 10%; /* Shifts the element 10% to the right from the left edge */
+    transform: translateX(-19%); /* Adjusts the horizontal position by moving 19% to the left */
+    z-index: -1; /* Sends the element behind other content layers */
+    overflow: hidden; /* Hides any part of the element that overflows its box */
+}
+
+/* Background ellipse styling */
+.ellipse-background {
+    position: absolute; /* Enables free positioning */
+    top: -40%; /* Moves the ellipse 40% above its normal vertical position */
+    left: 5%; /* Adjusts horizontal positioning slightly */
+    width: 30vw; /* Defines the ellipse width as 30% of the viewport width */
+    height: 60vh; /* Sets the ellipse height to 60% of the viewport height */
+    border: 4vw solid grey; /* Creates a thick grey border for the ellipse */
+    border-radius: 50%; /* Ensures a circular or elliptical shape */
+    transform: translateX(-50%); /* Centers the ellipse horizontally */
+    z-index: -1; /* Positions the ellipse behind the main content */
+}

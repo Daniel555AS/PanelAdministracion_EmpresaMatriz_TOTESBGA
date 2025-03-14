@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <!-- Ensures correct character encoding for special characters (e.g., accents) -->
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Enables responsive design by adjusting the viewport to the device width -->
+
+    <title>Iniciar Sesión - Matriz</title>
+    <!-- Sets the title of the webpage displayed on the browser tab -->
+
+    <!-- Load the "Poppins" font family from Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Preconnects to external resources to improve font loading performance -->
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Imports the "Poppins" font family with various font weights -->
+
+    <!-- Link to the external CSS stylesheet -->
+    <link rel="stylesheet" href="styles/styles_panel.css">
+    <!-- Connects the HTML structure to an external stylesheet for styling -->
+</head>
+
+<body>
+    <!-- Main container for the entire interface -->
+    <div class="container">
+
+        <!-- Sidebar menu section -->
+        <aside class="sidebar">
+            <h2>Panel - Matriz</h2>
+            <!-- Panel title displayed in the sidebar -->
+
+            <img class="logo" src="assets/images/logo_totes.png" alt="logo">
+            <!-- Company or platform logo with alternative text for accessibility -->
+
+            <!-- Navigation menu with buttons to load dynamic sections -->
+            <nav>
+                <button class="menu-item" onclick="cargarSeccion('dashboard')">Inicio</button>
+                <!-- Button to load the "dashboard" section -->
+                
+                <button class="menu-item" onclick="cargarSeccion('items')">Gestionar ítems</button>
+                <!-- Button to navigate to the "Manage Items" section -->
+                
+                <button class="menu-item" onclick="cargarSeccion('comentarios')">Comentarios</button>
+                <!-- Button to navigate to the "Comments" section -->
+
+                <button class="menu-item admin" onclick="cargarSeccion('usuarios')">Administrar Usuarios</button>
+                <!-- Button for user administration (only visible to admins, based on the "admin" class) -->
+                
+                <button class="menu-item" onclick="cerrarSesion()">Cerrar Sesión</button>
+                <!-- Button to log out of the system -->
+            </nav>
+        </aside>
+
+        <!-- Dynamic content section where different views will be loaded -->
+        <main class="content" id="contenido">
+            <h1>Bienvenido al Panel</h1>
+            <!-- Main welcome message -->
+
+            <p>Selecciona una opción del menú para comenzar.</p>
+            <!-- Instructional text for the user -->
+        </main>
+    </div>
+
+    <!-- JavaScript file link to add interactivity -->
+    <script src="script.js"></script>
+</body>
+
+</html>
