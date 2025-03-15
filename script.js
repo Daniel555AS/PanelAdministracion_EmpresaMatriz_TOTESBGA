@@ -23,7 +23,14 @@ function cargarSeccion(seccion) {
 
         'usuarios': `
             <h1>Administrar Usuarios</h1>
-            <p>Esta sección está reservada para los administradores.</p>
+            <!-- Refresh logo -->
+            <div class="refresh-container" onclick="cargarUsuarios()">
+                <div class="refresh-logo">⟳</div>
+            </div>
+            <!-- Container for the user list -->
+            <div id="lista-usuarios" class="user-list">
+                <p>Cargando usuarios...</p>
+            </div>
         `, // Users section with a message for administrators only
 
         'comentarios': `
@@ -47,8 +54,121 @@ function cargarSeccion(seccion) {
         cargarComentarios(); // Calls the function to load comments
     } else if (seccion === 'items') {
         cargarItems(); // Calls the function to load items
+    } else if (seccion === 'usuarios') {
+        cargarUsuarios(); // Calls the function to load users
     }
 }
+
+async function cargarUsuarios() {
+    const listaUsuarios = document.getElementById('lista-usuarios');
+
+    try {
+        // Fetch user data from the API
+        const respuesta = await fetch('http://localhost:8080/user');
+        if (!respuesta.ok) throw new Error('Error loading users');
+
+        // Parse the JSON response and render the UI
+        const usuarios = await respuesta.json();
+        renderizarInterfaz(usuarios);
+    } catch (error) {
+        // Display error message if the fetch fails
+        listaUsuarios.innerHTML = `<p>Error loading users: ${error.message}</p>`;
+    }
+}
+
+function renderizarInterfaz(usuarios) {
+    const contenedor = document.getElementById('lista-usuarios');
+    
+    // Create the search container dynamically
+    const searchContainer = document.createElement('div');
+    searchContainer.classList.add('search-container');
+
+    // Search button (magnifying glass icon)
+    const searchBtn = document.createElement('button');
+    searchBtn.innerHTML = '🔍';
+    searchBtn.classList.add('search-btn');
+
+    // Search input field
+    const searchInput = document.createElement('input');
+    searchInput.type = 'number';
+    searchInput.id = 'searchInput';
+    searchInput.classList.add('search-input');
+    searchInput.placeholder = 'Enter ID';
+
+    // Append search elements to the container
+    searchContainer.appendChild(searchInput);
+    searchContainer.appendChild(searchBtn);
+    contenedor.innerHTML = ''; // Clear previous content
+    contenedor.appendChild(searchContainer);
+
+    // Create the user table
+    const tabla = document.createElement('table');
+    tabla.classList.add('tabla-users');
+    tabla.innerHTML = `
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Email</th>
+                <th>User Status</th>
+                <th>ID Type</th>
+            </tr>
+        </thead>
+        <tbody id="tabla-body">
+            ${generarFilasUsuarios(usuarios)}
+        </tbody>
+    `;
+
+    contenedor.appendChild(tabla);
+
+    // Add event listener for the search button (toggles search input visibility)
+    searchBtn.addEventListener('click', () => {
+        searchInput.classList.toggle('active');
+        if (searchInput.classList.contains('active')) {
+            searchInput.focus();
+        } else {
+            searchInput.value = '';
+            actualizarTabla(usuarios); // Restore the full user list
+        }
+    });
+
+    // Filter users dynamically based on input
+    searchInput.addEventListener('input', () => {
+        const searchTerm = searchInput.value.trim();
+        if (searchTerm === '') {
+            actualizarTabla(usuarios); // Reset the table when input is cleared
+        } else {
+            const filtrados = usuarios.filter(usuario => usuario.id.toString().includes(searchTerm));
+            actualizarTabla(filtrados);
+        }
+    });
+}
+
+// Generate table rows with user data
+function generarFilasUsuarios(usuarios) {
+    if (usuarios.length === 0) {
+        return '<tr><td colspan="4">No users available.</td></tr>';
+    }
+
+    return usuarios.map(usuario => `
+        <tr class="fila-user" onclick="mostrarDetalleUser(${usuario.id})">
+            <td>${usuario.id}</td>
+            <td>${usuario.email}</td>
+            <td>${usuario.user_state}</td>
+            <td>${usuario.user_type}</td>
+        </tr>
+    `).join('');
+}
+
+// Update the table content dynamically
+function actualizarTabla(usuarios) {
+    const tablaBody = document.getElementById('tabla-body');
+    if (tablaBody) {
+        tablaBody.innerHTML = generarFilasUsuarios(usuarios);
+    }
+}
+
+// Load users when the script runs
+cargarUsuarios();
 
 // Function to fetch and display items
 async function cargarItems() {
@@ -429,7 +549,7 @@ function controlarAcceso() {
 // Simulate user logout
 function cerrarSesion() {
     alert("Session closed. Redirecting...");
-    window.location.href = "login.html"; // Redirect to the login page
+    window.location.href = "index.html"; // Redirect to the login page
 }
 
 // Execute access control when the DOM is fully loaded

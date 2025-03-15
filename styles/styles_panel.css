@@ -11,6 +11,47 @@ body {
     height: 100vh; /* Full viewport height */
     background: #f5f5f5; /* Light gray background */
 }
+/* Search button */
+.search-container {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-bottom: 10px;
+    position: relative;
+}
+.search-btn {
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 50%;
+    background-color: #f5f5f5;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    transition: background 0.3s;
+}
+
+.search-btn:hover {
+    background: #767073; /* Lighter background on hover */
+}
+
+.search-input {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 20px; /* Esquinas más redondeadas */
+    width: 0;
+    opacity: 0;
+    transition: width 0.3s ease-in-out, opacity 0.3s ease-in-out;
+    overflow: hidden;
+}
+
+.search-input.active {
+    width: 150px; /* Se despliega suavemente */
+    opacity: 1;
+}
 
 /* Main container */
 .container {
@@ -90,14 +131,14 @@ body {
 }
 
 /* Refresh logo container */
-.refresh-container {
+.refresh-container{
     display: flex; /* Enables flexbox for alignment */
     justify-content: flex-end; /* Aligns the refresh logo to the right */
     margin-bottom: 20px; /* Space below the container */
 }
 
 /* Refresh logo styling */
-.refresh-logo {
+.refresh-logo{
     width: 40px; /* Fixed width */
     height: 40px; /* Fixed height */
     display: flex; /* Centers content using flexbox */
@@ -112,7 +153,7 @@ body {
 }
 
 /* Rotate effect on hover for the refresh logo */
-.refresh-logo:hover {
+.refresh-logo:hover{
     transform: rotate(180deg); /* Rotates the logo 180 degrees on hover */
 }
 
@@ -199,7 +240,8 @@ body {
 }
 
 /* Table styling */
-.tabla-items {
+.tabla-items,
+.tabla-users {
     width: 75vw; /* Table width relative to the viewport */
     margin: 5vh auto; /* Centered with vertical margin */
     border-collapse: collapse; /* Collapse cell borders */
@@ -209,27 +251,31 @@ body {
 }
 
 /* Table header */
-.tabla-items thead {
+.tabla-items thead,
+.tabla-users thead {
     background: rgb(49, 48, 48); /* Dark background for headers */
     color: white; /* White text */
 }
 
 /* Header cells */
-.tabla-items th {
+.tabla-items th,
+.tabla-users th {
     padding: 2vh 2vw; /* Vertical and horizontal padding */
     text-align: left; /* Left-aligns content */
     font-size: 1.2vw; /* Larger text size for headers */
 }
 
 /* Table rows */
-.tabla-items td {
+.tabla-items td,
+.tabla-users td {
     padding: 2vh 2vw; /* Consistent padding */
     font-size: 1vw; /* Smaller font size for data */
     border-bottom: 0.5vh solid #ddd; /* Bottom border for row separation */
 }
 
 /* Hover effect for rows */
-.fila-item:hover {
+.fila-item:hover,
+.fila-user:hover {
     background: rgba(177, 177, 177, 0.61); /* Light gray background on hover */
     color: white; /* White text */
     cursor: pointer; /* Pointer cursor */
@@ -237,7 +283,8 @@ body {
 }
 
 /* Main item detail container */
-.detalle-item-container {
+.detalle-item-container,
+.detalle-user-container {
     max-width: 80vw; /* Maximum width relative to viewport */
     margin-bottom: 2vh; /* Space below the container */
     padding: 5vh; /* Internal padding */
