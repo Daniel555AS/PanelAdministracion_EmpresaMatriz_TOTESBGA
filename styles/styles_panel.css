@@ -11,52 +11,58 @@ body {
     height: 100vh; /* Full viewport height */
     background: #f5f5f5; /* Light gray background */
 }
-/* Search button */
+
+/* Container for the search button */
 .search-container {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    margin-bottom: 10px;
-    position: relative;
+    display: flex; /* Uses flexbox for layout */
+    justify-content: flex-end; /* Aligns content to the right */
+    align-items: center; /* Centers items vertically */
+    margin-bottom: 10px; /* Adds spacing below the container */
+    position: relative; /* Sets position relative for child elements */
 }
+
+/* Styles for the search button */
 .search-btn {
-    width: 40px;
-    height: 40px;
-    border: none;
-    border-radius: 50%;
-    background-color: #f5f5f5;
-    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    transition: background 0.3s;
+    width: 40px; /* Sets button width */
+    height: 40px; /* Sets button height */
+    border: none; /* Removes default border */
+    border-radius: 50%; /* Makes the button circular */
+    background-color: #f5f5f5; /* Light gray background */
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2); /* Adds a subtle shadow effect */
+    cursor: pointer; /* Changes cursor to pointer on hover */
+    display: flex; /* Uses flexbox for centering */
+    align-items: center; /* Centers content vertically */
+    justify-content: center; /* Centers content horizontally */
+    font-size: 18px; /* Sets icon or text size */
+    transition: background 0.3s; /* Smooth transition for background color change */
 }
 
+/* Hover effect for the search button */
 .search-btn:hover {
-    background: #767073; /* Lighter background on hover */
+    background: #767073; /* Changes background color on hover */
 }
 
+/* Styles for the search input field */
 .search-input {
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 20px; /* Esquinas más redondeadas */
-    width: 0;
-    opacity: 0;
-    transition: width 0.3s ease-in-out, opacity 0.3s ease-in-out;
-    overflow: hidden;
+    padding: 8px; /* Adds inner spacing */
+    border: 1px solid #ccc; /* Light gray border */
+    border-radius: 20px; /* More rounded corners */
+    width: 0; /* Initially hidden width */
+    opacity: 0; /* Initially invisible */
+    transition: width 0.3s ease-in-out, opacity 0.3s ease-in-out; /* Smooth transition for width and opacity */
+    overflow: hidden; /* Prevents content overflow */
 }
 
+/* Active state for the search input */
 .search-input.active {
-    width: 150px; /* Se despliega suavemente */
-    opacity: 1;
+    width: 150px; /* Expands smoothly when active */
+    opacity: 1; /* Becomes fully visible */
 }
 
 /* Main container */
 .container {
-    display: flex; /* Flexbox layout for inner elements */
-    width: 100%; /* Full width of the viewport */
+    display: flex; /* Uses flexbox for layout */
+    width: 100%; /* Occupies the full width of the viewport */
 }
 
 /* Sidebar menu */
@@ -182,7 +188,6 @@ body {
 
 /* Extra space between the title and first input field */
 .titulo-detalle {
-    margin-top: 10vh; /* Large space above the title */
     margin-bottom: 5vh; /* Space between the title and the first field */
 }
 
@@ -218,7 +223,7 @@ body {
 
 /* Return arrow button */
 .btn-retorno {
-    position: absolute; /* Positioned relative to the container */
+    position: relative; /* Positioned relative to the container */
     top: 1vw; /* Distance from the top edge */
     left: 1vw; /* Distance from the left edge */
     background: rgb(49, 48, 48); /* Dark background */
@@ -232,6 +237,7 @@ body {
     align-items: center; /* Vertical centering */
     justify-content: center; /* Horizontal centering */
     cursor: pointer; /* Pointer cursor on hover */
+    margin-bottom: 4vh;
     transition: background 0.3s ease, transform 0.3s ease; /* Smooth hover effects */
 }
 
@@ -293,20 +299,28 @@ body {
     box-shadow: 0 0.5vh 1vh rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
 }
 
-/* Return button */
-.btn-retorno {
-    font-size: 2vw; /* Font size scales with viewport width */
-    cursor: pointer; /* Changes cursor to pointer */
-    background: #313030; /* Dark background color */
-    color: white; /* White text */
+/* Return arrow button */
+.btn-retorno-comentario {
+    position: relative; /* Positioned relative to the container */
+    top: 1vw; /* Distance from the top edge */
+    left: 1vw; /* Distance from the left edge */
+    background: rgb(49, 48, 48); /* Dark background */
+    color: white; /* White icon color */
+    font-size: 2vw; /* Large arrow size */
     border: none; /* No border */
-    border-radius: 50%; /* Circular button */
-    padding: 1vw; /* Responsive padding */
-    transition: background 0.3s ease; /* Smooth background transition */
+    border-radius: 50%; /* Circular shape */
+    width: 3vw; /* Button size */
+    height: 3vw; /* Button size */
+    display: flex; /* Flexbox for centering */
+    align-items: center; /* Vertical centering */
+    justify-content: center; /* Horizontal centering */
+    cursor: pointer; /* Pointer cursor on hover */
+    margin-bottom: 4vh;
+    transition: background 0.3s ease, transform 0.3s ease; /* Smooth hover effects */
 }
 
-.btn-retorno:hover {
-    background: #767073; /* Lighter background on hover */
+.btn-retorno-comentario:hover {
+    background: rgb(118, 109, 111); /* Lighten color on hover */
 }
 
 /* Two-column layout */
@@ -454,6 +468,97 @@ input:focus, select:focus, textarea:focus {
 .oculto {
     display: none; /* Hides content */
 }
+
+/* Update button */
+.btn-agregar-gasto {
+    background: #313030; /* Dark background */
+    color: white; /* White text */
+    padding: 1.5vh 2vw; /* Responsive padding */
+    border: none; /* No border */
+    border-radius: 1.5vw; /* Rounded corners */
+    font-size: 1vw; /* Responsive font size */
+    cursor: pointer; /* Changes cursor to pointer */
+    transition: background 0.3s ease; /* Smooth background transition */
+}
+
+.btn-agregar-gasto:hover {
+    background: #767073; /* Lighter background on hover */
+}
+
+/* Button to add an item */
+.btn-agregar-item {
+    background: #313030; /* Dark background */
+    color: white; /* White text */
+    padding: 1.5vh 2vw; /* Responsive padding based on viewport height and width */
+    border: none; /* No border */
+    border-radius: 1.5vw; /* Rounded corners */
+    font-size: 1vw; /* Responsive font size */
+    cursor: pointer; /* Changes cursor to pointer */
+    transition: background 0.3s ease; /* Smooth transition for background color */
+    margin-left: 1vw; /* Adds left margin */
+    font-weight: normal; /* Default font weight */
+}
+
+/* Hover effect for the add item button */
+.btn-agregar-item:hover {
+    background: #767073; /* Lighter background on hover */
+}
+
+/* Button to add a new item type */
+.btn-agregar-tipo-item {
+    background: #313030; /* Dark background */
+    color: white; /* White text */
+    padding: 1.5vh 2vw; /* Responsive padding */
+    border: none; /* No border */
+    border-radius: 1.5vw; /* Rounded corners */
+    font-size: 1vw; /* Responsive font size */
+    cursor: pointer; /* Changes cursor to pointer */
+    transition: background 0.3s ease; /* Smooth transition for background color */
+    margin-left: 1vw; /* Adds left margin */
+    font-weight: normal; /* Default font weight */
+}
+
+/* Hover effect for the add item type button */
+.btn-agregar-tipo-item:hover {
+    background: #767073; /* Lighter background on hover */
+}
+
+/* Styles for the additional expenses table */
+.tabla-gastos {
+    width: 70vw; /* Sets the table width to 70% of the viewport width */
+    margin: 5vh auto; /* Centers the table vertically and horizontally */
+    border-collapse: collapse; /* Removes space between table borders */
+    box-shadow: 0 1vh 2vh rgba(0, 0, 0, 0.1); /* Adds a subtle shadow */
+    border-radius: 1vw; /* Rounds table corners */
+    overflow: hidden; /* Ensures border radius applies correctly */
+}
+
+/* Table header */
+.tabla-gastos thead {
+    background: rgb(49, 48, 48); /* Dark background */
+    color: white; /* White text */
+}
+
+/* Header cells */
+.tabla-gastos th {
+    padding: 2vh 2vw; /* Adds spacing inside the cells */
+    text-align: left; /* Aligns text to the left */
+    font-size: 1.2vw; /* Responsive font size */
+}
+
+/* Table cells */
+.tabla-gastos td {
+    padding: 2vh 2vw; /* Adds spacing inside the cells */
+    font-size: 1vw; /* Responsive font size */
+    border-bottom: 0.5vh solid #ddd; /* Adds a bottom border for separation */
+}
+
+/* Hover effect for table rows */
+.tabla-gastos tbody tr:hover {
+    background-color: rgba(49, 48, 48, 0.1); /* Light gray background */
+    cursor: pointer; /* Changes cursor to pointer */
+}
+
 
 
 

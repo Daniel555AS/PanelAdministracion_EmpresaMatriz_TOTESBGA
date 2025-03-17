@@ -59,49 +59,57 @@ function cargarSeccion(seccion) {
     }
 }
 
+// Asynchronous function to load user data from an API
 async function cargarUsuarios() {
+    // Get the HTML element where the user list will be displayed
     const listaUsuarios = document.getElementById('lista-usuarios');
 
     try {
         // Fetch user data from the API
         const respuesta = await fetch('http://localhost:8080/user');
+
+        // Check if the request was successful (status code 200-299)
         if (!respuesta.ok) throw new Error('Error loading users');
 
-        // Parse the JSON response and render the UI
+        // Parse the JSON response and render the user interface
         const usuarios = await respuesta.json();
         renderizarInterfaz(usuarios);
     } catch (error) {
-        // Display error message if the fetch fails
+        // Display an error message in the UI if the fetch operation fails
         listaUsuarios.innerHTML = `<p>Error loading users: ${error.message}</p>`;
     }
 }
 
+// Function to render the user interface dynamically
 function renderizarInterfaz(usuarios) {
+    // Get the container where the user list will be displayed
     const contenedor = document.getElementById('lista-usuarios');
     
-    // Create the search container dynamically
+    // Create a container for the search functionality
     const searchContainer = document.createElement('div');
     searchContainer.classList.add('search-container');
 
-    // Search button (magnifying glass icon)
+    // Create the search button (magnifying glass icon)
     const searchBtn = document.createElement('button');
     searchBtn.innerHTML = '🔍';
     searchBtn.classList.add('search-btn');
 
-    // Search input field
+    // Create the search input field (filters users by ID)
     const searchInput = document.createElement('input');
     searchInput.type = 'number';
     searchInput.id = 'searchInput';
     searchInput.classList.add('search-input');
     searchInput.placeholder = 'Enter ID';
 
-    // Append search elements to the container
+    // Append the search elements to the search container
     searchContainer.appendChild(searchInput);
     searchContainer.appendChild(searchBtn);
-    contenedor.innerHTML = ''; // Clear previous content
+
+    // Clear the previous content before rendering new elements
+    contenedor.innerHTML = '';
     contenedor.appendChild(searchContainer);
 
-    // Create the user table
+    // Create the user table dynamically
     const tabla = document.createElement('table');
     tabla.classList.add('tabla-users');
     tabla.innerHTML = `
@@ -114,55 +122,63 @@ function renderizarInterfaz(usuarios) {
             </tr>
         </thead>
         <tbody id="tabla-body">
-            ${generarFilasUsuarios(usuarios)}
+            ${generarFilasUsuarios(usuarios)} <!-- Generate table rows dynamically -->
         </tbody>
     `;
 
+    // Append the table to the container
     contenedor.appendChild(tabla);
 
-    // Add event listener for the search button (toggles search input visibility)
+    // Event listener for the search button (toggles search input visibility)
     searchBtn.addEventListener('click', () => {
-        searchInput.classList.toggle('active');
+        searchInput.classList.toggle('active'); // Show or hide the search input
         if (searchInput.classList.contains('active')) {
-            searchInput.focus();
+            searchInput.focus(); // Focus input when active
         } else {
-            searchInput.value = '';
+            searchInput.value = ''; // Clear input when hidden
             actualizarTabla(usuarios); // Restore the full user list
         }
     });
 
-    // Filter users dynamically based on input
+    // Event listener for filtering users dynamically based on input value
     searchInput.addEventListener('input', () => {
-        const searchTerm = searchInput.value.trim();
+        const searchTerm = searchInput.value.trim(); // Get trimmed input value
         if (searchTerm === '') {
             actualizarTabla(usuarios); // Reset the table when input is cleared
         } else {
+            // Filter users whose ID contains the search term
             const filtrados = usuarios.filter(usuario => usuario.id.toString().includes(searchTerm));
-            actualizarTabla(filtrados);
+            actualizarTabla(filtrados); // Update table with filtered results
         }
     });
 }
 
-// Generate table rows with user data
+// Function to generate table rows with user data
 function generarFilasUsuarios(usuarios) {
+    // If there are no users, return a single row indicating no data
     if (usuarios.length === 0) {
         return '<tr><td colspan="4">No users available.</td></tr>';
     }
 
+    // Map through the user list and generate a table row for each user
     return usuarios.map(usuario => `
         <tr class="fila-user" onclick="mostrarDetalleUser(${usuario.id})">
-            <td>${usuario.id}</td>
-            <td>${usuario.email}</td>
-            <td>${usuario.user_state}</td>
-            <td>${usuario.user_type}</td>
+            <td>${usuario.id}</td> <!-- User ID -->
+            <td>${usuario.email}</td> <!-- User email -->
+            <td>${usuario.user_state}</td> <!-- User status -->
+            <td>${usuario.user_type}</td> <!-- Type of user -->
         </tr>
-    `).join('');
+    `).join(''); // Join the array of rows into a single string
 }
 
-// Update the table content dynamically
+// Function to update the table content dynamically
 function actualizarTabla(usuarios) {
+    // Get the table body element where user data is displayed
     const tablaBody = document.getElementById('tabla-body');
+    
+    // Check if the table body exists to avoid errors
     if (tablaBody) {
+        // Replace the current table content with new user data
         tablaBody.innerHTML = generarFilasUsuarios(usuarios);
     }
 }
@@ -172,84 +188,86 @@ cargarUsuarios();
 
 // Function to fetch and display items
 async function cargarItems() {
-    const listaItems = document.getElementById('lista-items'); // Gets the item list container
+    // Get the container where the item list will be displayed
+    const listaItems = document.getElementById('lista-items'); 
 
     try {
-        // Sends a GET request to the item API
+        // Fetch item data from the API
         const respuesta = await fetch('http://localhost:8080/item');
-        if (!respuesta.ok) throw new Error('Error al obtener los ítems'); // Throws an error if the request fails
+        
+        // Check if the response is successful; if not, throw an error
+        if (!respuesta.ok) throw new Error('Error fetching items');
 
-        const items = await respuesta.json(); // Parses the JSON response
+        // Parse the JSON response into an array of items
+        const items = await respuesta.json();
 
-        // Checks if there are no items available
-        if (items.length === 0) {
-            listaItems.innerHTML = '<p>No hay ítems disponibles.</p>'; // Displays a message if the item list is empty
-            return; // Exits the function
-        }
-
-        // Renders the items in a table format
+        // Populate the container with buttons and the item table
         listaItems.innerHTML = `
-            <table class="tabla-items">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Nombre</th>
-                        <th>Stock</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${items.map(item => `
-                        <!-- Each row displays item data and is clickable to show item details -->
-                        <tr class="fila-item" onclick="mostrarDetalleItem(${item.id})">
-                            <td>${item.id}</td>
-                            <td>${item.name}</td>
-                            <td>${item.stock}</td>
+            <!-- Button to add a new item -->
+            <button class="btn-agregar-item" onclick="mostrarFormularioAgregarItem()"> + Add Item 🚗</button>
+            <!-- Button to add a new item type -->
+            <button class="btn-agregar-tipo-item" onclick="mostrarFormularioAgregarItem()"> + Add Item Type 🏷️</button>
+            ${items.length === 0 
+                ? '<p>No items available...</p>' // Display message if no items are found
+                : `
+                <table class="tabla-items">
+                    <thead>
+                        <tr>
+                            <th>ID</th> <!-- Item ID column -->
+                            <th>Nombre</th> <!-- Item Name column -->
+                            <th>Stock</th> <!-- Item Stock column -->
                         </tr>
-                    `).join('')} <!-- Joins all rows into a single HTML string -->
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        ${items.map(item => `
+                            <tr class="fila-item" onclick="mostrarDetalleItem(${item.id})">
+                                <td>${item.id}</td> <!-- Item ID -->
+                                <td>${item.name}</td> <!-- Item Name -->
+                                <td>${item.stock}</td> <!-- Item Stock -->
+                            </tr>
+                        `).join('')} <!-- Convert array of rows into a single string -->
+                    </tbody>
+                </table>
+            `}
         `;
     } catch (error) {
-        // Displays an error message if the fetch operation fails
-        listaItems.innerHTML = `<p>Error al cargar los ítems: ${error.message}</p>`;
+        // Display an error message if the fetch request fails
+        listaItems.innerHTML = `<p>Oops... Ha ocurrido un error</p>`;
     }
 }
 
-// Function to display item details
+// Function to display the details of an item
 async function mostrarDetalleItem(id) {
     try {
-        // Helper function to perform GET requests
         async function fetchData(url, errorMsg) {
-            const respuesta = await fetch(url); // Sends GET request
-            if (!respuesta.ok) throw new Error(errorMsg); // Throws error if the request fails
-            return respuesta.json(); // Parses JSON response
+            const respuesta = await fetch(url);
+            if (!respuesta.ok) throw new Error(errorMsg);
+            return respuesta.json();
         }
 
-        // Fetch item data, item types, price history, and additional expenses concurrently
-        const [item, tiposDeItem, historial, gastosAdicionales] = await Promise.all([
+        // Upload the main data WITHOUT the additional costs
+        const [item, tiposDeItem, historial] = await Promise.all([
             fetchData(`http://localhost:8080/item/${id}`, 'Error al cargar el ítem'),
             fetchData('http://localhost:8080/item-type', 'Error al cargar los tipos de ítem'),
-            fetchData(`http://localhost:8080/historical-item-price/${id}`, 'Error al cargar el historial de precios'),
-            fetchData(`http://localhost:8080/additional-expense?item_id=${id}`, 'Error al cargar los gastos adicionales')
+            fetchData(`http://localhost:8080/historical-item-price/${id}`, 'Error al cargar el historial de precios')
         ]);
 
-        const contenido = document.getElementById('contenido'); // Gets the main content container
+        // Variable to avoid multiple additional expense charges
+        let gastosCargados = false;
+
+        // Insert item detail content
+        const contenido = document.getElementById('contenido');
 
         contenido.innerHTML = `
-            <!-- Item details container -->
             <div class="detalle-item-container">
-                <!-- Return button -->
                 <button class="btn-retorno" onclick="cargarSeccion('items')"><</button>
                 <h1>Detalles del Ítem</h1>
-
-                <!-- Form for updating item information -->
                 <form id="form-item" onsubmit="actualizarItem(event, '${item.id}')">
                     <div class="detalle-grid">
-                        <!-- First column with ID, Name, and Stock -->
                         <div class="columna">
                             <div class="campo">
                                 <label>ID:</label>
-                                <div class="campo-no-editable">${item.id}</div> <!-- Non-editable field -->
+                                <div class="campo-no-editable">${item.id}</div>
                             </div>
                             <div class="campo">
                                 <label for="nombre">Nombre:</label>
@@ -261,7 +279,6 @@ async function mostrarDetalleItem(id) {
                             </div>
                         </div>
 
-                        <!-- Second column with purchase price, status, and selling price -->
                         <div class="columna">
                             <div class="campo">
                                 <label for="precioCompra">Precio de compra:</label>
@@ -273,7 +290,6 @@ async function mostrarDetalleItem(id) {
                             <div class="campo">
                                 <label for="estado">Estado:</label>
                                 <select id="estado" required>
-                                    <!-- Select option for item status -->
                                     <option value="true" ${item.item_state ? 'selected' : ''}>Activo</option>
                                     <option value="false" ${!item.item_state ? 'selected' : ''}>Inactivo</option>
                                 </select>
@@ -287,7 +303,6 @@ async function mostrarDetalleItem(id) {
                             </div>
                         </div>
 
-                        <!-- Item type selection -->
                         <div class="campo campo-doble">
                             <label for="tipoItem">Tipo de ítem:</label>
                             <select id="tipoItem" required>
@@ -299,25 +314,21 @@ async function mostrarDetalleItem(id) {
                             </select>
                         </div>
 
-                        <!-- Item description -->
                         <div class="campo campo-doble">
                             <label for="descripcion">Descripción:</label>
-                            <textarea id="descripcion" required>${item.description || 'No disponible'}</textarea>
+                            <textarea id="descripcion" required style="resize: none;">${item.description || 'No disponible'}</textarea>
                         </div>
                     </div>
                     <button type="submit" class="btn-actualizar">Actualizar Ítem</button>
                 </form>
             </div>
 
-            <!-- Price history container -->
+            <!-- Contenedor de historial de precios -->
             <div class="detalle-item-container">
-                <!-- Collapsible section for price history -->
                 <div class="toggle-container" onclick="toggleHistorial()">
                     <h2>Historial de Precios</h2>
                     <span id="toggle-icon">▼</span>
                 </div>
-
-                <!-- Displays price history if available -->
                 <div id="historial-container" class="oculto">
                     ${historial.length > 0 ? `
                         <table class="tabla-precios">
@@ -342,18 +353,36 @@ async function mostrarDetalleItem(id) {
                 </div>
             </div>
 
-            <!-- Additional expenses container -->
+            <!-- Contenedor de Gastos Adicionales -->
             <div class="detalle-item-container">
-                <!-- Collapsible section for additional expenses -->
-                <div class="toggle-container" onclick="toggleGastos()">
+                <div class="toggle-container" onclick="toggleGastos(${item.id})">
                     <h2>Gastos Adicionales</h2>
                     <span id="toggle-gastos-icon">▼</span>
                 </div>
 
-                <!-- Displays additional expenses if available -->
+                <button class="btn-agregar-gasto" onclick="mostrarFormularioAgregarGasto('${item.id}')">Agregar +</button>
+
                 <div id="gastos-container" class="oculto">
-                    ${gastosAdicionales.length > 0 ? `
-                        <table class="tabla-precios">
+                    <p id="mensaje-gastos">Haga clic para ver los gastos adicionales.</p>
+                </div>
+            </div>
+        `;
+
+        // Function to charge additional expenses when the section is displayed
+        window.toggleGastos = async function (itemId) {
+            const gastosContainer = document.getElementById('gastos-container');
+            const icono = document.getElementById('toggle-gastos-icon');
+        
+            if (gastosContainer.classList.contains('oculto')) {
+                try {
+                    const respuesta = await fetch('http://localhost:8080/additional-expense');
+                    if (!respuesta.ok) throw new Error('Error al cargar los gastos adicionales');
+        
+                    const gastosAdicionales = await respuesta.json();
+                    const gastosFiltrados = gastosAdicionales.filter(gasto => gasto.item_id === itemId);
+        
+                    gastosContainer.innerHTML = gastosFiltrados.length > 0
+                        ? `<table class="tabla-gastos">
                             <thead>
                                 <tr>
                                     <th>ID</th>
@@ -363,8 +392,8 @@ async function mostrarDetalleItem(id) {
                                 </tr>
                             </thead>
                             <tbody>
-                                ${gastosAdicionales.map(gasto => `
-                                    <tr>
+                                ${gastosFiltrados.map(gasto => `
+                                    <tr onclick="mostrarFormularioEditarGasto(${gasto.id}, ${itemId})" style="cursor: pointer;">
                                         <td>${gasto.id}</td>
                                         <td>${gasto.name}</td>
                                         <td>${gasto.is_percentage ? '%' : 'COP $'}</td>
@@ -372,15 +401,384 @@ async function mostrarDetalleItem(id) {
                                     </tr>
                                 `).join('')}
                             </tbody>
-                        </table>
-                    ` : '<p>No hay gastos adicionales registrados.</p>'}
-                </div>
-        `;
+                        </table>`
+                        : '<p>No hay gastos adicionales registrados.</p>';
+        
+                    gastosContainer.classList.remove('oculto');
+                    icono.textContent = '▲';
+                } catch (error) {
+                    console.error(error);
+                    gastosContainer.innerHTML = '<p>Error al cargar los gastos adicionales.</p>';
+                }
+            } else {
+                gastosContainer.classList.add('oculto');
+                icono.textContent = '▼';
+            }
+        };
+        
     } catch (error) {
-        // Logs error and shows an alert if data loading fails
         console.error(error);
         alert(`Error al cargar el ítem: ${error.message}`);
     }
+}
+
+// Function to display the add item form
+async function mostrarFormularioAgregarItem() {
+    try {
+        // Fetches item types from the backend
+        const tiposDeItem = await fetch('http://localhost:8080/item-type')
+            .then(res => res.json())
+            .catch(() => { throw new Error('Error al cargar los tipos de ítem'); });
+
+        // Selects the content container and inserts the form HTML dynamically
+        const contenido = document.getElementById('contenido');
+        contenido.innerHTML = `
+            <div class="detalle-item-container">
+                <!-- Back button to return to item list -->
+                <button class="btn-retorno" onclick="cargarSeccion('items')"><</button>
+                <h1>Agregar Nuevo Ítem</h1>
+
+                <!-- Item addition form -->
+                <form id="form-agregar-item" onsubmit="guardarNuevoItem(event)">
+                    <div class="detalle-grid">
+                        <!-- First column: Name and Stock -->
+                        <div class="columna">
+                            <div class="campo">
+                                <label for="nombre">Nombre:</label>
+                                <input type="text" id="nombre" required>
+                            </div>
+                            <div class="campo">
+                                <label for="stock">Stock:</label>
+                                <input type="number" id="stock" required>
+                            </div>
+                        </div>
+
+                        <!-- Second column: Purchase Price and State -->
+                        <div class="columna">
+                            <div class="campo">
+                                <label for="precioCompra">Precio de compra:</label>
+                                <div class="campo-moneda">
+                                    <span class="prefijo">COP $ | </span>
+                                    <input type="number" id="precioCompra" step="0.01" required>
+                                </div>
+                            </div>
+                            <div class="campo">
+                                <label for="estado">Estado:</label>
+                                <select id="estado" required>
+                                    <option value="true">Activo</option>
+                                    <option value="false">Inactivo</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Third column: Selling Price -->
+                        <div class="columna">
+                            <div class="campo">
+                                <label for="precioVenta">Precio de venta:</label>
+                                <div class="campo-moneda">
+                                    <span class="prefijo">COP $ | </span>
+                                    <input type="number" id="precioVenta" step="0.01" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Fourth column: Item Type -->
+                        <div class="columna">
+                            <div class="campo">
+                                <label for="tipoItem">Tipo de ítem:</label>
+                                <select id="tipoItem" required>
+                                    ${tiposDeItem.map(tipo => `
+                                        <option value="${tipo.id}">${tipo.name}</option>
+                                    `).join('')}
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Full-width field: Description -->
+                        <div class="campo campo-doble">
+                            <label for="descripcion">Descripción:</label>
+                            <textarea id="descripcion" required style="resize: none;"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Submit button to save the item -->
+                    <button type="submit" class="btn-guardar">Guardar Ítem</button>
+                </form>
+            </div>
+        `;
+
+    } catch (error) {
+        console.error(error); // Logs the error in the console
+        alert(`Error al cargar el formulario: ${error.message}`); // Displays an error message
+    }
+}
+
+
+// Function to save a new item
+async function guardarNuevoItem(event) {
+    event.preventDefault(); // Prevents the page from reloading
+
+    // Retrieves form values and constructs a new item object
+    const nuevoItem = {
+        name: document.getElementById('nombre').value, // Item name
+        stock: parseInt(document.getElementById('stock').value), // Stock quantity
+        purchase_price: parseFloat(document.getElementById('precioCompra').value), // Purchase price
+        selling_price: parseFloat(document.getElementById('precioVenta').value), // Selling price
+        item_state: document.getElementById('estado').value === "true", // Item state (active/inactive)
+        item_type_id: parseInt(document.getElementById('tipoItem').value), // Item type ID
+        description: document.getElementById('descripcion').value // Item description
+    };
+
+    try {
+        // Sends a POST request to save the new item
+        const respuesta = await fetch('http://localhost:8080/item', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(nuevoItem) // Converts the object to JSON format
+        });
+
+        if (!respuesta.ok) throw new Error('Error al guardar el ítem'); // Throws an error if the request fails
+
+        alert('Ítem guardado con éxito'); // Displays a success message
+        cargarSeccion('items'); // Reloads the item list
+    } catch (error) {
+        console.error(error); // Logs the error to the console
+        alert(`Error al guardar el ítem: ${error.message}`); // Displays an error message
+    }
+}
+
+// Function to display the form to add a new additional expense
+function mostrarFormularioAgregarGasto(itemId) {
+    const contenido = document.getElementById('contenido');
+
+    // Validates itemId to ensure it's valid
+    if (!itemId || itemId === 0) {
+        console.error("Error: Invalid item_id", itemId);
+        alert("Error: Unable to retrieve item ID.");
+        return;
+    }
+
+    // Dynamically inserts the additional expense form into the page
+    contenido.innerHTML = `
+        <div class="detalle-item-container">
+            <!-- Back button to return to item details -->
+            <button class="btn-retorno" onclick="mostrarDetalleItem('${itemId}')"><</button>
+            <h1>Agregar Gasto Adicional</h1>
+
+            <!-- Additional expense form -->
+            <form id="form-gasto" onsubmit="guardarGastoAdicional(event, ${itemId})"> 
+                <div class="campo">
+                    <label for="nombreGasto">Nombre:</label>
+                    <input type="text" id="nombreGasto" required>
+                </div>
+                <div class="campo">
+                    <label for="valorGasto">Valor:</label>
+                    <input type="number" id="valorGasto" step="0.01" required>
+                </div>
+                <div class="campo">
+                    <label for="esPorcentaje">Unidad:</label>
+                    <select id="esPorcentaje" required>
+                        <option value="false">COP $</option>
+                        <option value="true">%</option>
+                    </select>
+                </div>
+
+                <!-- Optional comment field -->
+                <div class="campo campo-doble">
+                    <label for="comentarioGasto">Comentario:</label>
+                    <textarea id="comentarioGasto" style="resize: none;" placeholder="Opcional"></textarea>
+                </div>
+
+                <!-- Submit button to add the expense -->
+                <button type="submit" class="btn-agregar">Agregar Gasto</button>
+            </form>
+        </div>
+    `;
+}
+
+// Function to display the form to edit an additional expense
+function mostrarFormularioEditarGasto(gastoId, itemId) {
+    const contenido = document.getElementById('contenido');
+
+    // Validates itemId to ensure it's valid
+    if (!itemId || itemId === 0) {
+        console.error("Error: Invalid item_id", itemId);
+        alert("Error: Unable to retrieve item ID.");
+        return;
+    }
+
+    // Fetches additional expense data from the server
+    fetch(`http://localhost:8080/additional-expense/${gastoId}`)
+        .then(response => {
+            if (!response.ok) throw new Error('Error retrieving additional expense data');
+            return response.json();
+        })
+        .then(gasto => {
+            // Dynamically generates the form with the retrieved data
+            contenido.innerHTML = `
+                <div class="detalle-item-container">
+                    <!-- Back button to return to item details -->
+                    <button class="btn-retorno" onclick="mostrarDetalleItem('${itemId}')"><</button>
+                    <h1>Editar Gasto Adicional</h1>
+
+                    <!-- Form to edit the additional expense -->
+                    <form id="form-gasto" data-item-id="${itemId}" onsubmit="actualizarGastoAdicional(event, ${gastoId})">
+                        <div class="campo">
+                            <label for="nombreGasto">Nombre:</label>
+                            <input type="text" id="nombreGasto" value="${gasto.name}" required>
+                        </div>
+                        <div class="campo">
+                            <label for="valorGasto">Valor:</label>
+                            <input type="number" id="valorGasto" value="${gasto.expense}" step="0.01" required>
+                        </div>
+                        <div class="campo">
+                            <label for="esPorcentaje">Unidad:</label>
+                            <select id="esPorcentaje" required>
+                                <option value="false" ${!gasto.is_percentage ? 'selected' : ''}>COP $</option>
+                                <option value="true" ${gasto.is_percentage ? 'selected' : ''}>%</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Optional comment field -->
+                        <div class="campo campo-doble">
+                            <label for="comentarioGasto">Comentario:</label>
+                            <textarea id="comentarioGasto" style="resize: none;" placeholder="Opcional">${gasto.description || ''}</textarea>
+                        </div>
+                        
+                        <!-- Submit button to update the expense -->
+                        <button type="submit" class="btn-actualizar">Actualizar Gasto</button>
+                    </form>
+                </div>
+            `;
+        })
+        .catch(error => {
+            console.error(error);
+            alert("Error loading additional expense data.");
+        });
+}
+
+// Function to update an additional expense
+async function actualizarGastoAdicional(event, gastoId) {
+    event.preventDefault(); // Prevents the default form submission behavior
+
+    // Retrieves form elements and extracts input values
+    const form = document.getElementById('form-gasto');
+    const nombre = document.getElementById('nombreGasto').value;
+    const valor = parseFloat(document.getElementById('valorGasto').value);
+    const esPorcentaje = document.getElementById('esPorcentaje').value === 'true';
+    const comentario = document.getElementById('comentarioGasto').value;
+
+    // Retrieves itemId correctly from the form's data attribute
+    const itemId = form.dataset.itemId;
+
+    // Validates itemId to ensure it's valid
+    if (!itemId || itemId === "0") {
+        console.error("Error: Invalid item_id", itemId);
+        alert("Error: Unable to retrieve item ID.");
+        return;
+    }
+
+    // Creates an object with the expense data to be sent to the backend
+    const datos = {
+        name: nombre,
+        item_id: parseInt(itemId), // Converts itemId to a number
+        expense: valor,
+        is_percentage: esPorcentaje,
+        description: comentario
+    };
+
+    console.log("Data sent to the backend:", datos);  // Logs data for debugging
+
+    try {
+        // Sends a PUT request to update the additional expense
+        const respuesta = await fetch(`http://localhost:8080/additional-expense/${gastoId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(datos)
+        });
+
+        if (!respuesta.ok) throw new Error('Error updating additional expense');
+
+        alert('Additional expense updated successfully');
+        mostrarDetalleItem(itemId); // Returns to the item details view
+    } catch (error) {
+        console.error(error);
+        alert(error.message);
+    }
+}
+
+async function eliminarGastoAdicional(id, itemId) {
+    if (!confirm('¿Estás seguro de que deseas eliminar este gasto adicional?')) return;
+
+    try {
+        const respuesta = await fetch(`http://localhost:8080/additional-expense/${id}`, {
+            method: 'DELETE'
+        });
+
+        if (!respuesta.ok) throw new Error('Error al eliminar el gasto adicional');
+
+        alert('Gasto eliminado correctamente');
+        mostrarDetalleItem(itemId);
+    } catch (error) {
+        console.error(error);
+        alert('Error al eliminar el gasto adicional');
+    }
+}
+
+// Function to save a new additional expense
+function guardarGastoAdicional(event, itemId) {
+    event.preventDefault(); // Prevents the default form submission behavior
+
+    // Retrieves and trims input values
+    const nombre = document.getElementById('nombreGasto').value.trim();
+    const valor = parseFloat(document.getElementById('valorGasto').value);
+    const esPorcentaje = document.getElementById('esPorcentaje').value === "true";
+    const comentario = document.getElementById('comentarioGasto').value.trim();
+
+    // Validates required fields
+    if (!nombre || isNaN(valor)) {
+        alert("All required fields must be completed.");
+        return;
+    }
+
+    // Creates an object with expense data
+    const nuevoGasto = {
+        name: nombre,
+        item_id: parseInt(itemId), // References the item without auto-increment
+        expense: valor,
+        is_percentage: esPorcentaje
+    };
+
+    // Adds description only if it has content
+    if (comentario) {
+        nuevoGasto.description = comentario;
+    }
+
+    // Logs the JSON data before sending it to the backend
+    console.log("JSON sent to the backend:", JSON.stringify(nuevoGasto, null, 2));
+
+    // Sends a POST request to add the additional expense
+    fetch('http://localhost:8080/additional-expense', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(nuevoGasto)
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(err => { throw new Error(err.message || "Unknown error"); });
+        }
+        return response.json();
+    })
+    .then(() => {
+        alert("Additional expense added successfully");
+        mostrarDetalleItem(itemId); // Returns to the item details view
+    })
+    .catch(error => {
+        console.error("Error adding additional expense:", error);
+        alert("Error adding additional expense: " + error.message);
+    });
 }
 
 // Function to toggle the visibility of the price history section
@@ -397,18 +795,18 @@ function toggleHistorial() {
     icono.textContent = historial.classList.contains('oculto') ? '▼' : '▲';
 }
 
-// Function to toggle the visibility of the additional expenses section
-function toggleGastos() {
-    // Selects the container holding the additional expenses details
-    const gastos = document.getElementById('gastos-container');
+// Function to toggle the visibility of the price history section
+function toggleHistorial() {
+    // Selects the container holding the price history details
+    const historial = document.getElementById('historial-container');
     // Selects the icon used for visual indication (arrow)
-    const icono = document.getElementById('toggle-gastos-icon');
+    const icono = document.getElementById('toggle-icon');
     
     // Toggles the 'oculto' class, which controls the section's visibility
-    gastos.classList.toggle('oculto');
+    historial.classList.toggle('oculto');
     
     // Updates the icon based on the visibility state: ▼ (collapsed) or ▲ (expanded)
-    icono.textContent = gastos.classList.contains('oculto') ? '▼' : '▲';
+    icono.textContent = historial.classList.contains('oculto') ? '▼' : '▲';
 }
 
 // Function to update an item
@@ -510,22 +908,22 @@ async function mostrarDetalleComentario(id) {
         contenido.innerHTML = `
             <div class="detalle-comentario-container">
                 <!-- Return button to go back to the comments section -->
-                <button class="btn-retorno" onclick="cargarSeccion('comentarios')"><</button>
+                <button class="btn-retorno-comentario" onclick="cargarSeccion('comentarios')"><</button>
 
-                <h1 class="titulo-detalle">Comment Details</h1>
+                <h1 class="titulo-detalle">Detalles de Comentario</h1>
 
                 <div class="detalle-comentario">
                     <!-- Display comment information -->
-                    <p><strong>Name:</strong> ${comentario.name} ${comentario.last_name}</p>
+                    <p><strong>Nombre Completo:</strong> ${comentario.name} ${comentario.last_name}</p>
                     <p><strong>Email:</strong> ${comentario.email}</p>
-                    <p><strong>Phone:</strong> ${comentario.phone || 'Not provided'}</p>
-                    <p><strong>State of Residence:</strong> ${comentario.residence_state || 'Not specified'}</p>
-                    <p><strong>City of Residence:</strong> ${comentario.residence_city || 'Not specified'}</p>
+                    <p><strong>Teléfono:</strong> ${comentario.phone || 'Not provided'}</p>
+                    <p><strong>Departamento de Residencia:</strong> ${comentario.residence_state || 'Not specified'}</p>
+                    <p><strong>Ciudad de Residencia:</strong> ${comentario.residence_city || 'Not specified'}</p>
 
                     <div class="separador"></div>
 
                     <!-- Display the full comment -->
-                    <h2>Comment:</h2>
+                    <h2>Comentario:</h2>
                     <div class="comentario-marco">
                         <p>${comentario.comment}</p>
                     </div>
