@@ -590,7 +590,7 @@ function mostrarFormularioAgregarGasto(itemId) {
                 </div>
 
                 <!-- Submit button to add the expense -->
-                <button type="submit" class="btn-agregar">Agregar Gasto</button>
+                <button type="submit" class="btn-agregar-gasto">Agregar Gasto</button>
             </form>
         </div>
     `;
