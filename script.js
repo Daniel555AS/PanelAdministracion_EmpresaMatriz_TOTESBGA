@@ -319,7 +319,7 @@ async function mostrarDetalleItem(id) {
                             <textarea id="descripcion" required style="resize: none;">${item.description || 'No disponible'}</textarea>
                         </div>
                     </div>
-                    <button type="submit" class="btn-actualizar">Actualizar Ítem</button>
+                    <button type="submit" class="btn-actualizar">Actualizar Ítem 🔄</button>
                 </form>
             </div>
 
@@ -360,7 +360,7 @@ async function mostrarDetalleItem(id) {
                     <span id="toggle-gastos-icon">▼</span>
                 </div>
 
-                <button class="btn-agregar-gasto" onclick="mostrarFormularioAgregarGasto('${item.id}')">Agregar +</button>
+                <button class="btn-agregar-gasto" onclick="mostrarFormularioAgregarGasto('${item.id}')">Agregar ➕</button>
 
                 <div id="gastos-container" class="oculto">
                     <p id="mensaje-gastos">Haga clic para ver los gastos adicionales.</p>
@@ -590,7 +590,7 @@ function mostrarFormularioAgregarGasto(itemId) {
                 </div>
 
                 <!-- Submit button to add the expense -->
-                <button type="submit" class="btn-agregar-gasto">Agregar Gasto</button>
+                <button type="submit" class="btn-agregar-gasto">Agregar Gasto ➕</button>
             </form>
         </div>
     `;
