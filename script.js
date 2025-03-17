@@ -368,53 +368,53 @@ async function mostrarDetalleItem(id) {
             </div>
         `;
 
-        // Function to charge additional expenses when the section is displayed
-        window.toggleGastos = async function (itemId) {
-            const gastosContainer = document.getElementById('gastos-container');
-            const icono = document.getElementById('toggle-gastos-icon');
-        
-            if (gastosContainer.classList.contains('oculto')) {
-                try {
-                    const respuesta = await fetch('http://localhost:8080/additional-expense');
-                    if (!respuesta.ok) throw new Error('Error al cargar los gastos adicionales');
-        
-                    const gastosAdicionales = await respuesta.json();
-                    const gastosFiltrados = gastosAdicionales.filter(gasto => gasto.item_id === itemId);
-        
-                    gastosContainer.innerHTML = gastosFiltrados.length > 0
-                        ? `<table class="tabla-gastos">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Nombre</th>
-                                    <th>Unidad</th>
-                                    <th>Valor</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${gastosFiltrados.map(gasto => `
-                                    <tr onclick="mostrarFormularioEditarGasto(${gasto.id}, ${itemId})" style="cursor: pointer;">
-                                        <td>${gasto.id}</td>
-                                        <td>${gasto.name}</td>
-                                        <td>${gasto.is_percentage ? '%' : 'COP $'}</td>
-                                        <td>${gasto.expense.toFixed(2)}</td>
+            // Function to charge additional expenses when the section is displayed
+            window.toggleGastos = async function (itemId) {
+                const gastosContainer = document.getElementById('gastos-container');
+                const icono = document.getElementById('toggle-gastos-icon');
+
+                if (gastosContainer.classList.contains('oculto')) {
+                    try {
+                        const respuesta = await fetch('http://localhost:8080/additional-expense');
+                        if (!respuesta.ok) throw new Error('Error al cargar los gastos adicionales');
+
+                        const gastosAdicionales = await respuesta.json();
+                        const gastosFiltrados = gastosAdicionales.filter(gasto => gasto.item_id === itemId);
+
+                        gastosContainer.innerHTML = gastosFiltrados.length > 0
+                            ? `<table class="tabla-gastos">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Nombre</th>
+                                        <th>Unidad</th>
+                                        <th>Valor</th>
                                     </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>`
-                        : '<p>No hay gastos adicionales registrados.</p>';
-        
-                    gastosContainer.classList.remove('oculto');
-                    icono.textContent = '▲';
-                } catch (error) {
-                    console.error(error);
-                    gastosContainer.innerHTML = '<p>Error al cargar los gastos adicionales.</p>';
+                                </thead>
+                                <tbody>
+                                    ${gastosFiltrados.map(gasto => `
+                                        <tr onclick="mostrarFormularioEditarGasto(${gasto.id}, ${itemId})" style="cursor: pointer;">
+                                            <td>${gasto.id}</td>
+                                            <td>${gasto.name}</td>
+                                            <td>COP ($)</td>
+                                            <td>${gasto.expense.toFixed(2)}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>`
+                            : '<p>No hay gastos adicionales registrados.</p>';
+
+                        gastosContainer.classList.remove('oculto');
+                        icono.textContent = '▲';
+                    } catch (error) {
+                        console.error(error);
+                        gastosContainer.innerHTML = '<p>Error al cargar los gastos adicionales.</p>';
+                    }
+                } else {
+                    gastosContainer.classList.add('oculto');
+                    icono.textContent = '▼';
                 }
-            } else {
-                gastosContainer.classList.add('oculto');
-                icono.textContent = '▼';
-            }
-        };
+            };
         
     } catch (error) {
         console.error(error);
@@ -576,11 +576,8 @@ function mostrarFormularioAgregarGasto(itemId) {
                     <input type="number" id="valorGasto" step="0.01" required>
                 </div>
                 <div class="campo">
-                    <label for="esPorcentaje">Unidad:</label>
-                    <select id="esPorcentaje" required>
-                        <option value="false">COP $</option>
-                        <option value="true">%</option>
-                    </select>
+                    <label for="unidad">Unidad:</label>
+                    <input type="text" id="unidad" value="COP ($)" disabled style="background-color: #e0e0e0; color: #555;">
                 </div>
 
                 <!-- Optional comment field -->
@@ -595,6 +592,7 @@ function mostrarFormularioAgregarGasto(itemId) {
         </div>
     `;
 }
+
 
 // Function to display the form to edit an additional expense
 function mostrarFormularioEditarGasto(gastoId, itemId) {
@@ -632,11 +630,8 @@ function mostrarFormularioEditarGasto(gastoId, itemId) {
                             <input type="number" id="valorGasto" value="${gasto.expense}" step="0.01" required>
                         </div>
                         <div class="campo">
-                            <label for="esPorcentaje">Unidad:</label>
-                            <select id="esPorcentaje" required>
-                                <option value="false" ${!gasto.is_percentage ? 'selected' : ''}>COP $</option>
-                                <option value="true" ${gasto.is_percentage ? 'selected' : ''}>%</option>
-                            </select>
+                            <label for="unidad">Unidad:</label>
+                            <input type="text" id="unidad" value="COP ($)" disabled style="background-color: #e0e0e0; color: #555;">
                         </div>
                         
                         <!-- Optional comment field -->
@@ -666,7 +661,6 @@ async function actualizarGastoAdicional(event, gastoId) {
     const form = document.getElementById('form-gasto');
     const nombre = document.getElementById('nombreGasto').value;
     const valor = parseFloat(document.getElementById('valorGasto').value);
-    const esPorcentaje = document.getElementById('esPorcentaje').value === 'true';
     const comentario = document.getElementById('comentarioGasto').value;
 
     // Retrieves itemId correctly from the form's data attribute
@@ -684,7 +678,6 @@ async function actualizarGastoAdicional(event, gastoId) {
         name: nombre,
         item_id: parseInt(itemId), // Converts itemId to a number
         expense: valor,
-        is_percentage: esPorcentaje,
         description: comentario
     };
 
@@ -700,7 +693,7 @@ async function actualizarGastoAdicional(event, gastoId) {
 
         if (!respuesta.ok) throw new Error('Error updating additional expense');
 
-        alert('Additional expense updated successfully');
+        alert('El gasto adicional se ha actualizado correctamente :)');
         mostrarDetalleItem(itemId); // Returns to the item details view
     } catch (error) {
         console.error(error);
@@ -737,7 +730,6 @@ function guardarGastoAdicional(event, itemId) {
     // Retrieves and trims input values
     const nombre = document.getElementById('nombreGasto').value.trim();
     const valor = parseFloat(document.getElementById('valorGasto').value);
-    const esPorcentaje = document.getElementById('esPorcentaje').value === "true";
     const comentario = document.getElementById('comentarioGasto').value.trim();
 
     // Validates required fields
@@ -751,7 +743,6 @@ function guardarGastoAdicional(event, itemId) {
         name: nombre,
         item_id: parseInt(itemId), // References the item without auto-increment
         expense: valor,
-        is_percentage: esPorcentaje
     };
 
     // Adds description only if it has content
