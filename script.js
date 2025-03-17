@@ -884,7 +884,7 @@ async function cargarComentarios() {
         `).join('');
     } catch (error) {
         // Display an error message if the request fails
-        listaComentarios.innerHTML = `<p>Error loading comments: ${error.message}</p>`;
+        listaComentarios.innerHTML = `<p>Oops, algo no ha salido bien...</p>`;
     }
 }
 
