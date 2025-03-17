@@ -646,7 +646,8 @@ function mostrarFormularioEditarGasto(gastoId, itemId) {
                         </div>
                         
                         <!-- Submit button to update the expense -->
-                        <button type="submit" class="btn-actualizar">Actualizar Gasto</button>
+                        <button type="submit" class="btn-actualizar">Actualizar Gasto 🔄</button>
+                        <button type="button" class="btn-actualizar" onclick="eliminarGastoAdicional(${gastoId}, ${itemId})">Eliminar 🗑️</button>
                     </form>
                 </div>
             `;
@@ -707,21 +708,25 @@ async function actualizarGastoAdicional(event, gastoId) {
     }
 }
 
+// Function to delete an additional expense
 async function eliminarGastoAdicional(id, itemId) {
-    if (!confirm('¿Estás seguro de que deseas eliminar este gasto adicional?')) return;
+    // Confirm deletion before proceeding
+    if (!confirm('Are you sure you want to delete this additional expense?')) return;
 
     try {
+        // Sends a DELETE request to the backend
         const respuesta = await fetch(`http://localhost:8080/additional-expense/${id}`, {
             method: 'DELETE'
         });
 
-        if (!respuesta.ok) throw new Error('Error al eliminar el gasto adicional');
+        // Checks if the request was successful
+        if (!respuesta.ok) throw new Error('Error deleting the additional expense');
 
-        alert('Gasto eliminado correctamente');
-        mostrarDetalleItem(itemId);
+        alert('Expense deleted successfully');
+        mostrarDetalleItem(itemId); // Refreshes the item details view
     } catch (error) {
         console.error(error);
-        alert('Error al eliminar el gasto adicional');
+        alert('Error deleting the additional expense');
     }
 }
 

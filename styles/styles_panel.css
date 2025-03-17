@@ -374,6 +374,8 @@ input:focus, select:focus, textarea:focus {
     font-size: 1vw; /* Responsive font size */
     cursor: pointer; /* Changes cursor to pointer */
     transition: background 0.3s ease; /* Smooth background transition */
+    margin-right: 1vw; /* Add spacing to the right */
+
 }
 
 .btn-actualizar:hover {
