@@ -502,7 +502,7 @@ async function mostrarFormularioAgregarItem() {
                     </div>
 
                     <!-- Submit button to save the item -->
-                    <button type="submit" class="btn-guardar">Guardar Ítem</button>
+                    <button type="submit" class="btn-actualizar">Guardar Ítem ✅</button>
                 </form>
             </div>
         `;
