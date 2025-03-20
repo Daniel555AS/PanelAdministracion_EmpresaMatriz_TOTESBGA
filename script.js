@@ -746,35 +746,40 @@ async function eliminarGastoAdicional(id, itemId) {
 
 // Function to save a new additional expense
 function guardarGastoAdicional(event, itemId) {
-    event.preventDefault(); // Prevents the default form submission behavior
+    event.preventDefault(); // Prevents the default behavior of the form
 
-    // Retrieves and trims input values
+    // Gets and clears input values
     const nombre = document.getElementById('nombreGasto').value.trim();
     const valor = parseFloat(document.getElementById('valorGasto').value);
     const comentario = document.getElementById('comentarioGasto').value.trim();
 
-    // Validates required fields
-    if (!nombre || isNaN(valor)) {
-        alert("All required fields must be completed.");
+    // Validations
+    if (!nombre) {
+        alert("Error: El nombre del gasto no puede estar vacío.");
         return;
     }
 
-    // Creates an object with expense data
+    if (isNaN(valor) || valor <= 0) {
+        alert("Error: El valor del gasto debe ser mayor que cero.");
+        return;
+    }
+
+    // Create the object with the expense data
     const nuevoGasto = {
         name: nombre,
-        item_id: parseInt(itemId), // References the item without auto-increment
+        item_id: parseInt(itemId), // Associate the expense with the item
         expense: valor,
     };
 
-    // Adds description only if it has content
+    // Add description if it has content
     if (comentario) {
         nuevoGasto.description = comentario;
     }
 
-    // Logs the JSON data before sending it to the backend
-    console.log("JSON sent to the backend:", JSON.stringify(nuevoGasto, null, 2));
+    // Displays JSON in the console before sending it to the backend
+    console.log("JSON enviado al backend:", JSON.stringify(nuevoGasto, null, 2));
 
-    // Sends a POST request to add the additional expense
+    // Send the POST request to add the additional expense
     fetch('http://localhost:8080/additional-expense', {
         method: 'POST',
         headers: {
@@ -784,17 +789,17 @@ function guardarGastoAdicional(event, itemId) {
     })
     .then(response => {
         if (!response.ok) {
-            return response.json().then(err => { throw new Error(err.message || "Unknown error"); });
+            return response.json().then(err => { throw new Error(err.message || "Error desconocido"); });
         }
         return response.json();
     })
     .then(() => {
-        alert("Additional expense added successfully");
-        mostrarDetalleItem(itemId); // Returns to the item details view
+        alert("¡Gasto adicional agregado con éxito!");
+        mostrarDetalleItem(itemId); // Return to the item details view
     })
     .catch(error => {
-        console.error("Error adding additional expense:", error);
-        alert("Error adding additional expense: " + error.message);
+        console.error("Error al agregar el gasto adicional:", error);
+        alert("Error al agregar el gasto adicional: " + error.message);
     });
 }
 
