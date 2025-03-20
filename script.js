@@ -513,37 +513,58 @@ async function mostrarFormularioAgregarItem() {
     }
 }
 
-
-// Function to save a new item
+// Function to save a new item with additional validations
 async function guardarNuevoItem(event) {
-    event.preventDefault(); // Prevents the page from reloading
+    event.preventDefault(); // Avoid page recharge
 
-    // Retrieves form values and constructs a new item object
+    // Gets the values ​​of the form fields
+    const nombre = document.getElementById('nombre').value.trim();
+    const stock = parseInt(document.getElementById('stock').value);
+    const purchasePrice = parseFloat(document.getElementById('precioCompra').value);
+    const sellingPrice = parseFloat(document.getElementById('precioVenta').value);
+
+    // Validations
+    if (nombre === '') {
+        alert('Error: El nombre del ítem no puede estar vacío.');
+        return;
+    }
+
+    if (stock < 0 || purchasePrice < 0 || sellingPrice < 0) {
+        alert('Error: El stock, el precio de compra y el precio de venta no pueden ser negativos.');
+        return;
+    }
+
+    if (sellingPrice <= purchasePrice) {
+        alert('Error: El precio de venta debe ser mayor que el precio de compra.');
+        return;
+    }
+
+    // Constructs the object of the new item
     const nuevoItem = {
-        name: document.getElementById('nombre').value, // Item name
-        stock: parseInt(document.getElementById('stock').value), // Stock quantity
-        purchase_price: parseFloat(document.getElementById('precioCompra').value), // Purchase price
-        selling_price: parseFloat(document.getElementById('precioVenta').value), // Selling price
-        item_state: document.getElementById('estado').value === "true", // Item state (active/inactive)
-        item_type_id: parseInt(document.getElementById('tipoItem').value), // Item type ID
-        description: document.getElementById('descripcion').value // Item description
+        name: nombre,
+        stock: stock,
+        purchase_price: purchasePrice,
+        selling_price: sellingPrice,
+        item_state: document.getElementById('estado').value === "true",
+        item_type_id: parseInt(document.getElementById('tipoItem').value),
+        description: document.getElementById('descripcion').value.trim()
     };
 
     try {
-        // Sends a POST request to save the new item
+        // Sends the POST request to the backend
         const respuesta = await fetch('http://localhost:8080/item', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(nuevoItem) // Converts the object to JSON format
+            body: JSON.stringify(nuevoItem)
         });
 
-        if (!respuesta.ok) throw new Error('Error al guardar el ítem'); // Throws an error if the request fails
+        if (!respuesta.ok) throw new Error('Error al guardar el ítem');
 
-        alert('Ítem guardado con éxito'); // Displays a success message
-        cargarSeccion('items'); // Reloads the item list
+        alert('Ítem guardado con éxito'); // Displays success message
+        cargarSeccion('items'); // Reloads the list of items
     } catch (error) {
-        console.error(error); // Logs the error to the console
-        alert(`Error al guardar el ítem: ${error.message}`); // Displays an error message
+        console.error(error);
+        alert(`Error al guardar el ítem: ${error.message}`);
     }
 }
 
