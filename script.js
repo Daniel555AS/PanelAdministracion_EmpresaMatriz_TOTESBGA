@@ -826,51 +826,66 @@ function toggleHistorial() {
     icono.textContent = historial.classList.contains('oculto') ? '▼' : '▲';
 }
 
-// Function to update an item
+// Function to update an item with additional validations
 async function actualizarItem(event, id) {
-    // Prevents the default form submission behavior
-    event.preventDefault();
+    event.preventDefault(); // Avoid the default behavior of the form
 
-    // Displays a confirmation dialog; exits if the user cancels
+    // Confirms whether the user really wants to update the item
     if (!confirm("¿Está seguro de que desea actualizar este ítem?")) return;
 
+    // Obtiene los valores de los campos del formulario
+    const nombre = document.getElementById('nombre').value.trim();
+    const stock = parseInt(document.getElementById('stock').value);
+    const purchasePrice = parseFloat(document.getElementById('precioCompra').value);
+    const sellingPrice = parseFloat(document.getElementById('precioVenta').value);
+    const tipoItemSeleccionado = document.getElementById('tipoItem');
+    const item_type_id = parseInt(tipoItemSeleccionado.options[tipoItemSeleccionado.selectedIndex].getAttribute('data-id'));
+
+    // Validations
+    if (nombre === '') {
+        alert('Error: El nombre del ítem no puede estar vacío.');
+        return;
+    }
+
+    if (stock < 0 || purchasePrice < 0 || sellingPrice < 0) {
+        alert('Error: El stock, el precio de compra y el precio de venta no pueden ser negativos.');
+        return;
+    }
+
+    if (sellingPrice <= purchasePrice) {
+        alert('Error: El precio de venta debe ser mayor que el precio de compra.');
+        return;
+    }
+
+    // Build the object with the updated data
+    const datosActualizados = {
+        name: nombre,
+        description: document.getElementById('descripcion').value.trim(),
+        stock: stock,
+        selling_price: sellingPrice,
+        purchase_price: purchasePrice,
+        item_state: document.getElementById('estado').value === 'true',
+        item_type_id: item_type_id
+    };
+
     try {
-        // Retrieve the correct item_type_id from the dropdown menu
-        const tipoItemSeleccionado = document.getElementById('tipoItem');
-        const item_type_id = tipoItemSeleccionado.options[tipoItemSeleccionado.selectedIndex].getAttribute('data-id');
-
-        // Collect updated item data from form inputs
-        const datosActualizados = {
-            name: document.getElementById('nombre').value, // Item name
-            description: document.getElementById('descripcion').value, // Item description
-            stock: parseInt(document.getElementById('stock').value), // Item stock (converted to integer)
-            selling_price: parseFloat(document.getElementById('precioVenta').value), // Selling price (float)
-            purchase_price: parseFloat(document.getElementById('precioCompra').value), // Purchase price (float)
-            item_state: document.getElementById('estado').value === 'true', // Item status (boolean)
-            item_type_id: parseInt(item_type_id) // Item type ID (converted to integer)
-        };
-
-        // Logs the updated item data to the console (for debugging purposes)
-        console.log('Datos actualizados:', datosActualizados);
-
-        // Sends a PUT request to update the item on the backend
+        // Sends the PUT request to the backend
         const respuesta = await fetch(`http://localhost:8080/item/${id}`, {
-            method: 'PUT',                         // HTTP method: PUT (used for updating)
-            headers: { 'Content-Type': 'application/json' }, // Set content type to JSON
-            body: JSON.stringify(datosActualizados) // Convert data to JSON format
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(datosActualizados)
         });
 
-        // If the response is not OK, throws an error with the response message
+        // Check if the answer is correct
         if (!respuesta.ok) {
             const errorMensaje = await respuesta.text();
             throw new Error(`Error al actualizar el ítem: ${errorMensaje}`);
         }
 
-        // Displays a success alert and reloads the item list
+        // Displays a success message and reloads the item list
         alert('¡Ítem actualizado con éxito!');
-        cargarSeccion('items');  // Reloads the "items" section
+        cargarSeccion('items');
     } catch (error) {
-        // Displays an error alert if the update process fails
         alert(`Error al actualizar el ítem: ${error.message}`);
     }
 }
