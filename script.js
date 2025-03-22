@@ -735,7 +735,7 @@ async function actualizarGastoAdicional(event, gastoId) {
 // Function to delete an additional expense
 async function eliminarGastoAdicional(id, itemId) {
     // Confirm deletion before proceeding
-    if (!confirm('Are you sure you want to delete this additional expense?')) return;
+    if (!confirm('¿Está seguro de que desea eliminar este gasto adicional?')) return;
 
     try {
         // Sends a DELETE request to the backend
@@ -744,13 +744,13 @@ async function eliminarGastoAdicional(id, itemId) {
         });
 
         // Checks if the request was successful
-        if (!respuesta.ok) throw new Error('Error deleting the additional expense');
+        if (!respuesta.ok) throw new Error('Error ocurrido al eliminar gasto adicional');
 
-        alert('Expense deleted successfully');
+        alert('¡Gasto adicional eliminado con éxito!');
         mostrarDetalleItem(itemId); // Refreshes the item details view
     } catch (error) {
         console.error(error);
-        alert('Error deleting the additional expense');
+        alert('Error ocurrido al eliminar gasto adicional');
     }
 }
 
