@@ -563,6 +563,38 @@ input:focus, select:focus, textarea:focus {
     transition: background 0.3s ease; /* Smooth background transition */
 }
 
+.barra-busqueda {
+    display: flex; /* Align items in a row */
+    justify-content: center; /* Center the search bar horizontally */
+    margin-top: 5vh; /* Add vertical spacing from the top */
+}
+
+.busqueda-container {
+    display: flex; /* Arrange elements in a row */
+    gap: 1vw; /* Add space between elements based on viewport width */
+    align-items: center; /* Align items vertically in the center */
+}
+
+.barra-busqueda input {
+    padding: 1vh; /* Add padding inside the input field */
+    width: 63vw; /* Set the width based on viewport width */
+    border: 0.2vh solid #ccc; /* Add a light gray border */
+    border-radius: 1vh; /* Round the corners */
+    font-size: 2.3vh; /* Set font size relative to viewport height */
+}
+
+.barra-busqueda select {
+    padding: 1vh; /* Add padding inside the dropdown */
+    border: 0.2vh solid #ccc; /* Add a light gray border */
+    border-radius: 1vh; /* Round the corners */
+    font-size: 2.3vh; /* Set font size relative to viewport height */
+    width: 10vw; /* Set the width based on viewport width */
+}
+
+
+
+
+
 
 
 

@@ -322,56 +322,108 @@ async function generarPDFReporteInventario() {
     }
 }
 
-// Function to fetch and display items
-async function cargarItems() {
-    // Get the container where the item list will be displayed
-    const listaItems = document.getElementById('lista-items'); 
+// Function to search for an item according to the selected filter
+async function buscarItem() {
+    const textoBusqueda = document.getElementById('inputBusqueda').value.trim();
+    const filtro = document.getElementById('filtroBusqueda').value;
+    const tablaBody = document.getElementById('tablaItemsBody');
+
+    // If the search field is empty, reload all items
+    if (textoBusqueda === '') {
+        cargarItems();
+        return;
+    }
+
+    // Building the URL based on the filter
+    let urlBusqueda;
+    if (filtro === "id") {
+        urlBusqueda = `http://localhost:8080/item/searchById?id=${encodeURIComponent(textoBusqueda)}`;
+    } else {
+        urlBusqueda = `http://localhost:8080/item/searchByName?name=${encodeURIComponent(textoBusqueda)}`;
+    }
 
     try {
-        // Fetch item data from the API
-        const respuesta = await fetch('http://localhost:8080/item');
+        const respuesta = await fetch(urlBusqueda);
+        if (!respuesta.ok) throw new Error('Error en la búsqueda');
+
+        const itemsEncontrados = await respuesta.json();
         
-        // Check if the response is successful; if not, throw an error
-        if (!respuesta.ok) throw new Error('Error fetching items');
+        // If the API returns only one object (for ID), convert it to an array
+        const itemsArray = Array.isArray(itemsEncontrados) ? itemsEncontrados : [itemsEncontrados];
 
-        // Parse the JSON response into an array of items
-        const items = await respuesta.json();
-
-        // Populate the container with buttons and the item table
-        listaItems.innerHTML = `
-            <!-- Button to add a new item -->
-            <button class="btn-agregar-item" onclick="mostrarFormularioAgregarItem()"> + Agregar ítem 🚗</button>
-            <!-- Button to add a new item type -->
-            <button class="btn-agregar-tipo-item" onclick="mostrarFormularioAgregarItem()"> + Agregar Tipo de Ítem 🏷️</button>
-            <button class="btn-agregar-tipo-item" onclick="generarPDFReporteInventario()">Descargar PDF 📄</button>
-            ${items.length === 0 
-                ? '<p>No items available...</p>' // Display message if no items are found
-                : `
-                <table class="tabla-items">
-                    <thead>
-                        <tr>
-                            <th>ID</th> <!-- Item ID column -->
-                            <th>Nombre</th> <!-- Item Name column -->
-                            <th>Stock</th> <!-- Item Stock column -->
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${items.map(item => `
-                            <tr class="fila-item" onclick="mostrarDetalleItem(${item.id})">
-                                <td>${item.id}</td> <!-- Item ID -->
-                                <td>${item.name}</td> <!-- Item Name -->
-                                <td>${item.stock}</td> <!-- Item Stock -->
-                            </tr>
-                        `).join('')} <!-- Convert array of rows into a single string -->
-                    </tbody>
-                </table>
-            `}
-        `;
+        // Update only the `tbody` with the results
+        tablaBody.innerHTML = generarFilasTabla(itemsArray);
     } catch (error) {
-        // Display an error message if the fetch request fails
-        listaItems.innerHTML = `<p>Oops... Ha ocurrido un error</p>`;
+        console.error("Error en la búsqueda:", error);
+        tablaBody.innerHTML = `<tr><td colspan="3">No se encontraron resultados</td></tr>`;
     }
 }
+
+// Function to load all items in the table
+async function cargarItems() {
+    try {
+        const respuesta = await fetch('http://localhost:8080/item');
+        if (!respuesta.ok) throw new Error('Error al obtener los ítems');
+
+        const items = await respuesta.json();
+
+        // If the table already exists, only update the `tbody`
+        const tablaBody = document.getElementById('tablaItemsBody');
+        if (tablaBody) {
+            tablaBody.innerHTML = generarFilasTabla(items);
+            return;
+        }
+
+        // If the table does not exist, create the entire structure
+        document.getElementById('lista-items').innerHTML = `
+            <button class="btn-agregar-item" onclick="mostrarFormularioAgregarItem()"> + Agregar ítem 🚗</button>
+            <button class="btn-agregar-tipo-item" onclick="generarPDFReporteInventario()">Descargar PDF 📄</button>
+
+            <div class="barra-busqueda">
+                <div class="busqueda-container">
+                    <input type="text" id="inputBusqueda" placeholder="Buscar ítem..." oninput="buscarItem()">
+                    <select id="filtroBusqueda" onchange="buscarItem()">
+                        <option value="id">ID</option>
+                        <option value="name">Nombre</option>
+                    </select>
+                </div>
+            </div>
+
+            <table class="tabla-items">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Stock</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaItemsBody">
+                    ${generarFilasTabla(items)}
+                </tbody>
+            </table>
+        `;
+    } catch (error) {
+        document.getElementById('lista-items').innerHTML = `<p>Oops... Ha ocurrido un error</p>`;
+    }
+}
+
+// Function to generate table rows dynamically
+function generarFilasTabla(items) {
+    if (items.length === 0) {
+        return `<tr><td colspan="3">No se encontraron resultados</td></tr>`;
+    }
+
+    return items.map(item => `
+        <tr class="fila-item" onclick="mostrarDetalleItem(${item.id})">
+            <td>${item.id}</td>
+            <td>${item.name}</td>
+            <td>${item.stock}</td>
+        </tr>
+    `).join('');
+}
+
+// Call `cargarItems()` when the page loads
+document.addEventListener('DOMContentLoaded', cargarItems);
 
 // Function to display the details of an item
 async function mostrarDetalleItem(id) {
