@@ -589,6 +589,7 @@ input:focus, select:focus, textarea:focus {
     border-radius: 1vh; /* Round the corners */
     font-size: 2.3vh; /* Set font size relative to viewport height */
     width: 10vw; /* Set the width based on viewport width */
+    background: rgba(177, 177, 177, 0.61); /* Background color */
 }
 
 
