@@ -186,6 +186,142 @@ function actualizarTabla(usuarios) {
 // Load users when the script runs
 cargarUsuarios();
 
+// Function to Generate PDF of Inventory Report
+async function generarPDFReporteInventario() {
+    try {
+        // Get the items
+        const respuestaItems = await fetch('http://localhost:8080/item');
+        if (!respuestaItems.ok) throw new Error('Error al obtener los ítems');
+
+        const items = await respuestaItems.json();
+        if (items.length === 0) {
+            alert("No hay ítems disponibles para generar el PDF.");
+            return;
+        }
+
+        // Get item types and create a dictionary {id: name}
+        const respuestaTipos = await fetch('http://localhost:8080/item-type');
+        if (!respuestaTipos.ok) throw new Error('Error al obtener los tipos de ítems');
+
+        const tiposItem = await respuestaTipos.json();
+        const diccionarioTipos = {};
+        tiposItem.forEach(tipo => {
+            diccionarioTipos[tipo.id] = tipo.name;
+        });
+
+        // Get the current date and time
+        const fechaHoraActual = new Date().toLocaleString("es-CO", { timeZone: "America/Bogota" });
+
+        // Create a new PDF document in LETTER size and PORTRAIT orientation
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({
+            orientation: "portrait",
+            format: "letter" 
+        });
+
+        // Draw a black stripe at the top
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const headerHeight = 25;
+        doc.setFillColor(0, 0, 0);
+        doc.rect(0, 10, pageWidth, headerHeight, "F");
+
+        // Add text "TOTES BGA - Matriz" inside the black strip
+        doc.setTextColor(255, 255, 255);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(10);
+        doc.text("TOTES BGA - Matriz", 15, 20);
+
+        // Add logo on the black stripe
+        const imageUrl = "assets/images/logo_totes.png";
+        const imgWidth = 60;
+        const imgHeight = 15;
+        const imgX = pageWidth - imgWidth - 15;
+        const imgY = 13;
+
+        const img = new Image();
+        img.src = imageUrl;
+        img.onload = function () {
+            doc.addImage(img, "PNG", imgX, imgY, imgWidth, imgHeight);
+
+            // Margin below the black stripe
+            const margenDebajoFranja = 10;
+            let startY = 10 + headerHeight + margenDebajoFranja;
+
+            // Add centered title
+            doc.setTextColor(0, 0, 0);
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(14);
+            doc.text("Reporte General de Inventario", pageWidth / 2, startY, { align: "center" });
+
+            // Add the report overview
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(10);
+
+            const descripcion = `El presente reporte general de inventario fue generado en la siguiente Fecha y Hora: ${fechaHoraActual}, el cual contiene información sobre Identificador, Nombre, Descripción, Stock, Precio de Venta, Precio de Compra, Estado y Tipo de Ítem de los vehículos presentes en el inventario de la empresa TOTES BGA - Matriz.`;
+
+            let marginX = 15;
+            let marginY = startY + 10;
+            let maxWidth = pageWidth - 30;
+
+            let textoDividido = doc.splitTextToSize(descripcion, maxWidth);
+            doc.text(textoDividido, marginX, marginY);
+
+            let startTableY = marginY + doc.getTextDimensions(textoDividido).h + 5;
+
+            // Columns
+            const columnas = [
+                "ID", "Nombre", "Descripción", "Stock", "Precio Venta", "Precio Compra", "Estado", "Tipo de Ítem"
+            ];
+
+            // Build the rows with the complete data
+            const filas = items.map(item => [
+                item.id,
+                item.name,
+                item.description || "N/A",
+                item.stock,
+                `$${item.selling_price.toFixed(2)}`,
+                `$${item.purchase_price.toFixed(2)}`,
+                item.item_state ? "Activo" : "Inactivo",
+                diccionarioTipos[item.item_type_id] || "Desconocido"
+            ]);
+
+            // Determine the width of the table and center it
+            let tableWidth = 180;
+            let startX = (pageWidth - tableWidth) / 2;
+
+            // Add the table to the centered PDF
+            doc.autoTable({
+                head: [columnas],
+                body: filas,
+                startY: startTableY,
+                theme: "striped",
+                styles: { fontSize: 8, halign: "center", cellPadding: 2 },
+                headStyles: { fillColor: [52, 73, 94], textColor: 255, fontSize: 7 },
+                columnStyles: {
+                    0: { cellWidth: 10 },
+                    1: { cellWidth: 25 },
+                    2: { cellWidth: 30 },
+                    3: { cellWidth: 15 },
+                    4: { cellWidth: 25 },
+                    5: { cellWidth: 25 },
+                    6: { cellWidth: 15 },
+                    7: { cellWidth: 30 }
+                },
+                tableWidth: "wrap",
+                margin: { top: 10, bottom: 10 },
+                startX: startX,
+                pageBreak: "auto"
+            });
+
+            // Download the PDF
+            doc.save("Reporte_General_Inventario.pdf");
+        };
+    } catch (error) {
+        console.error("Error al generar el PDF:", error);
+        alert("Error al generar el PDF: " + error.message);
+    }
+}
+
 // Function to fetch and display items
 async function cargarItems() {
     // Get the container where the item list will be displayed
@@ -204,9 +340,10 @@ async function cargarItems() {
         // Populate the container with buttons and the item table
         listaItems.innerHTML = `
             <!-- Button to add a new item -->
-            <button class="btn-agregar-item" onclick="mostrarFormularioAgregarItem()"> + Add Item 🚗</button>
+            <button class="btn-agregar-item" onclick="mostrarFormularioAgregarItem()"> + Agregar ítem 🚗</button>
             <!-- Button to add a new item type -->
-            <button class="btn-agregar-tipo-item" onclick="mostrarFormularioAgregarItem()"> + Add Item Type 🏷️</button>
+            <button class="btn-agregar-tipo-item" onclick="mostrarFormularioAgregarItem()"> + Agregar Tipo de Ítem 🏷️</button>
+            <button class="btn-agregar-tipo-item" onclick="generarPDFReporteInventario()">Descargar PDF 📄</button>
             ${items.length === 0 
                 ? '<p>No items available...</p>' // Display message if no items are found
                 : `
