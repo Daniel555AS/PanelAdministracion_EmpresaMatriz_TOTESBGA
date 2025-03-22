@@ -676,48 +676,58 @@ function mostrarFormularioEditarGasto(gastoId, itemId) {
 
 // Function to update an additional expense
 async function actualizarGastoAdicional(event, gastoId) {
-    event.preventDefault(); // Prevents the default form submission behavior
+    event.preventDefault(); // Prevents the default behavior of the form
 
-    // Retrieves form elements and extracts input values
+    // Gets form elements and input values
     const form = document.getElementById('form-gasto');
-    const nombre = document.getElementById('nombreGasto').value;
+    const nombre = document.getElementById('nombreGasto').value.trim();
     const valor = parseFloat(document.getElementById('valorGasto').value);
-    const comentario = document.getElementById('comentarioGasto').value;
+    const comentario = document.getElementById('comentarioGasto').value.trim();
+    const itemId = form.dataset.itemId; // Gets the itemId from the form attribute
 
-    // Retrieves itemId correctly from the form's data attribute
-    const itemId = form.dataset.itemId;
-
-    // Validates itemId to ensure it's valid
+    // Validations
     if (!itemId || itemId === "0") {
-        console.error("Error: Invalid item_id", itemId);
-        alert("Error: Unable to retrieve item ID.");
+        console.error("Error: item_id no válido", itemId);
+        alert("Error: No se pudo obtener el ID del ítem.");
         return;
     }
 
-    // Creates an object with the expense data to be sent to the backend
+    if (!nombre) {
+        alert("Error: El nombre del gasto no puede estar vacío.");
+        return;
+    }
+
+    if (isNaN(valor) || valor <= 0) {
+        alert("Error: El valor del gasto debe ser mayor que cero.");
+        return;
+    }
+
+    // Create the object with the updated expense data
     const datos = {
         name: nombre,
-        item_id: parseInt(itemId), // Converts itemId to a number
-        expense: valor,
-        description: comentario
+        item_id: parseInt(itemId), // Convert itemId to number
+        expense: valor
     };
 
-    console.log("Data sent to the backend:", datos);  // Logs data for debugging
+    // Add the description only if it has content
+    if (comentario) {
+        datos.description = comentario;
+    }
 
     try {
-        // Sends a PUT request to update the additional expense
+        // Send a PUT request to update the additional spend
         const respuesta = await fetch(`http://localhost:8080/additional-expense/${gastoId}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(datos)
         });
 
-        if (!respuesta.ok) throw new Error('Error updating additional expense');
+        if (!respuesta.ok) throw new Error('Error al actualizar el gasto adicional');
 
-        alert('El gasto adicional se ha actualizado correctamente :)');
-        mostrarDetalleItem(itemId); // Returns to the item details view
+        alert('¡El gasto adicional se ha actualizado correctamente!');
+        mostrarDetalleItem(itemId); // Return to the item details view
     } catch (error) {
-        console.error(error);
+        console.error("Error al actualizar el gasto adicional:", error);
         alert(error.message);
     }
 }
