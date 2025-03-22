@@ -283,7 +283,7 @@ body {
 .fila-item:hover,
 .fila-user:hover {
     background: rgba(177, 177, 177, 0.61); /* Light gray background on hover */
-    color: white; /* White text */
+    color: black; /* Black text */
     cursor: pointer; /* Pointer cursor */
     transition: background 0.3s ease; /* Smooth background transition */
 }
@@ -557,8 +557,10 @@ input:focus, select:focus, textarea:focus {
 
 /* Hover effect for table rows */
 .tabla-gastos tbody tr:hover {
-    background-color: rgba(49, 48, 48, 0.1); /* Light gray background */
-    cursor: pointer; /* Changes cursor to pointer */
+    background: rgba(177, 177, 177, 0.61); /* Light gray background on hover */
+    color: rgb(0, 0, 0); /* Black text */
+    cursor: pointer; /* Pointer cursor */
+    transition: background 0.3s ease; /* Smooth background transition */
 }
 
 
