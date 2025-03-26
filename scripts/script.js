@@ -189,9 +189,25 @@ cargarUsuarios();
 // Function to Generate PDF of Inventory Report
 async function generarPDFReporteInventario() {
     try {
+        // Get the user's email stored in sessionStorage
+        const userEmail = sessionStorage.getItem("userEmail");
+
+        if (!userEmail) {
+            alert("Acceso no autorizado. Inicia sesión primero.");
+            window.location.href = "login.html";
+            return;
+        }
+
         // Get the items
-        const respuestaItems = await fetch('http://localhost:8080/item');
-        if (!respuestaItems.ok) throw new Error('Error al obtener los ítems');
+        const respuestaItems = await fetch("http://localhost:8080/item", {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Username": userEmail // Add the email to the header
+            }
+        });
+
+        if (!respuestaItems.ok) throw new Error("Error al obtener los ítems");
 
         const items = await respuestaItems.json();
         if (items.length === 0) {
@@ -199,9 +215,16 @@ async function generarPDFReporteInventario() {
             return;
         }
 
-        // Get item types and create a dictionary {id: name}
-        const respuestaTipos = await fetch('http://localhost:8080/item-type');
-        if (!respuestaTipos.ok) throw new Error('Error al obtener los tipos de ítems');
+        // Get item types
+        const respuestaTipos = await fetch("http://localhost:8080/item-type", {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Username": userEmail // Add the email to the header
+            }
+        });
+
+        if (!respuestaTipos.ok) throw new Error("Error al obtener los tipos de ítems");
 
         const tiposItem = await respuestaTipos.json();
         const diccionarioTipos = {};
@@ -212,26 +235,26 @@ async function generarPDFReporteInventario() {
         // Get the current date and time
         const fechaHoraActual = new Date().toLocaleString("es-CO", { timeZone: "America/Bogota" });
 
-        // Create a new PDF document in LETTER size and PORTRAIT orientation
+        // Create a new PDF document
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF({
             orientation: "portrait",
-            format: "letter" 
+            format: "letter"
         });
 
-        // Draw a black stripe at the top
+        // Draw the black stripe at the top
         const pageWidth = doc.internal.pageSize.getWidth();
         const headerHeight = 25;
         doc.setFillColor(0, 0, 0);
         doc.rect(0, 10, pageWidth, headerHeight, "F");
 
-        // Add text "TOTES BGA - Matriz" inside the black strip
+        //Add the text "TOTES BGA - Matriz" inside the black stripe
         doc.setTextColor(255, 255, 255);
         doc.setFont("helvetica", "bold");
         doc.setFontSize(10);
         doc.text("TOTES BGA - Matriz", 15, 20);
 
-        // Add logo on the black stripe
+        // Add the logo to the black stripe
         const imageUrl = "assets/images/logo_totes.png";
         const imgWidth = 60;
         const imgHeight = 15;
@@ -243,7 +266,7 @@ async function generarPDFReporteInventario() {
         img.onload = function () {
             doc.addImage(img, "PNG", imgX, imgY, imgWidth, imgHeight);
 
-            // Margin below the black stripe
+            // Margins and content positioning
             const margenDebajoFranja = 10;
             let startY = 10 + headerHeight + margenDebajoFranja;
 
@@ -253,7 +276,7 @@ async function generarPDFReporteInventario() {
             doc.setFontSize(14);
             doc.text("Reporte General de Inventario", pageWidth / 2, startY, { align: "center" });
 
-            // Add the report overview
+            // Add report description
             doc.setFont("helvetica", "normal");
             doc.setFontSize(10);
 
@@ -268,12 +291,12 @@ async function generarPDFReporteInventario() {
 
             let startTableY = marginY + doc.getTextDimensions(textoDividido).h + 5;
 
-            // Columns
+            // Table columns
             const columnas = [
                 "ID", "Nombre", "Descripción", "Stock", "Precio Venta", "Precio Compra", "Estado", "Tipo de Ítem"
             ];
 
-            // Build the rows with the complete data
+            // Build rows with the data
             const filas = items.map(item => [
                 item.id,
                 item.name,
@@ -289,7 +312,7 @@ async function generarPDFReporteInventario() {
             let tableWidth = 180;
             let startX = (pageWidth - tableWidth) / 2;
 
-            // Add the table to the centered PDF
+            // Add the table to the PDF
             doc.autoTable({
                 head: [columnas],
                 body: filas,
@@ -322,11 +345,15 @@ async function generarPDFReporteInventario() {
     }
 }
 
+
 // Function to search for an item according to the selected filter
 async function buscarItem() {
     const textoBusqueda = document.getElementById('inputBusqueda').value.trim();
     const filtro = document.getElementById('filtroBusqueda').value;
     const tablaBody = document.getElementById('tablaItemsBody');
+
+    // Get the user's email from sessionStorage
+    const userEmail = sessionStorage.getItem("userEmail");
 
     // If the search field is empty, reload all items
     if (textoBusqueda === '') {
@@ -334,7 +361,7 @@ async function buscarItem() {
         return;
     }
 
-    // Building the URL based on the filter
+    // Build the URL based on the selected filter
     let urlBusqueda;
     if (filtro === "id") {
         urlBusqueda = `http://localhost:8080/item/searchById?id=${encodeURIComponent(textoBusqueda)}`;
@@ -343,12 +370,14 @@ async function buscarItem() {
     }
 
     try {
-        const respuesta = await fetch(urlBusqueda);
+        const respuesta = await fetch(urlBusqueda, {
+            headers: { 'Username': userEmail }
+        });
         if (!respuesta.ok) throw new Error('Error en la búsqueda');
 
         const itemsEncontrados = await respuesta.json();
         
-        // If the API returns only one object (for ID), convert it to an array
+        // If the API returns a single object (for ID), convert it to an array
         const itemsArray = Array.isArray(itemsEncontrados) ? itemsEncontrados : [itemsEncontrados];
 
         // Update only the `tbody` with the results
@@ -361,20 +390,28 @@ async function buscarItem() {
 
 // Function to load all items in the table
 async function cargarItems() {
+
+    const userEmail = sessionStorage.getItem("userEmail");
+    
     try {
-        const respuesta = await fetch('http://localhost:8080/item');
+        const respuesta = await fetch('http://localhost:8080/item', {
+            method: 'GET',
+            headers: {
+                "Content-Type": "application/json",
+                "Username": userEmail 
+            }
+        });
+
         if (!respuesta.ok) throw new Error('Error al obtener los ítems');
 
         const items = await respuesta.json();
 
-        // If the table already exists, only update the `tbody`
         const tablaBody = document.getElementById('tablaItemsBody');
         if (tablaBody) {
             tablaBody.innerHTML = generarFilasTabla(items);
             return;
         }
 
-        // If the table does not exist, create the entire structure
         document.getElementById('lista-items').innerHTML = `
             <button class="btn-agregar-item" onclick="mostrarFormularioAgregarItem()"> + Agregar ítem 🚗</button>
             <button class="btn-agregar-tipo-item" onclick="generarPDFReporteInventario()">Descargar PDF 📄</button>
@@ -427,9 +464,14 @@ document.addEventListener('DOMContentLoaded', cargarItems);
 
 // Function to display the details of an item
 async function mostrarDetalleItem(id) {
+
+    const userEmail = sessionStorage.getItem("userEmail");
+
     try {
         async function fetchData(url, errorMsg) {
-            const respuesta = await fetch(url);
+            const respuesta = await fetch(url, {
+                headers: { 'Username': userEmail }
+            });
             if (!respuesta.ok) throw new Error(errorMsg);
             return respuesta.json();
         }
@@ -564,7 +606,10 @@ async function mostrarDetalleItem(id) {
 
                 if (gastosContainer.classList.contains('oculto')) {
                     try {
-                        const respuesta = await fetch('http://localhost:8080/additional-expense');
+                        const respuesta = await fetch('http://localhost:8080/additional-expense', {
+                            headers: { 'Username': userEmail }
+                        });
+    
                         if (!respuesta.ok) throw new Error('Error al cargar los gastos adicionales');
 
                         const gastosAdicionales = await respuesta.json();
@@ -613,11 +658,18 @@ async function mostrarDetalleItem(id) {
 
 // Function to display the add item form
 async function mostrarFormularioAgregarItem() {
+
+    const userEmail = sessionStorage.getItem("userEmail")
+
     try {
         // Fetches item types from the backend
-        const tiposDeItem = await fetch('http://localhost:8080/item-type')
-            .then(res => res.json())
-            .catch(() => { throw new Error('Error al cargar los tipos de ítem'); });
+        const tiposDeItem = await fetch('http://localhost:8080/item-type', {
+            headers: { 'Username': userEmail }
+        })
+        .then(res => {
+            if (!res.ok) throw new Error('Error al cargar los tipos de ítem');
+            return res.json();
+        });
 
         // Selects the content container and inserts the form HTML dynamically
         const contenido = document.getElementById('contenido');
@@ -704,6 +756,9 @@ async function mostrarFormularioAgregarItem() {
 
 // Function to save a new item with additional validations
 async function guardarNuevoItem(event) {
+
+    const userEmail = sessionStorage.getItem("userEmail")
+
     event.preventDefault(); // Avoid page recharge
 
     // Gets the values ​​of the form fields
@@ -743,7 +798,10 @@ async function guardarNuevoItem(event) {
         // Sends the POST request to the backend
         const respuesta = await fetch('http://localhost:8080/item', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                      'Content-Type': 'application/json', 
+                      'Username': userEmail
+            },
             body: JSON.stringify(nuevoItem)
         });
 
@@ -803,9 +861,9 @@ function mostrarFormularioAgregarGasto(itemId) {
     `;
 }
 
-
 // Function to display the form to edit an additional expense
 function mostrarFormularioEditarGasto(gastoId, itemId) {
+    const userEmail = sessionStorage.getItem("userEmail");
     const contenido = document.getElementById('contenido');
 
     // Validates itemId to ensure it's valid
@@ -815,8 +873,12 @@ function mostrarFormularioEditarGasto(gastoId, itemId) {
         return;
     }
 
-    // Fetches additional expense data from the server
-    fetch(`http://localhost:8080/additional-expense/${gastoId}`)
+        // Fetches additional expense data from the server
+        fetch(`http://localhost:8080/additional-expense/${gastoId}`, {
+            headers: {
+                'Username': userEmail
+            }
+        })     
         .then(response => {
             if (!response.ok) throw new Error('Error retrieving additional expense data');
             return response.json();
@@ -865,6 +927,8 @@ function mostrarFormularioEditarGasto(gastoId, itemId) {
 
 // Function to update an additional expense
 async function actualizarGastoAdicional(event, gastoId) {
+    const userEmail = sessionStorage.getItem("userEmail")
+
     event.preventDefault(); // Prevents the default behavior of the form
 
     // Gets form elements and input values
@@ -907,7 +971,7 @@ async function actualizarGastoAdicional(event, gastoId) {
         // Send a PUT request to update the additional spend
         const respuesta = await fetch(`http://localhost:8080/additional-expense/${gastoId}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', 'Username': userEmail },
             body: JSON.stringify(datos)
         });
 
@@ -923,13 +987,18 @@ async function actualizarGastoAdicional(event, gastoId) {
 
 // Function to delete an additional expense
 async function eliminarGastoAdicional(id, itemId) {
+    const userEmail = sessionStorage.getItem("userEmail");
+
     // Confirm deletion before proceeding
     if (!confirm('¿Está seguro de que desea eliminar este gasto adicional?')) return;
 
     try {
         // Sends a DELETE request to the backend
         const respuesta = await fetch(`http://localhost:8080/additional-expense/${id}`, {
-            method: 'DELETE'
+            method: 'DELETE',
+            headers: {
+                'Username': userEmail
+            }
         });
 
         // Checks if the request was successful
@@ -945,6 +1014,9 @@ async function eliminarGastoAdicional(id, itemId) {
 
 // Function to save a new additional expense
 function guardarGastoAdicional(event, itemId) {
+
+    const userEmail = sessionStorage.getItem("userEmail");
+
     event.preventDefault(); // Prevents the default behavior of the form
 
     // Gets and clears input values
@@ -982,7 +1054,8 @@ function guardarGastoAdicional(event, itemId) {
     fetch('http://localhost:8080/additional-expense', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Username': userEmail
         },
         body: JSON.stringify(nuevoGasto)
     })
@@ -1073,10 +1146,12 @@ async function actualizarItem(event, id) {
     };
 
     try {
+        const userEmail = sessionStorage.getItem("userEmail");
+
         // Sends the PUT request to the backend
         const respuesta = await fetch(`http://localhost:8080/item/${id}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', 'Username': userEmail },
             body: JSON.stringify(datosActualizados)
         });
 
@@ -1096,11 +1171,16 @@ async function actualizarItem(event, id) {
 
 // Function to fetch and display comments
 async function cargarComentarios() {
+    const userEmail = sessionStorage.getItem("userEmail");
     const listaComentarios = document.getElementById('lista-comentarios');
 
     try {
         // Perform a GET request to the comments API
-        const respuesta = await fetch('http://localhost:8080/comments');
+        const respuesta = await fetch('http://localhost:8080/comments', {
+            headers: {
+                'Username': userEmail
+            }
+        });
         if (!respuesta.ok) throw new Error('Error retrieving comments');
 
         // Parse the response to JSON format
@@ -1130,9 +1210,14 @@ async function cargarComentarios() {
 
 // Function to display the full details of a comment
 async function mostrarDetalleComentario(id) {
+    const userEmail = sessionStorage.getItem("userEmail");
     try {
         // Fetch the specific comment by its ID
-        const respuesta = await fetch(`http://localhost:8080/comment/${id}`);
+        const respuesta = await fetch(`http://localhost:8080/comment/${id}`, {
+            headers: {
+                'Username': userEmail
+            }
+        });
         if (!respuesta.ok) throw new Error('Error loading comment');
 
         // Parse the comment data to JSON format
