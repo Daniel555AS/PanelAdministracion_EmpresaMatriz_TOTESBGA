@@ -1265,9 +1265,12 @@ function controlarAcceso() {
     }
 }
 
-// Simulate user logout
+// logout function
 function cerrarSesion() {
-    alert("Session closed. Redirecting...");
+    // Clear all sessionStorage information
+    sessionStorage.clear();
+
+    alert("¡Sesión cerrada con éxito!");
     window.location.href = "index.html"; // Redirect to the login page
 }
 
