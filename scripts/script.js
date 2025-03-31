@@ -43,7 +43,17 @@ function cargarSeccion(seccion) {
             <div id="lista-comentarios" class="comment-list">
                 <p>Cargando comentarios...</p>
             </div>
-        ` // Comments section with a refresh button and placeholder content
+        `, // Comments section with a refresh button and placeholder content
+
+        'clientes': `
+            <h1>Gestionar Clientes</h1>
+            <div class="refresh-container" onclick="cargarClientes()">
+                <div class="refresh-logo">⟳</div>
+            </div>
+            <div id="lista-clientes" class="client-list">
+                <p>Cargando clientes...</p>
+            </div>
+        `
     };
 
     // Updates the content based on the selected section or shows an error message if not found
@@ -56,6 +66,8 @@ function cargarSeccion(seccion) {
         cargarItems(); // Calls the function to load items
     } else if (seccion === 'usuarios') {
         cargarUsuarios(); // Calls the function to load users
+    } else if (seccion === 'clientes') {
+        cargarClientes(); // Call the function to load customers
     }
 }
 
@@ -345,7 +357,6 @@ async function generarPDFReporteInventario() {
     }
 }
 
-
 // Function to search for an item according to the selected filter
 async function buscarItem() {
     const textoBusqueda = document.getElementById('inputBusqueda').value.trim();
@@ -390,9 +401,8 @@ async function buscarItem() {
 
 // Function to load all items in the table
 async function cargarItems() {
-
     const userEmail = sessionStorage.getItem("userEmail");
-    
+
     try {
         const respuesta = await fetch('http://localhost:8080/item', {
             method: 'GET',
@@ -412,6 +422,7 @@ async function cargarItems() {
             return;
         }
 
+        // Loads the table interface even if there are no items
         document.getElementById('lista-items').innerHTML = `
             <button class="btn-agregar-item" onclick="mostrarFormularioAgregarItem()"> + Agregar ítem 🚗</button>
             <button class="btn-agregar-tipo-item" onclick="generarPDFReporteInventario()">Descargar PDF 📄</button>
@@ -440,14 +451,40 @@ async function cargarItems() {
             </table>
         `;
     } catch (error) {
-        document.getElementById('lista-items').innerHTML = `<p>Oops... Ha ocurrido un error</p>`;
+        document.getElementById('lista-items').innerHTML = `
+            <button class="btn-agregar-item" onclick="mostrarFormularioAgregarItem()"> + Agregar ítem 🚗</button>
+            <button class="btn-agregar-tipo-item" onclick="generarPDFReporteInventario()">Descargar PDF 📄</button>
+
+            <div class="barra-busqueda">
+                <div class="busqueda-container">
+                    <input type="text" id="inputBusqueda" placeholder="Buscar ítem..." oninput="buscarItem()">
+                    <select id="filtroBusqueda" onchange="buscarItem()">
+                        <option value="id">ID</option>
+                        <option value="name">Nombre</option>
+                    </select>
+                </div>
+            </div>
+
+            <table class="tabla-items">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Stock</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaItemsBody">
+                    <tr><td colspan="3">No hay ítems disponibles</td></tr>
+                </tbody>
+            </table>
+        `;
     }
 }
 
-// Function to generate table rows dynamically
+// Function to dynamically generate the rows of the items table
 function generarFilasTabla(items) {
-    if (items.length === 0) {
-        return `<tr><td colspan="3">No se encontraron resultados</td></tr>`;
+    if (!items || items.length === 0) {
+        return `<tr><td colspan="3">No hay ítems disponibles</td></tr>`;
     }
 
     return items.map(item => `
@@ -1175,38 +1212,47 @@ async function cargarComentarios() {
     const listaComentarios = document.getElementById('lista-comentarios');
 
     try {
-        // Perform a GET request to the comments API
+        // Make a GET request to the Comments API
         const respuesta = await fetch('http://localhost:8080/comments', {
             headers: {
                 'Username': userEmail
             }
         });
-        if (!respuesta.ok) throw new Error('Error retrieving comments');
 
-        // Parse the response to JSON format
+        if (!respuesta.ok) throw new Error('Error al obtener los comentarios');
+
+        // Converts the response to JSON format
         const comentarios = await respuesta.json();
 
-        // If no comments are available, display a message
+        // If there are no comments, display the appropriate message
         if (comentarios.length === 0) {
-            listaComentarios.innerHTML = '<p>No comments available.</p>';
+            listaComentarios.innerHTML = `
+                <p class="mensaje-vacio">📭 La bandeja de comentarios se encuentra vacía.</p>
+            `;
             return;
         }
 
-        // Sort comments by ID in descending order (latest first)
+        // Sort comments by ID in descending order (most recent first)
         comentarios.sort((a, b) => b.id - a.id);
 
-        // Render comments as a preview list (like an inbox)
+        // Renderiza la lista de comentarios en formato de bandeja de entrada
         listaComentarios.innerHTML = comentarios.map(comentario => `
             <div class="comentario-preview" onclick="mostrarDetalleComentario(${comentario.id})">
                 <strong>${comentario.name} ${comentario.last_name}</strong> - ${comentario.email}
-                <p>${comentario.comment.substring(0, 80)}...</p> <!-- Display first 80 characters -->
+                <p>${comentario.comment.substring(0, 80)}...</p> <!-- Muestra los primeros 80 caracteres -->
             </div>
         `).join('');
+
     } catch (error) {
-        // Display an error message if the request fails
-        listaComentarios.innerHTML = `<p>Oops, algo no ha salido bien...</p>`;
+        console.error("Error al cargar comentarios:", error);
+
+        // In case of error, it simply shows the empty tray instead of an error message
+        listaComentarios.innerHTML = `
+            <p class="mensaje-vacio">📭 La bandeja de comentarios se encuentra vacía.</p>
+        `;
     }
 }
+
 
 // Function to display the full details of a comment
 async function mostrarDetalleComentario(id) {
@@ -1256,6 +1302,359 @@ async function mostrarDetalleComentario(id) {
         alert(`Error loading the comment: ${error.message}`);
     }
 }
+
+// Function to search for a client according to the selected filter
+async function buscarCliente() {
+    const textoBusqueda = document.getElementById('inputBusquedaClientes').value.trim();
+    const filtro = document.getElementById('filtroBusquedaClientes').value;
+    const tablaBody = document.getElementById('tablaClientesBody');
+
+    const userEmail = sessionStorage.getItem("userEmail");
+
+    // If the field is empty, reload all clients
+    if (textoBusqueda === '') {
+        cargarClientes();
+        return;
+    }
+
+    // Build the URL based on the selected filter
+    let urlBusqueda;
+    if (filtro === "id") {
+        urlBusqueda = `http://localhost:8080/customer/customerID/${encodeURIComponent(textoBusqueda)}`;
+    } else if (filtro === "lastName") {  // Ahora busca por apellido
+        urlBusqueda = `http://localhost:8080/customer/searchByLastName?lastName=${encodeURIComponent(textoBusqueda)}`;
+    } else {
+        urlBusqueda = `http://localhost:8080/customer/email/${encodeURIComponent(textoBusqueda)}`;
+    }
+
+    try {
+        const [respuestaClientes, respuestaTipos] = await Promise.all([
+            fetch(urlBusqueda, { headers: { 'Username': userEmail } }),
+            fetch('http://localhost:8080/identifier-type', { headers: { 'Username': userEmail } })
+        ]);
+
+        if (!respuestaClientes.ok || !respuestaTipos.ok) throw new Error('Error en la búsqueda');
+
+        const clientesEncontrados = await respuestaClientes.json();
+        const tiposIdentificadores = await respuestaTipos.json();
+
+        // Convert to array if the result is a single object (search by Email or ID)
+        const clientesArray = Array.isArray(clientesEncontrados) ? clientesEncontrados : [clientesEncontrados];
+
+        // Create the identifier type map
+        const mapaTiposIdentificadores = {};
+        tiposIdentificadores.forEach(tipo => {
+            mapaTiposIdentificadores[tipo.id] = tipo.name;
+        });
+
+        tablaBody.innerHTML = generarFilasTablaClientes(clientesArray, mapaTiposIdentificadores);
+    } catch (error) {
+        console.error("Error en la búsqueda:", error);
+        tablaBody.innerHTML = `<tr><td colspan="5">No se encontraron resultados</td></tr>`;
+    }
+}
+
+// Function to load all customers into the table
+async function cargarClientes() {
+    const userEmail = sessionStorage.getItem("userEmail");
+
+    try {
+        // Obtener clientes
+        const respuestaClientes = await fetch('http://localhost:8080/customers', {
+            method: 'GET',
+            headers: {
+                "Content-Type": "application/json",
+                "Username": userEmail
+            }
+        });
+
+        if (!respuestaClientes.ok) throw new Error('Error al obtener los clientes');
+        const clientes = await respuestaClientes.json();
+
+        // Get identifier types with the "Username" header
+        const respuestaTipos = await fetch('http://localhost:8080/identifier-type', {
+            method: 'GET',
+            headers: {
+                "Content-Type": "application/json",
+                "Username": userEmail
+            }
+        });
+
+        if (!respuestaTipos.ok) throw new Error('Error al obtener los tipos de identificador');
+        const tiposIdentificadores = await respuestaTipos.json();
+
+        // Create a map (dictionary) to quickly access the identifier name by its ID
+        const mapaTiposIdentificadores = {};
+        tiposIdentificadores.forEach(tipo => {
+            mapaTiposIdentificadores[tipo.id] = tipo.name;
+        });
+
+        const tablaBody = document.getElementById('tablaClientesBody');
+        if (tablaBody) {
+            tablaBody.innerHTML = generarFilasTablaClientes(clientes, mapaTiposIdentificadores);
+            return;
+        }
+
+        document.getElementById('lista-clientes').innerHTML = `
+            <button class="btn-agregar-cliente" onclick="mostrarFormularioAgregarCliente()">+ Agregar Cliente 🧑</button>
+
+            <div class="barra-busqueda">
+                <div class="busqueda-container">
+                    <input type="text" id="inputBusquedaClientes" placeholder="Buscar cliente..." oninput="buscarCliente()">
+                    <select id="filtroBusquedaClientes" onchange="buscarCliente()">
+                        <option value="id">ID</option>
+                        <option value="lastName">Apellido</option> 
+                        <option value="email">Email</option>
+                    </select>
+                </div>
+            </div>
+
+            <table class="tabla-clientes">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre Completo</th>
+                        <th>Tipo de ID</th>
+                        <th>Número de ID</th>
+                        <th>Email</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaClientesBody">
+                    ${generarFilasTablaClientes(clientes, mapaTiposIdentificadores)}
+                </tbody>
+            </table>
+        `;
+
+    } catch (error) {
+        document.getElementById('lista-clientes').innerHTML = `<p>Oops... Ha ocurrido un error</p>`;
+    }
+}
+
+// Function to dynamically generate rows from the customer table
+function generarFilasTablaClientes(clientes, mapaTiposIdentificadores) {
+    if (clientes.length === 0) {
+        return `<tr><td colspan="5">No se encontraron resultados</td></tr>`;
+    }
+
+    return clientes.map(cliente => `
+        <tr class="fila-cliente" onclick="mostrarDetalleCliente(${cliente.id})">
+            <td>${cliente.id}</td>
+            <td>${cliente.customerName} ${cliente.lastName}</td>  <!-- Nombre Completo -->
+            <td>${mapaTiposIdentificadores[cliente.identifierTypeId] || 'Desconocido'}</td>  <!-- Nombre del Tipo de ID -->
+            <td>${cliente.customerId}</td>  <!-- Número de ID -->
+            <td>${cliente.email}</td>
+        </tr>
+    `).join('');
+}
+
+let tiposDeIdentificacionOriginales = []; // It will store the original list of ID types
+async function mostrarFormularioAgregarCliente() {
+    const userEmail = sessionStorage.getItem("userEmail");
+
+    try {
+        // Get ID types from the backend
+        const tiposDeIdentificacion = await fetch('http://localhost:8080/identifier-type', {
+            headers: { 'Username': userEmail }
+        })
+        .then(res => {
+            if (!res.ok) throw new Error('Error al cargar los tipos de identificación');
+            return res.json();
+        });
+
+        // Save the original list of ID types
+        tiposDeIdentificacionOriginales = tiposDeIdentificacion;
+
+        // Identify the ID of the "NIT" identification type
+        const nitType = tiposDeIdentificacion.find(tipo => tipo.name === "NIT");
+        const nitId = nitType ? nitType.id : null;
+
+        // Building the form
+        const contenido = document.getElementById('contenido');
+        contenido.innerHTML = `
+            <div class="detalle-item-container">
+                <button class="btn-retorno" onclick="cargarSeccion('clientes')"><</button>
+                <h1>Agregar Nuevo Cliente</h1>
+
+                <form id="form-agregar-cliente" onsubmit="guardarNuevoCliente(event, ${nitId})">
+                    <div class="detalle-grid">
+                        <!-- Primera fila: Tipo de Persona y Tipo de Identificación -->
+                        <div class="columna">
+                            <div class="campo">
+                                <label for="tipoPersona">Tipo de Persona:</label>
+                                <select id="tipoPersona" required onchange="actualizarFormulario(${nitId})">
+                                    <option value="Natural">Natural</option>
+                                    <option value="Juridica">Jurídica</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="columna">
+                            <div class="campo">
+                                <label for="tipoIdentificacion">Tipo de Identificación:</label>
+                                <select id="tipoIdentificacion" required>
+                                    ${tiposDeIdentificacion
+                                        .filter(tipo => tipo.id !== nitId) // Inicialmente excluye "NIT"
+                                        .map(tipo => `<option value="${tipo.id}">${tipo.name}</option>`)
+                                        .join('')}
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Segunda fila: Nombres y Apellidos (Natural) o Razón Social (Jurídica) -->
+                        <div id="campoNombres" class="columna">
+                            <div class="campo">
+                                <label for="nombres">Nombres:</label>
+                                <input type="text" id="nombres">
+                            </div>
+                        </div>
+                        <div id="campoApellidos" class="columna">
+                            <div class="campo">
+                                <label for="apellidos">Apellidos:</label>
+                                <input type="text" id="apellidos">
+                            </div>
+                        </div>
+                        <div id="campoRazonSocial" class="campo campo-doble" style="display: none;">
+                            <div class="campo">
+                                <label for="razonSocial">Razón Social:</label>
+                                <input type="text" id="razonSocial">
+                            </div>
+                        </div>
+
+                        <!-- Tercera fila: Teléfono y Número de Identificación -->
+                        <div class="columna">
+                            <div class="campo">
+                                <label for="telefono">Teléfono:</label>
+                                <input type="text" id="telefono" required>
+                            </div>
+                        </div>
+                        <div class="columna">
+                            <div class="campo">
+                                <label for="numeroIdentificacion">Número de Identificación:</label>
+                                <input type="text" id="numeroIdentificacion" required>
+                            </div>
+                        </div>
+
+                        <!-- Cuarta fila: Email y Estado del Cliente -->
+                        <div class="columna">
+                            <div class="campo">
+                                <label for="email">Email:</label>
+                                <input type="email" id="email" required>
+                            </div>
+                        </div>
+                        <div class="columna">
+                            <div class="campo">
+                                <label for="estadoCliente">Estado del Cliente:</label>
+                                <select id="estadoCliente" required>
+                                    <option value="true">Activo</option>
+                                    <option value="false">Desactivado</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Quinta fila: Dirección -->
+                        <div class="campo campo-doble">
+                            <label for="direccion">Dirección:</label>
+                            <input type="text" id="direccion" required>
+                        </div>
+                    </div>
+
+                    <!-- Botón para guardar el cliente -->
+                    <button type="submit" class="btn-actualizar">Guardar Cliente ✅</button>
+                </form>
+            </div>
+        `;
+
+    } catch (error) {
+        console.error(error);
+        alert(`Error al cargar el formulario: ${error.message}`);
+    }
+}
+
+// Function to update the form according to the type of person
+function actualizarFormulario(nitId) {
+    const tipoPersona = document.getElementById("tipoPersona").value;
+    const tipoIdentificacion = document.getElementById("tipoIdentificacion");
+    const campoNombres = document.getElementById("campoNombres");
+    const campoApellidos = document.getElementById("campoApellidos");
+    const campoRazonSocial = document.getElementById("campoRazonSocial");
+
+    if (tipoPersona === "Juridica") {
+        // Block "NIT" and hide first and last name fields
+        tipoIdentificacion.innerHTML = `<option value="${nitId}">NIT</option>`;
+        tipoIdentificacion.disabled = true;
+
+        campoNombres.style.display = "none";
+        campoApellidos.style.display = "none";
+        campoRazonSocial.style.display = "block";
+    } else {
+        // Restore original options without "NIT"
+        tipoIdentificacion.innerHTML = tiposDeIdentificacionOriginales
+            .filter(tipo => tipo.id !== nitId)
+            .map(tipo => `<option value="${tipo.id}">${tipo.name}</option>`)
+            .join('');
+
+        tipoIdentificacion.disabled = false;
+
+        campoNombres.style.display = "block";
+        campoApellidos.style.display = "block";
+        campoRazonSocial.style.display = "none";
+    }
+}
+
+// Function to save the new client
+async function guardarNuevoCliente(event) {
+    event.preventDefault();
+    const userEmail = sessionStorage.getItem("userEmail");
+
+    // Gets the values ​​from the form
+    const tipoPersona = document.getElementById("tipoPersona").value;
+    const tipoIdentificacion = document.getElementById("tipoIdentificacion").value;
+    const numeroIdentificacion = document.getElementById("numeroIdentificacion").value.trim();
+    const telefono = document.getElementById("telefono").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const estadoCliente = document.getElementById("estadoCliente").value === "true";
+    const direccion = document.getElementById("direccion").value.trim();
+
+    // Build the new customer object with the correct field names
+    let customerData = {
+        customerId: numeroIdentificacion,  // The identification number is the CustomerId
+        identifierTypeId: parseInt(tipoIdentificacion),
+        phoneNumbers: telefono,
+        email: email,
+        customerState: estadoCliente,
+        address: direccion,
+        isBusiness: tipoPersona === "Juridica", 
+        customerName:"",
+        lastName: ""
+    };
+
+    if (tipoPersona === "Natural") {
+        customerData.customerName = document.getElementById("nombres").value.trim();
+        customerData.lastName = document.getElementById("apellidos").value.trim();
+    } else {
+        customerData.customerName = "*";
+        customerData.lastName = document.getElementById("razonSocial").value.trim();
+    }
+
+    try {
+        const response = await fetch('http://localhost:8080/customer', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Username': userEmail },
+            body: JSON.stringify(customerData)
+        });
+
+        if (!response.ok) {
+            throw new Error('Error al guardar el cliente');
+        }
+
+        alert("Cliente guardado con éxito");
+        cargarSeccion('clientes');
+    } catch (error) {
+        alert("Error al guardar el cliente: " + error.message);
+    }
+}
+
+// Load clients when the page loads
+document.addEventListener('DOMContentLoaded', cargarClientes);
 
 // Function to manage role-based access control
 function controlarAcceso() {

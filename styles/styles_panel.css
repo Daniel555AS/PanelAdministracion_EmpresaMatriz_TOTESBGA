@@ -247,7 +247,8 @@ body {
 
 /* Table styling */
 .tabla-items,
-.tabla-users {
+.tabla-users,
+.tabla-clientes {
     width: 75vw; /* Table width relative to the viewport */
     margin: 5vh auto; /* Centered with vertical margin */
     border-collapse: collapse; /* Collapse cell borders */
@@ -258,14 +259,16 @@ body {
 
 /* Table header */
 .tabla-items thead,
-.tabla-users thead {
+.tabla-users thead,
+.tabla-clientes thead {
     background: rgb(49, 48, 48); /* Dark background for headers */
     color: white; /* White text */
 }
 
 /* Header cells */
 .tabla-items th,
-.tabla-users th {
+.tabla-users th,
+.tabla-clientes th {
     padding: 2vh 2vw; /* Vertical and horizontal padding */
     text-align: left; /* Left-aligns content */
     font-size: 1.2vw; /* Larger text size for headers */
@@ -273,7 +276,8 @@ body {
 
 /* Table rows */
 .tabla-items td,
-.tabla-users td {
+.tabla-users td,
+.tabla-clientes td {
     padding: 2vh 2vw; /* Consistent padding */
     font-size: 1vw; /* Smaller font size for data */
     border-bottom: 0.5vh solid #ddd; /* Bottom border for row separation */
@@ -281,7 +285,8 @@ body {
 
 /* Hover effect for rows */
 .fila-item:hover,
-.fila-user:hover {
+.fila-user:hover,
+.fila-cliente:hover {
     background: rgba(177, 177, 177, 0.61); /* Light gray background on hover */
     color: black; /* Black text */
     cursor: pointer; /* Pointer cursor */
@@ -297,6 +302,10 @@ body {
     background: #fff; /* White background */
     border-radius: 2vw; /* Large rounded corners */
     box-shadow: 0 0.5vh 1vh rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
+}
+
+.detalle-item-container h1 {
+    margin-bottom: 4vh; 
 }
 
 /* Return arrow button */
@@ -592,6 +601,24 @@ input:focus, select:focus, textarea:focus {
     background: rgba(177, 177, 177, 0.61); /* Background color */
 }
 
+/* Button to add a customer */
+.btn-agregar-cliente {
+    background: #313030; /* Dark background */
+    color: white; /* White text */
+    padding: 1.5vh 2vw; /* Responsive padding based on viewport height and width */
+    border: none; /* No border */
+    border-radius: 1.5vw; /* Rounded corners */
+    font-size: 1vw; /* Responsive font size */
+    cursor: pointer; /* Changes cursor to pointer */
+    transition: background 0.3s ease; /* Smooth transition for background color */
+    margin-left: 1vw; /* Adds left margin */
+    font-weight: normal; /* Default font weight */
+}
+
+/* Hover effect for the add customer button */
+.btn-agregar-cliente:hover {
+    background: #767073; /* Lighter background on hover */
+}
 
 
 
