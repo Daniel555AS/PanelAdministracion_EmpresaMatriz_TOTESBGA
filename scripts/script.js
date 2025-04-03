@@ -543,7 +543,7 @@ async function mostrarDetalleItem(id) {
                             </div>
                             <div class="campo">
                                 <label for="stock">Stock:</label>
-                                <input type="number" id="stock" value="${item.stock}" required>
+                                <input type="text" id="stock" value="${item.stock}" required>
                             </div>
                         </div>
 
@@ -552,7 +552,7 @@ async function mostrarDetalleItem(id) {
                                 <label for="precioCompra">Precio de compra:</label>
                                 <div class="campo-moneda">
                                     <span class="prefijo">COP $ | </span>
-                                    <input type="number" id="precioCompra" value="${item.purchase_price.toFixed(2)}" step="0.01" required>
+                                    <input type="text" id="precioCompra" value="${item.purchase_price.toFixed(2)}" step="0.01" required>
                                 </div>
                             </div>
                             <div class="campo">
@@ -566,7 +566,7 @@ async function mostrarDetalleItem(id) {
                                 <label for="precioVenta">Precio de venta:</label>
                                 <div class="campo-moneda">
                                     <span class="prefijo">COP $ | </span>
-                                    <input type="number" id="precioVenta" value="${item.selling_price.toFixed(2)}" step="0.01" required>
+                                    <input type="text" id="precioVenta" value="${item.selling_price.toFixed(2)}" step="0.01" required>
                                 </div>
                             </div>
                         </div>
@@ -635,6 +635,18 @@ async function mostrarDetalleItem(id) {
                 </div>
             </div>
         `;
+
+        // Add restrictions to allow only numbers in the specified fields
+        function permitirSoloNumeros(event) {
+            event.target.value = event.target.value.replace(/\D/g, ''); // Removes any character that is not a number
+        }
+
+        // Wait for the DOM to update form elements
+        setTimeout(() => {
+            document.getElementById("precioCompra").addEventListener("input", permitirSoloNumeros);
+            document.getElementById("precioVenta").addEventListener("input", permitirSoloNumeros);
+            document.getElementById("stock").addEventListener("input", permitirSoloNumeros);
+        }, 0);
 
             // Function to charge additional expenses when the section is displayed
             window.toggleGastos = async function (itemId) {
@@ -1447,7 +1459,198 @@ function generarFilasTablaClientes(clientes, mapaTiposIdentificadores) {
     `).join('');
 }
 
+async function mostrarDetalleCliente(customerId) {
+    const userEmail = sessionStorage.getItem("userEmail");
+
+    try {
+        // Obtener los datos del cliente y los tipos de identificación
+        const [cliente, tiposDeIdentificacion] = await Promise.all([
+            fetch(`http://localhost:8080/customer/${customerId}`, {
+                headers: { 'Username': userEmail }
+            }).then(res => {
+                if (!res.ok) throw new Error('Error al cargar los datos del cliente');
+                return res.json();
+            }),
+            fetch('http://localhost:8080/identifier-type', {
+                headers: { 'Username': userEmail }
+            }).then(res => {
+                if (!res.ok) throw new Error('Error al cargar los tipos de identificación');
+                return res.json();
+            })
+        ]);
+
+        // Construcción del formulario de detalle
+        const contenido = document.getElementById('contenido');
+        contenido.innerHTML = `
+            <div class="detalle-item-container">
+                <button class="btn-retorno" onclick="cargarSeccion('clientes')"><</button>
+                <h1>Detalles del Cliente</h1>
+
+                <form id="form-detalle-cliente" onsubmit="actualizarCliente(event, '${cliente.id}')">
+                    <div class="detalle-grid">
+                        <div class="columna">
+                            <div class="campo">
+                                <label for="tipoPersona">Tipo de Persona:</label>
+                                <select id="tipoPersona" disabled>
+                                    <option value="Natural" ${cliente.isBusiness ? '' : 'selected'}>Natural</option>
+                                    <option value="Juridica" ${cliente.isBusiness ? 'selected' : ''}>Jurídica</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="columna">
+                            <div class="campo">
+                                <label for="tipoIdentificacion">Tipo de Identificación:</label>
+                                <select id="tipoIdentificacion" disabled>
+                                    ${tiposDeIdentificacion.map(tipo => `
+                                        <option value="${tipo.id}" ${tipo.id == cliente.identifierTypeId ? 'selected' : ''}>
+                                            ${tipo.name}
+                                        </option>
+                                    `).join('')}
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Campos para Persona Natural -->
+                        <div id="campoNombres" class="columna" style="display: ${cliente.isBusiness ? 'none' : 'block'};">
+                            <div class="campo">
+                                <label for="nombres">Nombres:</label>
+                                <input type="text" id="nombres" value="${cliente.customerName || ''}" required>
+                            </div>
+                        </div>
+                        <div id="campoApellidos" class="columna" style="display: ${cliente.isBusiness ? 'none' : 'block'};">
+                            <div class="campo">
+                                <label for="apellidos">Apellidos:</label>
+                                <input type="text" id="apellidos" value="${cliente.lastName || ''}" required>
+                            </div>
+                        </div>
+
+                        <!-- Campo para Persona Jurídica -->
+                        <div id="campoRazonSocial" class="campo campo-doble" style="display: ${cliente.isBusiness ? 'block' : 'none'};">
+                            <div class="campo">
+                                <label for="razonSocial">Razón Social:</label>
+                                <input type="text" id="razonSocial" value="${cliente.lastName || ''}">
+                            </div>
+                        </div>
+
+                        <div class="columna">
+                            <div class="campo">
+                                <label for="telefono">Teléfono:</label>
+                                <input type="text" id="telefono" value="${cliente.phoneNumbers || ''}" required>
+                            </div>
+                        </div>
+                        <div class="columna">
+                            <div class="campo">
+                                <label for="numeroIdentificacion">Número de Identificación:</label>
+                                <input type="text" id="numeroIdentificacion" value="${cliente.customerId}" required>
+                            </div>
+                        </div>
+
+                        <div class="columna">
+                            <div class="campo">
+                                <label for="email">Email:</label>
+                                <input type="email" id="email" value="${cliente.email || ''}" required>
+                            </div>
+                        </div>
+                        <div class="columna">
+                            <div class="campo">
+                                <label for="estadoCliente">Estado del Cliente:</label>
+                                <select id="estadoCliente" required>
+                                    <option value="true" ${cliente.customerState ? 'selected' : ''}>Activo</option>
+                                    <option value="false" ${!cliente.customerState ? 'selected' : ''}>Desactivado</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="campo campo-doble">
+                            <label for="direccion">Dirección:</label>
+                            <input type="text" id="direccion" value="${cliente.address || ''}" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-actualizar">Actualizar Cliente 🔄</button>
+                </form>
+            </div>
+        `;
+
+    } catch (error) {
+        console.error(error);
+        alert(`Error al cargar los detalles del cliente: ${error.message}`);
+    }
+}
+
+// Función para actualizar un cliente con validaciones adicionales
+async function actualizarCliente(event, id) {
+    event.preventDefault(); // Evita el comportamiento por defecto del formulario
+
+    // Confirmar si el usuario realmente quiere actualizar el cliente
+    if (!confirm("¿Está seguro de que desea actualizar este cliente?")) return;
+
+    // Obtener los valores de los campos del formulario
+    const tipoPersona = document.getElementById('tipoPersona').value;
+    const nombres = document.getElementById('nombres')?.value.trim();
+    const apellidos = document.getElementById('apellidos')?.value.trim();
+    const razonSocial = document.getElementById('razonSocial')?.value.trim();
+    const telefono = document.getElementById('telefono').value.trim();
+    const numeroIdentificacion = document.getElementById('numeroIdentificacion').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const estadoCliente = document.getElementById('estadoCliente').value === 'true';
+    const direccion = document.getElementById('direccion').value.trim();
+
+    // Validaciones
+    if (tipoPersona === "Natural" && (!nombres || !apellidos)) {
+        alert('Error: Los nombres y apellidos son obligatorios para una persona natural.');
+        return;
+    }
+    
+    if (tipoPersona === "Juridica" && !razonSocial) {
+        alert('Error: La razón social es obligatoria para una persona jurídica.');
+        return;
+    }
+
+    if (!telefono || !numeroIdentificacion || !email || !direccion) {
+        alert('Error: Todos los campos son obligatorios.');
+        return;
+    }
+
+    // Construcción del objeto con los datos actualizados
+    const datosActualizados = {
+        customerId: numeroIdentificacion, // Usar el ID original recibido como parámetro
+        isBusiness: tipoPersona === "Juridica",
+        customerName: tipoPersona === "Natural" ? nombres : razonSocial,
+        lastName: tipoPersona === "Natural" ? apellidos : "", 
+        phoneNumbers: telefono,
+        email: email,
+        customerState: estadoCliente,
+        address: direccion
+    };
+
+    try {
+        const userEmail = sessionStorage.getItem("userEmail");
+
+        // Enviar la solicitud PUT al backend
+        const respuesta = await fetch(`http://localhost:8080/customer/${id}`, { 
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'Username': userEmail },
+            body: JSON.stringify(datosActualizados)
+        });
+        
+
+        // Verificar si la respuesta es correcta
+        if (!respuesta.ok) {
+            const errorMensaje = await respuesta.text();
+            throw new Error(`Error al actualizar el cliente: ${errorMensaje}`);
+        }
+
+        // Mostrar mensaje de éxito y recargar la sección de clientes
+        alert('¡Cliente actualizado con éxito!');
+        cargarSeccion('clientes');
+    } catch (error) {
+        alert(`Error al actualizar el cliente: ${error.message}`);
+    }
+}
+
 let tiposDeIdentificacionOriginales = []; // It will store the original list of ID types
+
 async function mostrarFormularioAgregarCliente() {
     const userEmail = sessionStorage.getItem("userEmail");
 
@@ -1475,7 +1678,7 @@ async function mostrarFormularioAgregarCliente() {
                 <button class="btn-retorno" onclick="cargarSeccion('clientes')"><</button>
                 <h1>Agregar Nuevo Cliente</h1>
 
-                <form id="form-agregar-cliente" onsubmit="guardarNuevoCliente(event, ${nitId})">
+                <form id="form-agregar-cliente" onsubmit="guardarNuevoCliente(event)">
                     <div class="detalle-grid">
                         <!-- Primera fila: Tipo de Persona y Tipo de Identificación -->
                         <div class="columna">
@@ -1605,34 +1808,72 @@ async function guardarNuevoCliente(event) {
     event.preventDefault();
     const userEmail = sessionStorage.getItem("userEmail");
 
-    // Gets the values ​​from the form
-    const tipoPersona = document.getElementById("tipoPersona").value;
-    const tipoIdentificacion = document.getElementById("tipoIdentificacion").value;
+    // Obtiene los valores del formulario y los recorta para evitar espacios vacíos
+    const tipoPersona = document.getElementById("tipoPersona").value.trim();
+    const tipoIdentificacion = document.getElementById("tipoIdentificacion").value.trim();
     const numeroIdentificacion = document.getElementById("numeroIdentificacion").value.trim();
     const telefono = document.getElementById("telefono").value.trim();
     const email = document.getElementById("email").value.trim();
     const estadoCliente = document.getElementById("estadoCliente").value === "true";
     const direccion = document.getElementById("direccion").value.trim();
 
-    // Build the new customer object with the correct field names
+    // Validaciones generales
+    if (numeroIdentificacion === ''  || numeroIdentificacion === null ) {
+        alert("Error: El número de identificación no puede estar vacío.");
+        return;
+    }
+    if (telefono === '') {
+        alert("Error: El número de teléfono no puede estar vacío.");
+        return;
+    } 
+    if (email === '') {
+        alert("Error: El correo electrónico no puede estar vacío.");
+        return;
+    }
+    if (direccion === '') {
+        alert("Error: La dirección no puede estar vacía.");
+        return;
+    }
+
+    // Construye el objeto con los datos del cliente
     let customerData = {
-        customerId: numeroIdentificacion,  // The identification number is the CustomerId
+        customerId: numeroIdentificacion,
         identifierTypeId: parseInt(tipoIdentificacion),
         phoneNumbers: telefono,
         email: email,
         customerState: estadoCliente,
         address: direccion,
         isBusiness: tipoPersona === "Juridica", 
-        customerName:"",
+        customerName: "",
         lastName: ""
     };
 
+    // Validaciones específicas según el tipo de persona
     if (tipoPersona === "Natural") {
-        customerData.customerName = document.getElementById("nombres").value.trim();
-        customerData.lastName = document.getElementById("apellidos").value.trim();
+        const nombres = document.getElementById("nombres").value.trim();
+        const apellidos = document.getElementById("apellidos").value.trim();
+
+        if (nombres === '') {
+            alert("Error: El nombre no puede estar vacío.");
+            return;
+        }
+        if (apellidos === '') {
+            alert("Error: El apellido no puede estar vacío.");
+            return;
+        }
+
+        customerData.customerName = nombres;
+        customerData.lastName = apellidos;
     } else {
-        customerData.customerName = "*";
-        customerData.lastName = document.getElementById("razonSocial").value.trim();
+        const razonSocial = document.getElementById("razonSocial").value.trim();
+        
+        if (!razonSocial) {
+            alert("Error: La razón social no puede estar vacía.");
+            return;
+        }
+
+        customerData.customerName = "*";  // Valor por defecto para evitar problemas con cadenas vacías
+        customerData.lastName = razonSocial;
     }
 
     try {
