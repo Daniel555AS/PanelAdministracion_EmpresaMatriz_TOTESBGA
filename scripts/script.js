@@ -611,7 +611,7 @@ async function mostrarDetalleItem(id) {
                                 ${historial.map(h => `
                                     <tr>
                                         <td>${h.id}</td>
-                                        <td>${h.price.toFixed(2)}</td>
+                                        <td>${Number(h.price).toLocaleString("es-CO")}</td>
                                         <td>${new Date(h.modified_at).toLocaleString()}</td>
                                     </tr>
                                 `).join('')}
