@@ -761,7 +761,7 @@ async function mostrarFormularioAgregarItem() {
                             </div>
                             <div class="campo">
                                 <label for="stock">Stock:</label>
-                                <input type="number" id="stock" required>
+                                <input type="text" id="stock" required>
                             </div>
                         </div>
 
@@ -771,7 +771,7 @@ async function mostrarFormularioAgregarItem() {
                                 <label for="precioCompra">Precio de compra:</label>
                                 <div class="campo-moneda">
                                     <span class="prefijo">COP $ | </span>
-                                    <input type="number" id="precioCompra" step="0.01" required>
+                                    <input type="text" id="precioCompra" required>
                                 </div>
                             </div>
                             <div class="campo">
@@ -789,7 +789,7 @@ async function mostrarFormularioAgregarItem() {
                                 <label for="precioVenta">Precio de venta:</label>
                                 <div class="campo-moneda">
                                     <span class="prefijo">COP $ | </span>
-                                    <input type="number" id="precioVenta" step="0.01" required>
+                                    <input type="text" id="precioVenta" required>
                                 </div>
                             </div>
                         </div>
@@ -819,6 +819,40 @@ async function mostrarFormularioAgregarItem() {
             </div>
         `;
 
+        // Add restrictions to allow only numbers in the specified fields
+        function permitirSoloNumeros(event) {
+            event.target.value = event.target.value.replace(/\D/g, ''); // Removes any character that is not a number
+        }
+
+        // Wait for the DOM to update form elements
+        setTimeout(() => {
+            document.getElementById("precioCompra").addEventListener("input", permitirSoloNumeros);
+            document.getElementById("precioVenta").addEventListener("input", permitirSoloNumeros);
+            document.getElementById("stock").addEventListener("input", permitirSoloNumeros);
+        }, 0);
+
+
+        // Function to allow only numbers and format with thousands separators
+        function formatearNumero(event) {
+            let valor = event.target.value.replace(/\D/g, ''); // Remove non-numeric characters
+            if (valor) {
+                valor = Number(valor).toLocaleString("es-CO"); // Apply Colombian format
+            }
+            event.target.value = valor;
+        }
+
+        // Apply formatting to price and stock fields
+        setTimeout(() => {
+            document.getElementById("precioCompra").addEventListener("input", formatearNumero);
+            document.getElementById("precioVenta").addEventListener("input", formatearNumero);
+            document.getElementById("stock").addEventListener("input", formatearNumero);
+
+            // Restore formatting when the page loads
+            document.getElementById("precioCompra").value = Number(document.getElementById("precioCompra").value.replace(/\D/g, '') || 0).toLocaleString("es-CO");
+            document.getElementById("precioVenta").value = Number(document.getElementById("precioVenta").value.replace(/\D/g, '') || 0).toLocaleString("es-CO");
+            document.getElementById("stock").value = Number(document.getElementById("stock").value.replace(/\D/g, '') || 0).toLocaleString("es-CO");
+        }, 0);    
+
     } catch (error) {
         console.error(error); // Logs the error in the console
         alert(`Error al cargar el formulario: ${error.message}`); // Displays an error message
@@ -834,9 +868,9 @@ async function guardarNuevoItem(event) {
 
     // Gets the values ​​of the form fields
     const nombre = document.getElementById('nombre').value.trim();
-    const stock = parseInt(document.getElementById('stock').value);
-    const purchasePrice = parseFloat(document.getElementById('precioCompra').value);
-    const sellingPrice = parseFloat(document.getElementById('precioVenta').value);
+    const stock = parseFloat(document.getElementById('stock').value.replace(/\./g, '').replace(',', '.'));
+    const purchasePrice = parseFloat(document.getElementById('precioCompra').value.replace(/\./g, '').replace(',', '.'));
+    const sellingPrice = parseFloat(document.getElementById('precioVenta').value.replace(/\./g, '').replace(',', '.'));
 
     // Validations
     if (nombre === '') {
