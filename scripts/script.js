@@ -1485,6 +1485,7 @@ async function cargarClientes() {
                         <th>Tipo de ID</th>
                         <th>Número de ID</th>
                         <th>Email</th>
+                        <th>Estado</th>
                     </tr>
                 </thead>
                 <tbody id="tablaClientesBody">
@@ -1498,19 +1499,21 @@ async function cargarClientes() {
     }
 }
 
-// Function to dynamically generate rows from the customer table
 function generarFilasTablaClientes(clientes, mapaTiposIdentificadores) {
     if (clientes.length === 0) {
-        return `<tr><td colspan="5">No se encontraron resultados</td></tr>`;
+        return `<tr><td colspan="6">No se encontraron resultados</td></tr>`;
     }
 
     return clientes.map(cliente => `
         <tr class="fila-cliente" onclick="mostrarDetalleCliente(${cliente.id})">
             <td>${cliente.id}</td>
-            <td>${cliente.customerName} ${cliente.lastName}</td>  <!-- Nombre Completo -->
-            <td>${mapaTiposIdentificadores[cliente.identifierTypeId] || 'Desconocido'}</td>  <!-- Nombre del Tipo de ID -->
-            <td>${cliente.customerId}</td>  <!-- Número de ID -->
+            <td>${cliente.customerName} ${cliente.lastName}</td>  
+            <td>${mapaTiposIdentificadores[cliente.identifierTypeId] || 'Desconocido'}</td>  
+            <td>${cliente.customerId}</td>  
             <td>${cliente.email}</td>
+            <td>
+                <div class="estado-circulo ${cliente.customerState ? 'activo' : 'inactivo'}"></div>
+            </td>
         </tr>
     `).join('');
 }
@@ -1647,6 +1650,7 @@ async function actualizarCliente(event, id) {
     const apellidos = document.getElementById('apellidos')?.value.trim();
     const razonSocial = document.getElementById('razonSocial')?.value.trim();
     const telefono = document.getElementById('telefono').value.trim();
+    const tipoIdentificacion = document.getElementById('tipoIdentificacion').value.trim();
     const numeroIdentificacion = document.getElementById('numeroIdentificacion').value.trim();
     const email = document.getElementById('email').value.trim();
     const estadoCliente = document.getElementById('estadoCliente').value === 'true';
@@ -1668,16 +1672,17 @@ async function actualizarCliente(event, id) {
         return;
     }
 
-    // Construcción del objeto con los datos actualizados
+    // Building the object with the updated data
     const datosActualizados = {
-        customerId: numeroIdentificacion, // Usar el ID original recibido como parámetro
+        customerId: numeroIdentificacion,
         isBusiness: tipoPersona === "Juridica",
-        customerName: tipoPersona === "Natural" ? nombres : razonSocial,
-        lastName: tipoPersona === "Natural" ? apellidos : "", 
+        customerName: tipoPersona === "Natural" ? nombres : "*",
+        lastName: tipoPersona === "Natural" ? apellidos : razonSocial, 
         phoneNumbers: telefono,
         email: email,
         customerState: estadoCliente,
-        address: direccion
+        address: direccion,
+        identifierTypeId: parseInt(tipoIdentificacion)
     };
 
     try {

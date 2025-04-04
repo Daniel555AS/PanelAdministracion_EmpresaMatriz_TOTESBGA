@@ -620,6 +620,20 @@ input:focus, select:focus, textarea:focus {
     background: #767073; /* Lighter background on hover */
 }
 
+.estado-circulo {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.activo {
+    background-color: green;
+}
+
+.inactivo {
+    background-color: red;
+}
 
 
 
