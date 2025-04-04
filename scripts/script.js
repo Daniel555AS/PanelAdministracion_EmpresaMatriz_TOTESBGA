@@ -491,7 +491,7 @@ function generarFilasTabla(items) {
         <tr class="fila-item" onclick="mostrarDetalleItem(${item.id})">
             <td>${item.id}</td>
             <td>${item.name}</td>
-            <td>${item.stock}</td>
+            <td>${Number(item.stock).toLocaleString("es-CO")}</td>
         </tr>
     `).join('');
 }
@@ -662,13 +662,12 @@ async function mostrarDetalleItem(id) {
         setTimeout(() => {
             document.getElementById("precioCompra").addEventListener("input", formatearNumero);
             document.getElementById("precioVenta").addEventListener("input", formatearNumero);
-            document.getElementById("stock").addEventListener("input", (event) => {
-                event.target.value = event.target.value.replace(/\D/g, ''); // Only numbers without formatting
-            });
+            document.getElementById("stock").addEventListener("input", formatearNumero);
 
             // Restore formatting when the page loads
             document.getElementById("precioCompra").value = Number(document.getElementById("precioCompra").value.replace(/\D/g, '') || 0).toLocaleString("es-CO");
             document.getElementById("precioVenta").value = Number(document.getElementById("precioVenta").value.replace(/\D/g, '') || 0).toLocaleString("es-CO");
+            document.getElementById("stock").value = Number(document.getElementById("stock").value.replace(/\D/g, '') || 0).toLocaleString("es-CO");
         }, 0);
 
             // Function to charge additional expenses when the section is displayed
@@ -1184,7 +1183,7 @@ async function actualizarItem(event, id) {
 
     // Gets the values ​​of the form fields
     const nombre = document.getElementById('nombre').value.trim();
-    const stock = parseInt(document.getElementById('stock').value);
+    const stock = parseFloat(document.getElementById('stock').value.replace(/\./g, '').replace(',', '.'));
     const purchasePrice = parseFloat(document.getElementById('precioCompra').value.replace(/\./g, '').replace(',', '.'));
     const sellingPrice = parseFloat(document.getElementById('precioVenta').value.replace(/\./g, '').replace(',', '.'));
     const tipoItemSeleccionado = document.getElementById('tipoItem');
