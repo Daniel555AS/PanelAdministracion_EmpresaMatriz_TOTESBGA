@@ -53,6 +53,22 @@ function cargarSeccion(seccion) {
             <div id="lista-clientes" class="client-list">
                 <p>Cargando clientes...</p>
             </div>
+        `,
+
+        'citas': `
+            <h1>Gestionar Citas</h1>
+            <div class="refresh-container" onclick="cargarCitas()">
+                <div class="refresh-logo">⟳</div>
+            </div>
+            <div id="calendario-semanal" class="calendar-container">
+                <p>Cargando calendario...</p>
+            </div>
+            <div id="popup-cita" class="popup-cita oculto">
+            <div class="popup-contenido">
+                <span id="cerrar-popup" class="cerrar-popup">×</span>
+                <div id="detalle-cita"></div>
+                </div>
+            </div>
         `
     };
 
@@ -68,6 +84,8 @@ function cargarSeccion(seccion) {
         cargarUsuarios(); // Calls the function to load users
     } else if (seccion === 'clientes') {
         cargarClientes(); // Call the function to load customers
+    } else if (seccion === 'citas') {
+        cargarCitas(); // Call the function to load appointments
     }
 }
 
@@ -1310,7 +1328,7 @@ async function cargarComentarios() {
         // Sort comments by ID in descending order (most recent first)
         comentarios.sort((a, b) => b.id - a.id);
 
-        // Renderiza la lista de comentarios en formato de bandeja de entrada
+        // Renders the list of comments in inbox format
         listaComentarios.innerHTML = comentarios.map(comentario => `
             <div class="comentario-preview" onclick="mostrarDetalleComentario(${comentario.id})">
                 <strong>${comentario.name} ${comentario.last_name}</strong> - ${comentario.email}
@@ -1327,7 +1345,6 @@ async function cargarComentarios() {
         `;
     }
 }
-
 
 // Function to display the full details of a comment
 async function mostrarDetalleComentario(id) {
@@ -1529,7 +1546,7 @@ async function mostrarDetalleCliente(customerId) {
     const userEmail = sessionStorage.getItem("userEmail");
 
     try {
-        // Obtener los datos del cliente y los tipos de identificación
+        // Obtain customer data and identification types
         const [cliente, tiposDeIdentificacion] = await Promise.all([
             fetch(`http://localhost:8080/customer/${customerId}`, {
                 headers: { 'Username': userEmail }
@@ -1545,7 +1562,7 @@ async function mostrarDetalleCliente(customerId) {
             })
         ]);
 
-        // Construcción del formulario de detalle
+        // Building the detail form
         const contenido = document.getElementById('contenido');
         contenido.innerHTML = `
             <div class="detalle-item-container">
@@ -1644,14 +1661,14 @@ async function mostrarDetalleCliente(customerId) {
     }
 }
 
-// Función para actualizar un cliente con validaciones adicionales
+// Function to update a client with additional validations
 async function actualizarCliente(event, id) {
-    event.preventDefault(); // Evita el comportamiento por defecto del formulario
+    event.preventDefault(); // Avoid the default behavior of the form
 
-    // Confirmar si el usuario realmente quiere actualizar el cliente
+    // Confirm if the user really wants to update the client
     if (!confirm("¿Está seguro de que desea actualizar este cliente?")) return;
 
-    // Obtener los valores de los campos del formulario
+    // Get the values ​​of the form fields
     const tipoPersona = document.getElementById('tipoPersona').value;
     const nombres = document.getElementById('nombres')?.value.trim();
     const apellidos = document.getElementById('apellidos')?.value.trim();
@@ -1663,7 +1680,7 @@ async function actualizarCliente(event, id) {
     const estadoCliente = document.getElementById('estadoCliente').value === 'true';
     const direccion = document.getElementById('direccion').value.trim();
 
-    // Validaciones
+    // Validations
     if (tipoPersona === "Natural" && (!nombres || !apellidos)) {
         alert('Error: Los nombres y apellidos son obligatorios para una persona natural.');
         return;
@@ -1703,13 +1720,13 @@ async function actualizarCliente(event, id) {
         });
         
 
-        // Verificar si la respuesta es correcta
+        // Check if the answer is correct
         if (!respuesta.ok) {
             const errorMensaje = await respuesta.text();
             throw new Error(`Error al actualizar el cliente: ${errorMensaje}`);
         }
 
-        // Mostrar mensaje de éxito y recargar la sección de clientes
+        // Display success message and reload the customer section
         alert('¡Cliente actualizado con éxito!');
         cargarSeccion('clientes');
     } catch (error) {
@@ -1876,7 +1893,7 @@ async function guardarNuevoCliente(event) {
     event.preventDefault();
     const userEmail = sessionStorage.getItem("userEmail");
 
-    // Obtiene los valores del formulario y los recorta para evitar espacios vacíos
+    // Gets the values ​​from the form and trims them to avoid empty spaces
     const tipoPersona = document.getElementById("tipoPersona").value.trim();
     const tipoIdentificacion = document.getElementById("tipoIdentificacion").value.trim();
     const numeroIdentificacion = document.getElementById("numeroIdentificacion").value.trim();
@@ -1885,7 +1902,7 @@ async function guardarNuevoCliente(event) {
     const estadoCliente = document.getElementById("estadoCliente").value === "true";
     const direccion = document.getElementById("direccion").value.trim();
 
-    // Validaciones generales
+    // General validations
     if (numeroIdentificacion === ''  || numeroIdentificacion === null ) {
         alert("Error: El número de identificación no puede estar vacío.");
         return;
@@ -1903,7 +1920,7 @@ async function guardarNuevoCliente(event) {
         return;
     }
 
-    // Construye el objeto con los datos del cliente
+    // Build the object with the client data
     let customerData = {
         customerId: numeroIdentificacion,
         identifierTypeId: parseInt(tipoIdentificacion),
@@ -1916,7 +1933,7 @@ async function guardarNuevoCliente(event) {
         lastName: ""
     };
 
-    // Validaciones específicas según el tipo de persona
+    // Specific validations according to the type of person
     if (tipoPersona === "Natural") {
         const nombres = document.getElementById("nombres").value.trim();
         const apellidos = document.getElementById("apellidos").value.trim();
@@ -1940,7 +1957,7 @@ async function guardarNuevoCliente(event) {
             return;
         }
 
-        customerData.customerName = "*";  // Valor por defecto para evitar problemas con cadenas vacías
+        customerData.customerName = "*";  
         customerData.lastName = razonSocial;
     }
 
@@ -1962,15 +1979,198 @@ async function guardarNuevoCliente(event) {
     }
 }
 
-// Load clients when the page loads
-document.addEventListener('DOMContentLoaded', cargarClientes);
+let semanaActualOffset = 0; // Control the movement in weeks
 
-// Function to manage role-based access control
-function controlarAcceso() {
-    if (usuario.rol === "empresa") {
-        // Hide admin-exclusive options for users with the "empresa" role
-        document.querySelectorAll('.admin').forEach(item => item.classList.add('hidden'));
+async function cargarCitas(offset = 0) {
+    semanaActualOffset += offset;
+
+    const contenedorCalendario = document.getElementById('calendario-semanal');
+    contenedorCalendario.innerHTML = ""; // Clear previous content
+
+    const diasSemana = ["Lun.", "Mar.", "Mié.", "Jue.", "Vie.", "Sáb.", "Dom."];
+    const hoy = new Date();
+
+    const lunes = new Date(hoy);
+    lunes.setDate(hoy.getDate() - hoy.getDay() + 1 + semanaActualOffset * 7);
+    const domingo = new Date(lunes);
+    domingo.setDate(lunes.getDate() + 6);
+
+    const diasEnPantalla = [];
+    for (let i = 0; i < 7; i++) {
+        const dia = new Date(lunes);
+        dia.setDate(lunes.getDate() + i);
+        diasEnPantalla.push(dia);
     }
+
+    // Create header with arrows and date range
+    const encabezado = document.createElement("div");
+    encabezado.classList.add("encabezado-semana");
+
+    const flechaIzquierda = document.createElement("span");
+    flechaIzquierda.classList.add("flecha-navegacion");
+    flechaIzquierda.textContent = "<";
+    flechaIzquierda.onclick = () => cargarCitas(-1);
+
+    const flechaDerecha = document.createElement("span");
+    flechaDerecha.classList.add("flecha-navegacion");
+    flechaDerecha.textContent = ">";
+    flechaDerecha.onclick = () => cargarCitas(1);
+
+    const tituloSemana = document.createElement("span");
+    const opcionesFecha = { day: "numeric", month: "long" };
+    const rango = `${lunes.toLocaleDateString("es-CO", opcionesFecha)} - ${domingo.toLocaleDateString("es-CO", opcionesFecha)} de ${domingo.getFullYear()}`;
+    tituloSemana.textContent = rango;
+    tituloSemana.classList.add("titulo-semana");
+
+    encabezado.appendChild(flechaIzquierda);
+    encabezado.appendChild(tituloSemana);
+    encabezado.appendChild(flechaDerecha);
+    contenedorCalendario.appendChild(encabezado);
+
+    // Create table
+    const tabla = document.createElement("table");
+    tabla.classList.add("tabla-calendario");
+
+    // Head
+    const thead = document.createElement("thead");
+    const filaCabecera = document.createElement("tr");
+
+    const thHora = document.createElement("th");
+    thHora.textContent = "Hora";
+    filaCabecera.appendChild(thHora);
+
+    for (let i = 0; i < 7; i++) {
+        const dia = diasEnPantalla[i];
+        const th = document.createElement("th");
+        th.textContent = `${diasSemana[i]} ${dia.toLocaleDateString("es-CO", opcionesFecha)}`;
+        filaCabecera.appendChild(th);
+    }
+
+    thead.appendChild(filaCabecera);
+    tabla.appendChild(thead);
+
+    // Table body with hours
+    const tbody = document.createElement("tbody");
+
+    for (let h = 9; h <= 17; h++) {
+        const fila = document.createElement("tr");
+
+        const celdaHora = document.createElement("td");
+        celdaHora.textContent = `${h.toString().padStart(2, '0')}:00`;
+        fila.appendChild(celdaHora);
+
+        for (let i = 0; i < 7; i++) {
+            const celda = document.createElement("td");
+            celda.classList.add("celda-calendario");
+            celda.dataset.dia = i;
+            celda.dataset.hora = h;
+            fila.appendChild(celda);
+        }
+
+        tbody.appendChild(fila);
+    }
+
+    tabla.appendChild(tbody);
+    contenedorCalendario.appendChild(tabla);
+
+    // Query API and position appointments
+    try {
+        const userEmail = localStorage.getItem('userEmail');
+
+        const respuesta = await fetch('http://localhost:8080/appointments', {
+            method: 'GET',
+            headers: {
+                "Content-Type": "application/json",
+                "Username": userEmail 
+            }
+        });
+
+        const citas = await respuesta.json();
+
+        citas.forEach(cita => {
+            const fechaCita = new Date(cita.dateTime);
+            const hora = new Date(fechaCita.getTime() + fechaCita.getTimezoneOffset() * 60000).getHours();
+
+            const diaIndex = diasEnPantalla.findIndex(d =>
+                d.getFullYear() === fechaCita.getFullYear() &&
+                d.getMonth() === fechaCita.getMonth() &&
+                d.getDate() === fechaCita.getDate()
+            );
+
+            if (hora >= 9 && hora <= 17 && diaIndex !== -1) {
+                const celda = document.querySelector(`.celda-calendario[data-dia='${diaIndex}'][data-hora='${hora}']`);
+                if (celda) {
+                    const divCita = document.createElement("div");
+                    divCita.textContent = `${cita.customerName} ${cita.lastName}`;
+                    divCita.classList.add("bloque-cita");
+                    celda.appendChild(divCita);
+                    divCita.dataset.citaId = cita.id;
+                    divCita.onclick = mostrarDetalleCita;
+
+                }
+            }
+        });
+
+    } catch (error) {
+        console.error("Error al cargar las citas:", error);
+        alert("No se pudieron cargar las citas.");
+    }
+}
+
+async function mostrarDetalleCita(event) {
+    const citaId = event.currentTarget.dataset.citaId;
+    const userEmail = localStorage.getItem('userEmail');
+
+    try {
+        const respuesta = await fetch(`http://localhost:8080/appointments/searchByID?id=${citaId}`, {
+            method: 'GET',
+            headers: {
+                "Content-Type": "application/json",
+                "Username": userEmail 
+            }
+        });
+
+        if (!respuesta.ok) throw new Error("No se pudo obtener la información de la cita");
+
+        const cita = await respuesta.json();
+
+        console.log("Respuesta de la API:", cita);
+
+        const citaReal = Array.isArray(cita) ? cita[0] : cita;
+
+        mostrarPopUpCita(citaReal);
+
+    } catch (error) {
+        console.error("Error al obtener detalles de la cita:", error);
+        alert("No se pudo obtener la información de la cita.");
+    }
+}
+
+function mostrarPopUpCita(cita) {
+    const detalleDiv = document.getElementById("detalle-cita");
+    const popup = document.getElementById("popup-cita");
+
+    if (!cita) {
+        detalleDiv.innerHTML = "<p>Error al mostrar detalles.</p>";
+        return;
+    }
+
+    detalleDiv.innerHTML = `
+        <p><strong>Nombre:</strong> ${cita.customerName || ""} ${cita.lastName || ""}</p>
+        <p><strong>Correo:</strong> ${cita.email || "No registrado"}</p>
+        <p><strong>Fecha:</strong> ${cita.dateTime ? new Date(cita.dateTime).toLocaleString("es-CO") : "Sin fecha"}</p>
+        <p><strong>Dirección:</strong> ${cita.address || "No registrada"}</p>
+        <p><strong>Teléfono(s):</strong> ${Array.isArray(cita.phoneNumbers) ? cita.phoneNumbers.join(", ") : cita.phoneNumbers || "No disponibles"}</p>
+        <p><strong>Estado del Cliente:</strong> ${cita.customerState || "Desconocido"}</p>
+    `;
+
+    // Show the popup
+    popup.classList.remove("oculto");
+
+    // Activate the close button dynamically
+    document.getElementById("cerrar-popup").onclick = () => {
+        popup.classList.add("oculto");
+    };
 }
 
 // logout function
