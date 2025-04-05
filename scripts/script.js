@@ -443,6 +443,7 @@ async function cargarItems() {
                         <th>ID</th>
                         <th>Nombre</th>
                         <th>Stock</th>
+                        <th>Estado</th>
                     </tr>
                 </thead>
                 <tbody id="tablaItemsBody">
@@ -471,10 +472,11 @@ async function cargarItems() {
                         <th>ID</th>
                         <th>Nombre</th>
                         <th>Stock</th>
+                        <th>Estado</th>
                     </tr>
                 </thead>
                 <tbody id="tablaItemsBody">
-                    <tr><td colspan="3">No hay ítems disponibles</td></tr>
+                    <tr><td colspan="4">No hay ítems disponibles</td></tr>
                 </tbody>
             </table>
         `;
@@ -492,6 +494,9 @@ function generarFilasTabla(items) {
             <td>${item.id}</td>
             <td>${item.name}</td>
             <td>${Number(item.stock).toLocaleString("es-CO")}</td>
+            <td>
+                <div class="estado-circulo ${item.item_state ? 'activo' : 'inactivo'}"></div>
+            </td>
         </tr>
     `).join('');
 }
@@ -1246,9 +1251,11 @@ async function actualizarItem(event, id) {
         stock: stock,
         selling_price: sellingPrice,
         purchase_price: purchasePrice,
-        item_state: document.getElementById('estado').value === 'true',
+        item_state: document.getElementById('estado').value === "true" ? true : false,
         item_type_id: item_type_id
     };
+
+    console.log(datosActualizados);
 
     try {
         const userEmail = sessionStorage.getItem("userEmail");
@@ -1418,7 +1425,7 @@ async function buscarCliente() {
         tablaBody.innerHTML = generarFilasTablaClientes(clientesArray, mapaTiposIdentificadores);
     } catch (error) {
         console.error("Error en la búsqueda:", error);
-        tablaBody.innerHTML = `<tr><td colspan="5">No se encontraron resultados</td></tr>`;
+        tablaBody.innerHTML = `<tr><td colspan="6">No se encontraron resultados</td></tr>`;
     }
 }
 
@@ -1470,8 +1477,8 @@ async function cargarClientes() {
                 <div class="busqueda-container">
                     <input type="text" id="inputBusquedaClientes" placeholder="Buscar cliente..." oninput="buscarCliente()">
                     <select id="filtroBusquedaClientes" onchange="buscarCliente()">
-                        <option value="id">ID</option>
-                        <option value="lastName">Apellido</option> 
+                        <option value="id">No. ID</option>
+                        <option value="lastName">Apellidos / R.S.</option> 
                         <option value="email">Email</option>
                     </select>
                 </div>
