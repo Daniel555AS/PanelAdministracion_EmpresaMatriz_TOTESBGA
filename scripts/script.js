@@ -69,6 +69,20 @@ function cargarSeccion(seccion) {
                 <div id="detalle-cita"></div>
                 </div>
             </div>
+            <div id="modal-fechas" style="display: none;" class="modal">
+    <div class="modal-contenido">
+        <h3>Seleccione el rango de fechas</h3>
+        <label for="fecha-inicio">Fecha inicio:</label>
+        <input type="date" id="fecha-inicio">
+        <label for="fecha-fin">Fecha fin:</label>
+        <input type="date" id="fecha-fin">
+        <button id="confirmar-fechas">Generar Reporte</button>
+        <button onclick="cerrarModalFechas()">Cancelar</button>
+    </div>
+</div>
+<canvas id="graficoCitas" width="400" height="400" style="display: none;"></canvas>
+
+
         `
     };
 
@@ -221,12 +235,6 @@ async function generarPDFReporteInventario() {
     try {
         // Get the user's email stored in sessionStorage
         const userEmail = sessionStorage.getItem("userEmail");
-
-        if (!userEmail) {
-            alert("Acceso no autorizado. Inicia sesión primero.");
-            window.location.href = "login.html";
-            return;
-        }
 
         // Get the items
         const respuestaItems = await fetch("http://localhost:8080/item", {
@@ -443,7 +451,7 @@ async function cargarItems() {
         // Loads the table interface even if there are no items
         document.getElementById('lista-items').innerHTML = `
             <button class="btn-agregar-item" onclick="mostrarFormularioAgregarItem()"> + Agregar ítem 🚗</button>
-            <button class="btn-agregar-tipo-item" onclick="generarPDFReporteInventario()">Descargar PDF 📄</button>
+            <button class="btn-agregar-tipo-item" onclick="generarPDFReporteInventario()">Generar Reporte (PDF) 📄</button>
 
             <div class="barra-busqueda">
                 <div class="busqueda-container">
@@ -1981,11 +1989,26 @@ async function guardarNuevoCliente(event) {
 
 let semanaActualOffset = 0; // Control the movement in weeks
 
+// Function to load appointments into the calendar
 async function cargarCitas(offset = 0) {
     semanaActualOffset += offset;
 
     const contenedorCalendario = document.getElementById('calendario-semanal');
-    contenedorCalendario.innerHTML = ""; // Clear previous content
+
+    // Check if the button already exists before deleting everything
+    const botonPrevio = document.querySelector("#boton-reporte");
+    if (botonPrevio) botonPrevio.remove();
+    
+    // CLEAN before inserting the button
+    contenedorCalendario.innerHTML = "";
+    
+    // Create button and add it just before
+    const botonReporte = document.createElement("button");
+    botonReporte.id = "boton-reporte";
+    botonReporte.textContent = "Generar Reporte (PDF) 📄";
+    botonReporte.classList.add("boton-reporte");
+    contenedorCalendario.parentNode.insertBefore(botonReporte, contenedorCalendario);
+    
 
     const diasSemana = ["Lun.", "Mar.", "Mié.", "Jue.", "Vie.", "Sáb.", "Dom."];
     const hoy = new Date();
@@ -2075,7 +2098,7 @@ async function cargarCitas(offset = 0) {
 
     // Query API and position appointments
     try {
-        const userEmail = localStorage.getItem('userEmail');
+        const userEmail = sessionStorage.getItem("userEmail");
 
         const respuesta = await fetch('http://localhost:8080/appointments', {
             method: 'GET',
@@ -2117,9 +2140,10 @@ async function cargarCitas(offset = 0) {
     }
 }
 
+// Function to display details of an appointment
 async function mostrarDetalleCita(event) {
     const citaId = event.currentTarget.dataset.citaId;
-    const userEmail = localStorage.getItem('userEmail');
+    const userEmail = sessionStorage.getItem("userEmail");
 
     try {
         const respuesta = await fetch(`http://localhost:8080/appointments/searchByID?id=${citaId}`, {
@@ -2146,6 +2170,7 @@ async function mostrarDetalleCita(event) {
     }
 }
 
+// Function to display pop-up with appointment details
 function mostrarPopUpCita(cita) {
     const detalleDiv = document.getElementById("detalle-cita");
     const popup = document.getElementById("popup-cita");
@@ -2172,6 +2197,168 @@ function mostrarPopUpCita(cita) {
         popup.classList.add("oculto");
     };
 }
+
+// Function for generating Appointment Reports, in PDF format
+async function generarPDFReporteCitas(fechaInicio, fechaFin) {
+    try {
+        const userEmail = sessionStorage.getItem("userEmail");
+
+        const respuesta = await fetch("http://localhost:8080/appointments", {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Username": userEmail
+            }
+        });
+
+        if (!respuesta.ok) throw new Error("Error al obtener las citas");
+
+        const citas = await respuesta.json();
+
+        const citasFiltradas = citas.filter(cita => {
+            const fechaCita = new Date(cita.dateTime);
+            return fechaCita >= fechaInicio && fechaCita <= fechaFin;
+        });
+
+        if (citasFiltradas.length === 0) {
+            alert("No hay citas dentro del rango seleccionado.");
+            return;
+        }
+
+        const activas = citasFiltradas.filter(c => c.state === true).length;
+        const vencidas = citasFiltradas.filter(c => c.state === false).length;
+        const total = citasFiltradas.length;
+
+        // Create a chart with Chart.js and datalabels
+        const ctx = document.getElementById("graficoCitas").getContext("2d");
+
+        if (window.graficoCitasInstance) window.graficoCitasInstance.destroy();
+
+        window.graficoCitasInstance = new Chart(ctx, {
+            type: "pie",
+            data: {
+                labels: ["Activas / Próximas", "Vencidas / Atendidas"],
+                datasets: [{
+                    data: [activas, vencidas],
+                    backgroundColor: ["#36A2EB", "#FF6384"]
+                }]
+            },
+            options: {
+                responsive: false,
+                animation: false,
+                plugins: {
+                    datalabels: {
+                        color: '#fff',
+                        formatter: (value, context) => {
+                            const sum = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                            const percentage = ((value / sum) * 100).toFixed(1) + "%";
+                            return percentage;
+                        },
+                        font: {
+                            weight: 'bold',
+                            size: 12
+                        }
+                    }
+                }
+            },
+            plugins: [ChartDataLabels]
+        });
+
+        // Wait for the graphic to render
+        setTimeout(() => {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ orientation: "portrait", format: "letter" });
+            const pageWidth = doc.internal.pageSize.getWidth();
+
+            const headerHeight = 25;
+            doc.setFillColor(0, 0, 0);
+            doc.rect(0, 10, pageWidth, headerHeight, "F");
+
+            doc.setTextColor(255, 255, 255);
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(10);
+            doc.text("TOTES BGA - Matriz", 15, 20);
+
+            const imageUrl = "assets/images/logo_totes.png";
+            const img = new Image();
+            img.src = imageUrl;
+
+            img.onload = () => {
+                const imgWidth = 60;
+                const imgHeight = 15;
+                const imgX = pageWidth - imgWidth - 15;
+                const imgY = 13;
+                doc.addImage(img, "PNG", imgX, imgY, imgWidth, imgHeight);
+
+                let y = 10 + headerHeight + 10;
+                doc.setTextColor(0, 0, 0);
+                doc.setFontSize(14);
+                doc.text("Reporte de Citas por Estado", pageWidth / 2, y, { align: "center" });
+
+                y += 10;
+                doc.setFontSize(10);
+                const fechaGeneracion = new Date().toLocaleString("es-CO");
+                doc.text(`Este reporte fue generado el: ${fechaGeneracion}`, 15, y);
+                y += 8;
+                doc.text(`Rango de fechas: ${fechaInicio.toLocaleDateString()} - ${fechaFin.toLocaleDateString()}`, 15, y);
+                y += 10;
+
+                // Add summary
+                doc.setFont("helvetica", "normal");
+                doc.text(`Total de citas encontradas: ${total}`, 15, y);
+                y += 7;
+                doc.text(`Citas activas / próximas (color azul): ${activas}`, 15, y);
+                y += 7;
+                doc.text(`Citas vencidas / atendidas (color rojo): ${vencidas}`, 15, y);
+                y += 10;
+
+                // Add chart image
+                const graficoCanvas = document.getElementById("graficoCitas");
+                const graficoDataUrl = graficoCanvas.toDataURL("image/png");
+                doc.addImage(graficoDataUrl, "PNG", 40, y, 130, 120);
+
+                doc.save("Reporte_Citas.pdf");
+            };
+        }, 500);
+    } catch (error) {
+        console.error("Error al generar el PDF:", error);
+        alert("Error al generar el reporte de citas: " + error.message);
+    }
+}
+
+///////////////////////////////////////
+document.addEventListener("DOMContentLoaded", () => {
+    document.addEventListener("click", (e) => {
+        // Button to open the dates modal
+        if (e.target && e.target.id === "boton-reporte") {
+            document.getElementById("modal-fechas").style.display = "flex";
+        }
+
+        // Button to generate the report
+        if (e.target && e.target.id === "confirmar-fechas") {
+            const inicio = document.getElementById("fecha-inicio").value;
+            const fin = document.getElementById("fecha-fin").value;
+
+            if (!inicio || !fin) {
+                alert("Por favor selecciona ambas fechas.");
+                return;
+            }
+
+            document.getElementById("modal-fechas").style.display = "none";
+            const fechaInicio = new Date(`${inicio}T00:00:00`);
+            const fechaFin = new Date(`${fin}T23:59:59`);
+            generarPDFReporteCitas(fechaInicio, fechaFin);
+
+        }
+    });
+});
+
+
+function cerrarModalFechas() {
+    document.getElementById("modal-fechas").style.display = "none";
+}
+
+//////////////////////////////////////
 
 // logout function
 function cerrarSesion() {
