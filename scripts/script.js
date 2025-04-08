@@ -729,7 +729,7 @@ async function mostrarDetalleItem(id) {
                                         <tr onclick="mostrarFormularioEditarGasto(${gasto.id}, ${itemId})" style="cursor: pointer;">
                                             <td>${gasto.name}</td>
                                             <td>COP ($)</td>
-                                            <td>${gasto.expense.toFixed(2)}</td>
+                                            <td>${Number(gasto.expense).toLocaleString("es-CO")}</td>
                                         </tr>
                                     `).join('')}
                                 </tbody>
