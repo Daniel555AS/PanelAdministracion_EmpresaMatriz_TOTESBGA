@@ -1019,8 +1019,6 @@ function mostrarFormularioAgregarGasto(itemId) {
             // Restore formatting when the page loads
             document.getElementById("valorGasto").value = Number(document.getElementById("valorGasto").value.replace(/\D/g, '') || 0).toLocaleString("es-CO");
         }, 0);       
-
-
 }
 
 // Function to display the form to edit an additional expense
@@ -1183,7 +1181,7 @@ function guardarGastoAdicional(event, itemId) {
 
     // Gets and clears input values
     const nombre = document.getElementById('nombreGasto').value.trim();
-    const valor = parseFloat(document.getElementById('valorGasto').value);
+    const valor = parseFloat(document.getElementById('valorGasto').value.replace(/\./g, '').replace(',', '.'));
     const comentario = document.getElementById('comentarioGasto').value.trim();
 
     // Validations
