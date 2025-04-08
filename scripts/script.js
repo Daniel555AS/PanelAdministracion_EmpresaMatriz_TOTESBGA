@@ -105,130 +105,247 @@ function cargarSeccion(seccion) {
 
 // Asynchronous function to load user data from an API
 async function cargarUsuarios() {
-    // Get the HTML element where the user list will be displayed
-    const listaUsuarios = document.getElementById('lista-usuarios');
+    try {
+        const respuesta = await fetch('http://localhost:8080/user');
+        if (!respuesta.ok) throw new Error('Error al obtener los usuarios');
+        const usuarios = await respuesta.json();
+
+        // Verifica que el contenedor exista en el DOM
+        const listaUsuariosContainer = document.getElementById('lista-usuarios');
+        if (!listaUsuariosContainer) {
+            console.error("Elemento 'lista-usuarios' no encontrado en el DOM.");
+            return;
+        }
+
+        // Si ya existe la tabla, solo actualizamos el tbody
+        const tablaBody = document.getElementById('tablaUsuariosBody');
+        if (tablaBody) {
+            tablaBody.innerHTML = generarFilasUsuarios(usuarios);
+            return;
+        }
+
+        // Si la tabla no existe, creamos la estructura completa
+        listaUsuariosContainer.innerHTML = `
+            <button class="btn-agregar-usuario" onclick="mostrarFormularioAgregarUsuario()"> Agregar Usuario</button>
+            <div class="barra-busqueda">
+                <div class="busqueda-container">
+                    <input type="text" id="inputBusquedaUser" placeholder="Buscar usuario..." oninput="buscarUsuario()">
+                    <select id="filtroBusquedaUser" onchange="buscarUsuario()">
+                        <option value="id">ID</option>
+                        <option value="email">Email</option>
+                    </select>
+                </div>
+            </div>
+            <table class="tabla-users">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Email</th>
+                        <th>UserTypeID</th>
+                        <th>UserStateID</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaUsuariosBody">
+                    ${generarFilasUsuarios(usuarios)}
+                </tbody>
+            </table>
+        `;
+    } catch (error) {
+        const listaUsuariosContainer = document.getElementById('lista-usuarios');
+        if (listaUsuariosContainer) {
+            listaUsuariosContainer.innerHTML = `<p>Oops... Ha ocurrido un error al cargar los usuarios</p>`;
+        } else {
+            console.error("Elemento 'lista-usuarios' no encontrado al mostrar error:", error);
+        }
+    }
+}
+
+
+// Función para generar las filas de la tabla de usuarios
+function generarFilasUsuarios(usuarios) {
+    if (usuarios.length === 0) {
+        return `<tr><td colspan="4">No se encontraron usuarios</td></tr>`;
+    }
+    return usuarios.map(usuario => `
+        <tr class="fila-usuario" onclick="mostrarDetalleUsuario(${usuario.id})">
+            <td>${usuario.id}</td>
+            <td>${usuario.email}</td>
+            <td>${usuario.userTypeID || usuario.user_type || ''}</td>
+            <td>${usuario.userStateID || usuario.user_state || ''}</td>
+        </tr>
+    `).join('');
+}
+
+// Función para mostrar el formulario de agregar usuario
+function mostrarFormularioAgregarUsuario() {
+    const contenido = document.getElementById('contenido');
+    contenido.innerHTML = `
+        <div class="detalle-usuario-container">
+            <button class="btn-retorno" onclick="cargarSeccion('usuarios')"><</button>
+            <form id="form-usuario" onsubmit="guardarUsuario(event)">
+                <div class="campo">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" required>
+                </div>
+                <div class="campo">
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" required>
+                </div>
+                <div class="campo">
+                    <label for="userTypeID">UserTypeID:</label>
+                    <input type="number" id="userTypeID" required>
+                </div>
+                <div class="campo">
+                    <label for="userStateID">UserStateID:</label>
+                    <input type="number" id="userStateID" required>
+                </div>
+                <button type="submit" class="btn-guardar">Guardar Usuario</button>
+            </form>
+        </div>
+    `;
+}
+
+// Función para guardar un nuevo usuario (envía datos vía POST)
+async function guardarUsuario(event) {
+    event.preventDefault();
+
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const userTypeID = Number(document.getElementById('userTypeID').value);
+    const userStateID = Number(document.getElementById('userStateID').value);
+
+    const nuevoUsuario = {
+        email,
+        password,
+        token: "token-ejemplo-123", // ✅ Token agregado aquí
+        user_type_id: userTypeID,
+        user_state_id: userStateID
+    };
 
     try {
-        // Fetch user data from the API
-        const respuesta = await fetch('http://localhost:8080/user');
+        const respuesta = await fetch('http://localhost:8080/user', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(nuevoUsuario)
+        });
 
-        // Check if the request was successful (status code 200-299)
-        if (!respuesta.ok) throw new Error('Error loading users');
+        if (!respuesta.ok) {
+            const errorDetalle = await respuesta.text();
+            throw new Error(`Error al agregar el usuario: ${respuesta.status} ${respuesta.statusText} - ${errorDetalle}`);
+        }
 
-        // Parse the JSON response and render the user interface
-        const usuarios = await respuesta.json();
-        renderizarInterfaz(usuarios);
+        // Recargar lista de usuarios después de guardar
+        cargarUsuarios();
     } catch (error) {
-        // Display an error message in the UI if the fetch operation fails
-        listaUsuarios.innerHTML = `<p>Error loading users: ${error.message}</p>`;
+        console.error(error);
+        alert(error.message);
+    }
+}
+// Función para mostrar el detalle de un usuario y permitir su edición
+async function mostrarDetalleUsuario(userId) {
+    try {
+        const respuesta = await fetch(`http://localhost:8080/user/${userId}`);
+        if (!respuesta.ok) throw new Error('Error al cargar el usuario');
+        const usuario = await respuesta.json();
+
+        const contenido = document.getElementById('contenido');
+        contenido.innerHTML = `
+            <div class="detalle-usuario-container">
+                <button class="btn-retorno" onclick="cargarSeccion('usuarios')"><</button>
+                <h1>Detalles del Usuario</h1>
+                <form id="form-usuario" onsubmit="actualizarUsuario(event, '${usuario.id}')">
+                    <div class="campo">
+                        <label>ID:</label>
+                        <div class="campo-no-editable">${usuario.id}</div>
+                    </div>
+                    <div class="campo">
+                        <label for="email">Email:</label>
+                        <input type="email" id="email" value="${usuario.email}" required>
+                    </div>
+                    <div class="campo">
+                        <label for="password">Password:</label>
+                        <input type="password" id="password" placeholder="Dejar en blanco para no cambiar">
+                    </div>
+                    <div class="campo">
+                        <label for="userTypeID">UserTypeID:</label>
+                        <input type="number" id="userTypeID" value="${usuario.userTypeID || usuario.user_type || ''}" required>
+                    </div>
+                    <div class="campo">
+                        <label for="userStateID">UserStateID:</label>
+                        <input type="number" id="userStateID" value="${usuario.userStateID || usuario.user_state || ''}" required>
+                    </div>
+                    <button type="submit" class="btn-actualizar">Actualizar Usuario</button>
+                </form>
+            </div>
+        `;
+    } catch (error) {
+        console.error(error);
+        alert(`Error al cargar el usuario: ${error.message}`);
     }
 }
 
-// Function to render the user interface dynamically
-function renderizarInterfaz(usuarios) {
-    // Get the container where the user list will be displayed
-    const contenedor = document.getElementById('lista-usuarios');
-    
-    // Create a container for the search functionality
-    const searchContainer = document.createElement('div');
-    searchContainer.classList.add('search-container');
+// Función para actualizar un usuario (envía datos vía PUT o PATCH)
+async function actualizarUsuario(event, userId) {
+    event.preventDefault();
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
 
-    // Create the search button (magnifying glass icon)
-    const searchBtn = document.createElement('button');
-    searchBtn.innerHTML = '🔍';
-    searchBtn.classList.add('search-btn');
+    const userTypeID = document.getElementById('userTypeID').value;
+    const userStateID = document.getElementById('userStateID').value;
 
-    // Create the search input field (filters users by ID)
-    const searchInput = document.createElement('input');
-    searchInput.type = 'number';
-    searchInput.id = 'searchInput';
-    searchInput.classList.add('search-input');
-    searchInput.placeholder = 'Enter ID';
+    // Si no se ingresa un nuevo password, se omite el campo
+    const usuarioActualizado = {
+        email,
+        ...(password && { password }),
+        token: "token-ejemplo-123", // ✅ Token agregado aquí
+        userTypeID,
+        userStateID
+    };
 
-    // Append the search elements to the search container
-    searchContainer.appendChild(searchInput);
-    searchContainer.appendChild(searchBtn);
-
-    // Clear the previous content before rendering new elements
-    contenedor.innerHTML = '';
-    contenedor.appendChild(searchContainer);
-
-    // Create the user table dynamically
-    const tabla = document.createElement('table');
-    tabla.classList.add('tabla-users');
-    tabla.innerHTML = `
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Email</th>
-                <th>User Status</th>
-                <th>ID Type</th>
-            </tr>
-        </thead>
-        <tbody id="tabla-body">
-            ${generarFilasUsuarios(usuarios)} <!-- Generate table rows dynamically -->
-        </tbody>
-    `;
-
-    // Append the table to the container
-    contenedor.appendChild(tabla);
-
-    // Event listener for the search button (toggles search input visibility)
-    searchBtn.addEventListener('click', () => {
-        searchInput.classList.toggle('active'); // Show or hide the search input
-        if (searchInput.classList.contains('active')) {
-            searchInput.focus(); // Focus input when active
-        } else {
-            searchInput.value = ''; // Clear input when hidden
-            actualizarTabla(usuarios); // Restore the full user list
+    try {
+        const respuesta = await fetch(`http://localhost:8080/user/${userId}`, {
+            method: 'PUT', // O 'PATCH' según la implementación de tu API
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(usuarioActualizado)
+        });
+        if (!respuesta.ok) {
+            const errorDetalle = await respuesta.text();
+            throw new Error(`Error al actualizar el usuario: ${respuesta.status} ${respuesta.statusText} - ${errorDetalle}`);
         }
-    });
-
-    // Event listener for filtering users dynamically based on input value
-    searchInput.addEventListener('input', () => {
-        const searchTerm = searchInput.value.trim(); // Get trimmed input value
-        if (searchTerm === '') {
-            actualizarTabla(usuarios); // Reset the table when input is cleared
-        } else {
-            // Filter users whose ID contains the search term
-            const filtrados = usuarios.filter(usuario => usuario.id.toString().includes(searchTerm));
-            actualizarTabla(filtrados); // Update table with filtered results
-        }
-    });
-}
-
-// Function to generate table rows with user data
-function generarFilasUsuarios(usuarios) {
-    // If there are no users, return a single row indicating no data
-    if (usuarios.length === 0) {
-        return '<tr><td colspan="4">No users available.</td></tr>';
-    }
-
-    // Map through the user list and generate a table row for each user
-    return usuarios.map(usuario => `
-        <tr class="fila-user" onclick="mostrarDetalleUser(${usuario.id})">
-            <td>${usuario.id}</td> <!-- User ID -->
-            <td>${usuario.email}</td> <!-- User email -->
-            <td>${usuario.user_state}</td> <!-- User status -->
-            <td>${usuario.user_type}</td> <!-- Type of user -->
-        </tr>
-    `).join(''); // Join the array of rows into a single string
-}
-
-// Function to update the table content dynamically
-function actualizarTabla(usuarios) {
-    // Get the table body element where user data is displayed
-    const tablaBody = document.getElementById('tabla-body');
-    
-    // Check if the table body exists to avoid errors
-    if (tablaBody) {
-        // Replace the current table content with new user data
-        tablaBody.innerHTML = generarFilasUsuarios(usuarios);
+        // Regresar a la lista de usuarios tras actualizar
+        cargarUsuarios();
+    } catch (error) {
+        console.error(error);
+        alert(error.message);
     }
 }
 
-// Load users when the script runs
-cargarUsuarios();
+// Ejemplo de función para búsqueda dinámica de usuarios (opcional)
+function buscarUsuario() {
+    const input = document.getElementById('inputBusquedaUser').value.trim().toLowerCase();
+    const filtro = document.getElementById('filtroBusquedaUser').value;
+    // Se asume que 'usuarios' es un array global; en una implementación real podrías almacenar el listado en una variable
+    fetch('http://localhost:8080/user')
+        .then(res => res.json())
+        .then(usuarios => {
+            let filtrados = usuarios;
+            if (input !== '') {
+                filtrados = usuarios.filter(usuario => {
+                    if (filtro === 'id') return usuario.id.toString().includes(input);
+                    if (filtro === 'email') return usuario.email.toLowerCase().includes(input);
+                });
+            }
+            document.getElementById('tablaUsuariosBody').innerHTML = generarFilasUsuarios(filtrados);
+        })
+        .catch(error => console.error(error));
+}
+
+// Llama cargarUsuarios cuando la página se carga
+document.addEventListener('DOMContentLoaded', cargarUsuarios);
 
 // Function to Generate PDF of Inventory Report
 async function generarPDFReporteInventario() {
