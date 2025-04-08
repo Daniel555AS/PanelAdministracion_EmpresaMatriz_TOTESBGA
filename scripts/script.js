@@ -973,7 +973,7 @@ function mostrarFormularioAgregarGasto(itemId) {
                 </div>
                 <div class="campo">
                     <label for="valorGasto">Valor:</label>
-                    <input type="number" id="valorGasto" step="0.01" required>
+                    <input type="text" id="valorGasto" required>
                 </div>
                 <div class="campo">
                     <label for="unidad">Unidad:</label>
@@ -991,6 +991,36 @@ function mostrarFormularioAgregarGasto(itemId) {
             </form>
         </div>
     `;
+
+        // Add restrictions to allow only numbers in the specified fields
+        function permitirSoloNumeros(event) {
+            event.target.value = event.target.value.replace(/\D/g, ''); // Removes any character that is not a number
+        }
+
+        // Wait for the DOM to update form elements
+        setTimeout(() => {
+            document.getElementById("valorGasto").addEventListener("input", permitirSoloNumeros);
+        }, 0);
+
+
+        // Function to allow only numbers and format with thousands separators
+        function formatearNumero(event) {
+            let valor = event.target.value.replace(/\D/g, ''); // Remove non-numeric characters
+            if (valor) {
+                valor = Number(valor).toLocaleString("es-CO"); // Apply Colombian format
+            }
+            event.target.value = valor;
+        }
+
+        // Apply formatting to price and stock fields
+        setTimeout(() => {
+            document.getElementById("valorGasto").addEventListener("input", formatearNumero);
+
+            // Restore formatting when the page loads
+            document.getElementById("valorGasto").value = Number(document.getElementById("valorGasto").value.replace(/\D/g, '') || 0).toLocaleString("es-CO");
+        }, 0);       
+
+
 }
 
 // Function to display the form to edit an additional expense
