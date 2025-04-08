@@ -1059,7 +1059,7 @@ function mostrarFormularioEditarGasto(gastoId, itemId) {
                         </div>
                         <div class="campo">
                             <label for="valorGasto">Valor:</label>
-                            <input type="number" id="valorGasto" value="${gasto.expense}" step="0.01" required>
+                            <input type="text" id="valorGasto" value="${gasto.expense}" required>
                         </div>
                         <div class="campo">
                             <label for="unidad">Unidad:</label>
@@ -1078,11 +1078,40 @@ function mostrarFormularioEditarGasto(gastoId, itemId) {
                     </form>
                 </div>
             `;
+
+        // Add restrictions to allow only numbers in the specified fields
+        function permitirSoloNumeros(event) {
+            event.target.value = event.target.value.replace(/\D/g, ''); // Removes any character that is not a number
+        }
+
+        // Wait for the DOM to update form elements
+        setTimeout(() => {
+            document.getElementById("valorGasto").addEventListener("input", permitirSoloNumeros);
+        }, 0);
+
+        // Function to allow only numbers and format with thousands separators
+        function formatearNumero(event) {
+            let valor = event.target.value.replace(/\D/g, ''); // Remove non-numeric characters
+            if (valor) {
+                valor = Number(valor).toLocaleString("es-CO"); // Apply Colombian format
+            }
+            event.target.value = valor;
+        }
+
+        // Apply formatting to price and stock fields
+        setTimeout(() => {
+            document.getElementById("valorGasto").addEventListener("input", formatearNumero);
+
+            // Restore formatting when the page loads
+            document.getElementById("valorGasto").value = Number(document.getElementById("valorGasto").value.replace(/\D/g, '') || 0).toLocaleString("es-CO");
+        }, 0);               
+            
         })
         .catch(error => {
             console.error(error);
-            alert("Error loading additional expense data.");
+            alert("Error al cargar datos de gastos adicionales.");
         });
+
 }
 
 // Function to update an additional expense
