@@ -719,7 +719,6 @@ async function mostrarDetalleItem(id) {
                             ? `<table class="tabla-gastos">
                                 <thead>
                                     <tr>
-                                        <th>ID</th>
                                         <th>Nombre</th>
                                         <th>Unidad</th>
                                         <th>Valor</th>
@@ -728,7 +727,6 @@ async function mostrarDetalleItem(id) {
                                 <tbody>
                                     ${gastosFiltrados.map(gasto => `
                                         <tr onclick="mostrarFormularioEditarGasto(${gasto.id}, ${itemId})" style="cursor: pointer;">
-                                            <td>${gasto.id}</td>
                                             <td>${gasto.name}</td>
                                             <td>COP ($)</td>
                                             <td>${gasto.expense.toFixed(2)}</td>
