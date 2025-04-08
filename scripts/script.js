@@ -633,7 +633,6 @@ async function mostrarDetalleItem(id) {
                         <table class="tabla-precios">
                             <thead>
                                 <tr>
-                                    <th>ID</th>
                                     <th>Precio (COP)</th>
                                     <th>Fecha y Hora</th>
                                 </tr>
@@ -641,7 +640,6 @@ async function mostrarDetalleItem(id) {
                             <tbody>
                                 ${historial.map(h => `
                                     <tr>
-                                        <td>${h.id}</td>
                                         <td>${Number(h.price).toLocaleString("es-CO")}</td>
                                         <td>${new Date(h.modified_at).toLocaleString()}</td>
                                     </tr>
