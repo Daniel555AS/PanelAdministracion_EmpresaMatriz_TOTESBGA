@@ -687,7 +687,7 @@ async function mostrarDetalleItem(id) {
                             </div>
                             <div class="campo">
                                 <label for="nombre">Nombre:</label>
-                                <input type="text" id="nombre" value="${item.name}" required>
+                                <input type="text" id="nombre" maxlength="50" value="${item.name}" required>
                             </div>
                             <div class="campo">
                                 <label for="stock">Stock:</label>
@@ -1023,7 +1023,7 @@ async function guardarNuevoItem(event) {
         return;
     }
 
-    if(descripcion === '') {
+    if (descripcion === '') {
         alert('Error: La descripción del ítem no puede estar vacía.');
         return;
     }
@@ -1444,6 +1444,7 @@ async function actualizarItem(event, id) {
     const sellingPrice = parseFloat(document.getElementById('precioVenta').value.replace(/\./g, '').replace(',', '.'));
     const tipoItemSeleccionado = document.getElementById('tipoItem');
     const item_type_id = parseInt(tipoItemSeleccionado.options[tipoItemSeleccionado.selectedIndex].getAttribute('data-id'));
+    const descripcion = document.getElementById('descripcion').value.trim();
 
     // Validations
     if (nombre === '') {
@@ -1451,8 +1452,28 @@ async function actualizarItem(event, id) {
         return;
     }
 
+    if (descripcion === '') {
+        alert('Error: La descripción del ítem no puede estar vacía.');
+        return;
+    }
+
     if (stock < 0 || purchasePrice < 0 || sellingPrice < 0) {
         alert('Error: El stock, el precio de compra y el precio de venta no pueden ser negativos.');
+        return;
+    }
+
+    if (stock > 10000000) {
+        alert('Error: Valor de stock inválido.');
+        return;
+    }
+    
+    if (purchasePrice > 9999999999999 || purchasePrice === 0) {
+        alert('Error: Precio de compra inválido.');
+        return;
+    }
+
+    if (sellingPrice > 9999999999999 || sellingPrice === 0) {
+        alert('Error: Precio de venta inválido.');
         return;
     }
 
@@ -1464,7 +1485,7 @@ async function actualizarItem(event, id) {
     // Build the object with the updated data
     const datosActualizados = {
         name: nombre,
-        description: document.getElementById('descripcion').value.trim(),
+        description: descripcion,
         stock: stock,
         selling_price: sellingPrice,
         purchase_price: purchasePrice,
@@ -1990,19 +2011,19 @@ async function mostrarFormularioAgregarCliente() {
                         <div id="campoNombres" class="columna">
                             <div class="campo">
                                 <label for="nombres">Nombres:</label>
-                                <input type="text" id="nombres">
+                                <input type="text" id="nombres" name="nombres" maxlength="40">
                             </div>
                         </div>
                         <div id="campoApellidos" class="columna">
                             <div class="campo">
                                 <label for="apellidos">Apellidos:</label>
-                                <input type="text" id="apellidos">
+                                <input type="text" id="apellidos" name="apellidos" maxlength="40">
                             </div>
                         </div>
                         <div id="campoRazonSocial" class="campo campo-doble" style="display: none;">
                             <div class="campo">
                                 <label for="razonSocial">Razón Social:</label>
-                                <input type="text" id="razonSocial">
+                                <input type="text" id="razonSocial" name="razonSocial" maxlength="70">
                             </div>
                         </div>
 
@@ -2010,13 +2031,13 @@ async function mostrarFormularioAgregarCliente() {
                         <div class="columna">
                             <div class="campo">
                                 <label for="telefono">Teléfono:</label>
-                                <input type="text" id="telefono" required>
+                                <input type="text" id="telefono" name="telefono" maxlength="10" required>
                             </div>
                         </div>
                         <div class="columna">
                             <div class="campo">
                                 <label for="numeroIdentificacion">Número de Identificación:</label>
-                                <input type="text" id="numeroIdentificacion" required>
+                                <input type="text" id="numeroIdentificacion" name="numeroIdentificacion" maxlength="12" required>
                             </div>
                         </div>
 
@@ -2024,7 +2045,7 @@ async function mostrarFormularioAgregarCliente() {
                         <div class="columna">
                             <div class="campo">
                                 <label for="email">Email:</label>
-                                <input type="email" id="email" required>
+                                <input type="email" id="email" name="email" maxlength="70" required>
                             </div>
                         </div>
                         <div class="columna">
@@ -2040,7 +2061,7 @@ async function mostrarFormularioAgregarCliente() {
                         <!-- Quinta fila: Dirección -->
                         <div class="campo campo-doble">
                             <label for="direccion">Dirección:</label>
-                            <input type="text" id="direccion" required>
+                            <input type="text" id="direccion" name="direccion" maxlength="120" required>
                         </div>
                     </div>
 
@@ -2049,6 +2070,69 @@ async function mostrarFormularioAgregarCliente() {
                 </form>
             </div>
         `;
+
+        const telefonoInput = document.getElementById('telefono');
+
+        // Check if the input element exists in the DOM
+        if (telefonoInput) {
+            // Add an event listener to the 'keydown' event (when a key is pressed)
+            telefonoInput.addEventListener('keydown', (event) => {
+                // Allow only numeric characters [0-9] and essential control keys (backspace, delete, arrow keys, tab)
+                if (
+                    !/[0-9]/.test(event.key) && // Ensure the key is a digit (0-9)
+                    !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(event.key) // Allow specific control keys
+                ) {
+                    event.preventDefault(); // Block any other key press
+                }
+            });
+        }
+
+        // Select the email field
+        const emailInput = document.getElementById('email');
+
+        // Checks if the field exists in the DOM
+        if (emailInput) {
+                // Listen for the keydown event
+                emailInput.addEventListener('keydown', (event) => {
+                    if (event.key === ' ') {
+                        event.preventDefault(); // Lock the space bar
+                }
+            });
+        }        
+
+        // Select the input element with the ID 'numeroIdentificacion'
+        const InputId = document.getElementById('numeroIdentificacion');
+
+        // Check if the input element exists in the DOM
+        if (InputId) {
+            InputId.addEventListener('keydown', (event) => {
+                const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'];
+
+                // Block if not an allowed number or key
+                if (
+                    !/[0-9]/.test(event.key) &&
+                    !allowedKeys.includes(event.key)
+                ) {
+                    event.preventDefault();
+                    return;
+                }
+
+                // Prevent entry of more than 12 digits (except control keys)
+                const currentValue = InputId.value;
+                const isControlKey = allowedKeys.includes(event.key);
+                const selectionStart = InputId.selectionStart;
+                const selectionEnd = InputId.selectionEnd;
+                const willAddDigit = /[0-9]/.test(event.key);
+
+                if (
+                    willAddDigit &&
+                    currentValue.length >= 12 &&
+                    selectionStart === selectionEnd // You are not selecting text
+                ) {
+                    event.preventDefault();
+                }
+            });
+        }
 
     } catch (error) {
         console.error(error);
@@ -2106,10 +2190,12 @@ async function guardarNuevoCliente(event) {
         alert("Error: El número de identificación no puede estar vacío.");
         return;
     }
-    if (telefono === '') {
-        alert("Error: El número de teléfono no puede estar vacío.");
+    
+    if (!/^\d{10}$/.test(telefono)) {
+        alert("Ingrese un número telefónico válido");
         return;
-    } 
+    }
+
     if (email === '') {
         alert("Error: El correo electrónico no puede estar vacío.");
         return;
