@@ -1123,7 +1123,7 @@ async function actualizarGastoAdicional(event, gastoId) {
     // Gets form elements and input values
     const form = document.getElementById('form-gasto');
     const nombre = document.getElementById('nombreGasto').value.trim();
-    const valor = parseFloat(document.getElementById('valorGasto').value);
+    const valor = parseFloat(document.getElementById('valorGasto').value.replace(/\./g, '').replace(',', '.'));
     const comentario = document.getElementById('comentarioGasto').value.trim();
     const itemId = form.dataset.itemId; // Gets the itemId from the form attribute
 
