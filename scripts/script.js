@@ -784,7 +784,7 @@ async function mostrarFormularioAgregarItem() {
                         <div class="columna">
                             <div class="campo">
                                 <label for="nombre">Nombre:</label>
-                                <input type="text" id="nombre" required>
+                                <input type="text" id="nombre" maxlength="50" required>
                             </div>
                             <div class="campo">
                                 <label for="stock">Stock:</label>
@@ -836,7 +836,7 @@ async function mostrarFormularioAgregarItem() {
                         <!-- Full-width field: Description -->
                         <div class="campo campo-doble">
                             <label for="descripcion">Descripción:</label>
-                            <textarea id="descripcion" required style="resize: none;"></textarea>
+                            <textarea id="descripcion" maxlength="280" required style="resize: none;"></textarea>
                         </div>
                     </div>
 
@@ -898,6 +898,7 @@ async function guardarNuevoItem(event) {
     const stock = parseFloat(document.getElementById('stock').value.replace(/\./g, '').replace(',', '.'));
     const purchasePrice = parseFloat(document.getElementById('precioCompra').value.replace(/\./g, '').replace(',', '.'));
     const sellingPrice = parseFloat(document.getElementById('precioVenta').value.replace(/\./g, '').replace(',', '.'));
+    const descripcion = document.getElementById('descripcion').value.trim();
 
     // Validations
     if (nombre === '') {
@@ -905,8 +906,28 @@ async function guardarNuevoItem(event) {
         return;
     }
 
+    if(descripcion === '') {
+        alert('Error: La descripción del ítem no puede estar vacía.');
+        return;
+    }
+
     if (stock < 0 || purchasePrice < 0 || sellingPrice < 0) {
         alert('Error: El stock, el precio de compra y el precio de venta no pueden ser negativos.');
+        return;
+    }
+
+    if (stock > 10000000) {
+        alert('Error: Valor de stock inválido.');
+        return;
+    }
+    
+    if (purchasePrice > 9999999999999 || purchasePrice === 0) {
+        alert('Error: Precio de compra inválido.');
+        return;
+    }
+
+    if (sellingPrice > 9999999999999 || sellingPrice === 0) {
+        alert('Error: Precio de venta inválido.');
         return;
     }
 
@@ -923,7 +944,7 @@ async function guardarNuevoItem(event) {
         selling_price: sellingPrice,
         item_state: document.getElementById('estado').value === "true",
         item_type_id: parseInt(document.getElementById('tipoItem').value),
-        description: document.getElementById('descripcion').value.trim()
+        description: descripcion
     };
 
     try {
