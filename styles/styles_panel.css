@@ -515,6 +515,24 @@ input:focus, select:focus, textarea:focus {
     background: #767073; /* Lighter background on hover */
 }
 
+.btn-confirmar {
+    background: #313030; /* Dark background */
+    color: white; /* White text */
+    padding: 1.5vh 2vw; /* Responsive padding based on viewport height and width */
+    border: none; /* No border */
+    border-radius: 1.5vw; /* Rounded corners */
+    font-size: 0.4vw; /* Responsive font size */
+    cursor: pointer; /* Changes cursor to pointer */
+    transition: background 0.3s ease; /* Smooth transition for background color */
+    margin-left: 1vw; /* Adds left margin */
+    font-weight: normal; /* Default font weight */
+}
+
+/* Hover effect for the add item button */
+.btn-confirmar:hover {
+    background: #767073; /* Lighter background on hover */
+}
+
 /* Button to add a new item type */
 .btn-agregar-tipo-item {
     background: #313030; /* Dark background */
@@ -798,8 +816,63 @@ input:focus, select:focus, textarea:focus {
     background: #fff;
     padding: 20px;
     border-radius: 8px;
-    min-width: 300px;
+    width: 55vw;
+    height: 52vh;
+    max-width: 90%; /* Evita que se desborde en pantallas pequeñas */
 }
 
+.contenedor-botones-modal {
+    margin-top: 3vh; /* Ajusta según la separación que desees */
+}
 
+.btn-generar-reporte {
+    background: #313030; /* Dark background */
+    color: white; /* White text */
+    padding: 1.5vh 2vw; /* Responsive padding based on viewport height and width */
+    border: none; /* No border */
+    border-radius: 1.5vw; /* Rounded corners */
+    font-size: 1vw; /* Responsive font size */
+    cursor: pointer; /* Changes cursor to pointer */
+    transition: background 0.3s ease; /* Smooth transition for background color */
+    margin-left: 0vw; /* Adds left margin */
+    font-weight: normal; /* Default font weight */
+}
 
+/* Hover effect for the add item button */
+.btn-generar-reporte:hover {
+    background: #767073; /* Lighter background on hover */
+}
+
+.btn-cancelar-reporte {
+    background: #313030; /* Dark background */
+    color: white; /* White text */
+    padding: 1.5vh 2vw; /* Responsive padding based on viewport height and width */
+    border: none; /* No border */
+    border-radius: 1.5vw; /* Rounded corners */
+    font-size: 1vw; /* Responsive font size */
+    cursor: pointer; /* Changes cursor to pointer */
+    transition: background 0.3s ease; /* Smooth transition for background color */
+    margin-left: 1vw; /* Adds left margin */
+    font-weight: normal; /* Default font weight */
+}
+
+/* Hover effect for the add item button */
+.btn-cancelar-reporte:hover {
+    background: #767073; /* Lighter background on hover */
+}
+
+.label-fecha-inicio {
+    margin-top: 2vh;
+    display: block;
+}
+
+.label-fecha-fin {
+    margin-top: 2vh;
+    display: block;
+}
+
+.seleccione-rango-fechas {
+    margin-top: 2vh;
+    display: block;
+    font-size: 1.5vw;
+}

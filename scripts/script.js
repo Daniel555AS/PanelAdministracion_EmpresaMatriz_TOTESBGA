@@ -70,19 +70,21 @@ function cargarSeccion(seccion) {
                 </div>
             </div>
             <div id="modal-fechas" style="display: none;" class="modal">
-    <div class="modal-contenido">
-        <h3>Seleccione el rango de fechas</h3>
-        <label for="fecha-inicio">Fecha inicio:</label>
-        <input type="date" id="fecha-inicio">
-        <label for="fecha-fin">Fecha fin:</label>
-        <input type="date" id="fecha-fin">
-        <button id="confirmar-fechas">Generar Reporte</button>
-        <button onclick="cerrarModalFechas()">Cancelar</button>
-    </div>
-</div>
-<canvas id="graficoCitas" width="400" height="400" style="display: none;"></canvas>
+            <div class="modal-contenido">
+                <h3 class="seleccione-rango-fechas">Seleccione el Rango de Fechas</h3>
+                <label for="fecha-inicio" class="label-fecha-inicio">Fecha de Inicio:</label>
+                <input type="date" id="fecha-inicio">
+                <label for="fecha-fin" class="label-fecha-fin">Fecha de Fin:</label>
+                <input type="date" id="fecha-fin">
 
+                <!-- Agrupamos los botones -->
+                <div class="contenedor-botones-modal">
+                    <button id="confirmar-fechas" class="btn-generar-reporte">Generar Reporte ⬇️</button>
+                    <button onclick="cerrarModalFechas()" class="btn-cancelar-reporte">Cancelar ❌</button>
+                </div>
+            </div>
 
+            <canvas id="graficoCitas" width="400" height="400" style="display: none;"></canvas>
         `
     };
 
@@ -217,10 +219,12 @@ async function guardarUsuario(event) {
     const nuevoUsuario = {
         email,
         password,
-        token: "token-ejemplo-123", // ✅ Token agregado aquí
-        user_type_id: userTypeID,
-        user_state_id: userStateID
+        //token: "token-ejemplo-123", // Token agregado aquí
+        user_type: userTypeID,
+        user_state: userStateID
     };
+
+    console.log(nuevoUsuario);
 
     try {
         const respuesta = await fetch('http://localhost:8080/user', {
