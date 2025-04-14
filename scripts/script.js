@@ -2457,25 +2457,75 @@ function mostrarPopUpCita(cita) {
     const popup = document.getElementById("popup-cita");
 
     if (!cita) {
-        detalleDiv.innerHTML = "<p>Error al mostrar detalles.</p>";
+        detalleDiv.innerHTML = "<p>Error al mostrar detalles de la cita.</p>";
         return;
     }
 
+    // Format the date and time correctly with UTC time
+    const date = new Date(cita.dateTime);
+    const dia = String(date.getUTCDate()).padStart(2, '0');
+    const mes = String(date.getUTCMonth() + 1).padStart(2, '0');
+    const año = date.getUTCFullYear();
+    const horas = String(date.getUTCHours()).padStart(2, '0');
+    const minutos = String(date.getUTCMinutes()).padStart(2, '0');
+    const fechaFormateada = `${dia}-${mes}-${año} ${horas}:${minutos}`;
+
+    // Change label if it is a company
+    const etiquetaNombre = cita.isBusiness ? "Razón Social" : "Nombre Completo";
+
     detalleDiv.innerHTML = `
-        <p><strong>Nombre:</strong> ${cita.customerName || ""} ${cita.lastName || ""}</p>
-        <p><strong>Correo:</strong> ${cita.email || "No registrado"}</p>
-        <p><strong>Fecha:</strong> ${cita.dateTime ? new Date(cita.dateTime).toLocaleString("es-CO") : "Sin fecha"}</p>
+        <h3 class="detalles-cita-seleccionada">Detalles de Cita: </h3>
+        <p><strong>${etiquetaNombre}:</strong> ${cita.customerName || ""} ${cita.lastName || ""}</p>
+        <p><strong>Tipo de Persona:</strong> ${cita.isBusiness ? "Jurídica" : "Natural"}</p>
+        <p><strong>Correo Electrónico:</strong> ${cita.email || "No registrado"}</p>
+        <p><strong>Fecha y Hora:</strong> ${fechaFormateada}</p>
         <p><strong>Dirección:</strong> ${cita.address || "No registrada"}</p>
-        <p><strong>Teléfono(s):</strong> ${Array.isArray(cita.phoneNumbers) ? cita.phoneNumbers.join(", ") : cita.phoneNumbers || "No disponibles"}</p>
-        <p><strong>Estado del Cliente:</strong> ${cita.customerState || "Desconocido"}</p>
+        <p><strong>Teléfono:</strong> ${Array.isArray(cita.phoneNumbers) ? cita.phoneNumbers.join(", ") : cita.phoneNumbers || "No disponibles"}</p>
+        <p><strong>Estado de Cita:</strong> <span id="estado-cita-texto">${cita.state ? "Pendiente Agendada" : "Pasada"}</span></p>
+        <div class="contenedor-botones-modal">
+            <button id="cambiar-estado" class="btn-generar-reporte">Cambiar Estado 🔄</button>
+            <button onclick="cerrarModalFechas()" class="btn-cancelar-reporte">Cancelar Cita ❌</button>
+        </div>        
     `;
 
-    // Show the popup
     popup.classList.remove("oculto");
 
-    // Activate the close button dynamically
     document.getElementById("cerrar-popup").onclick = () => {
         popup.classList.add("oculto");
+    };
+
+    // Event to change the appointment status
+    document.getElementById("cambiar-estado").onclick = async () => {
+        const nuevoEstado = !cita.state;
+        const nombreNuevoEstado = nuevoEstado ? "Pendiente Agendada" : "Pasada";
+    
+        const confirmacion = confirm(`¿Confirma el cambio de estado de esta cita a "${nombreNuevoEstado}"?`);
+    
+        if (!confirmacion) return;
+    
+        try {
+            const userEmail = sessionStorage.getItem("userEmail");
+            const response = await fetch(`http://localhost:8080/appointment/${cita.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Username": userEmail
+                },
+                body: JSON.stringify({
+                    ...cita,
+                    state: nuevoEstado
+                })
+            });
+    
+            if (!response.ok) throw new Error("Error al actualizar estado");
+    
+            // Locally updates the status in the modal
+            cita.state = nuevoEstado;
+            document.getElementById("estado-cita-texto").textContent = nombreNuevoEstado;
+        } catch (error) {
+            alert("No se pudo cambiar el estado de la cita.");
+            console.error(error);
+        }
     };
 }
 

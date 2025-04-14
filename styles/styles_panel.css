@@ -776,6 +776,10 @@ input:focus, select:focus, textarea:focus {
     color: rgb(66, 66, 66);
 }
 
+.cerrar-popup:hover {
+    color: rgb(122, 122, 122);
+}
+
 #detalle-cita {
     padding-top: 7vh;
     padding-bottom: 5vh;
@@ -818,11 +822,33 @@ input:focus, select:focus, textarea:focus {
     border-radius: 8px;
     width: 55vw;
     height: 52vh;
-    max-width: 90%; /* Evita que se desborde en pantallas pequeñas */
+    max-width: 90%; 
+}
+
+.popup-cita {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.popup-contenido {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    width: 55vw;
+    height: 65vh;
+    max-width: 90%; 
 }
 
 .contenedor-botones-modal {
-    margin-top: 3vh; /* Ajusta según la separación que desees */
+    margin-top: 3vh; 
 }
 
 .btn-generar-reporte {
@@ -875,4 +901,18 @@ input:focus, select:focus, textarea:focus {
     margin-top: 2vh;
     display: block;
     font-size: 1.5vw;
+}
+
+#detalle-cita p {
+    margin-bottom: 1vh;
+    font-size: 1.2vw; 
+    margin-left: 1vw;
+}
+
+.detalles-cita-seleccionada {
+    margin-top: 0vh;
+    margin-bottom: 2vh;
+    display: block;
+    font-size: 1.5vw;
+    margin-left: 1vw;
 }
