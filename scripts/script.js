@@ -2407,6 +2407,13 @@ async function cargarCitas(offset = 0) {
                     const divCita = document.createElement("div");
                     divCita.textContent = `${cita.customerName} ${cita.lastName}`;
                     divCita.classList.add("bloque-cita");
+
+                    if (cita.state === true) {
+                        divCita.classList.add("estado-true");
+                    } else {
+                        divCita.classList.add("estado-false");
+                    }
+
                     celda.appendChild(divCita);
                     divCita.dataset.citaId = cita.id;
                     divCita.onclick = mostrarDetalleCita;
@@ -2522,6 +2529,7 @@ function mostrarPopUpCita(cita) {
             // Locally updates the status in the modal
             cita.state = nuevoEstado;
             document.getElementById("estado-cita-texto").textContent = nombreNuevoEstado;
+            cargarCitas(0);
         } catch (error) {
             alert("No se pudo cambiar el estado de la cita.");
             console.error(error);

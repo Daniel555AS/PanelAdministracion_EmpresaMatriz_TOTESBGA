@@ -729,14 +729,12 @@ input:focus, select:focus, textarea:focus {
     text-align: center;
 }
 
-.bloque-cita {
-    background-color: #626161;
-    color: white;
-    padding: 4px 6px;
-    border-radius: 2px;
-    font-size: 0.8rem;
-    text-align: center;
-    margin-top: 0.2vw;
+.bloque-cita.estado-true {
+    background-color: #8aeaa0;
+}
+
+.bloque-cita.estado-false {
+    background-color: #f9a7b0; 
 }
 
 .popup-cita {
