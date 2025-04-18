@@ -114,7 +114,7 @@ function cargarSeccion(seccion) {
 // Asynchronous function to load user data from an API
 async function cargarUsuarios() {
     try {
-        const respuesta = await fetch('http://localhost:8080/user');
+        const respuesta = await fetch('http://localhost:8080/users');
         if (!respuesta.ok) throw new Error('Error al obtener los usuarios');
         const usuarios = await respuesta.json();
 
@@ -233,7 +233,7 @@ async function guardarUsuario(event) {
     console.log(nuevoUsuario);
 
     try {
-        const respuesta = await fetch('http://localhost:8080/user', {
+        const respuesta = await fetch('http://localhost:8080/users', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -256,7 +256,7 @@ async function guardarUsuario(event) {
 // Función para mostrar el detalle de un usuario y permitir su edición
 async function mostrarDetalleUsuario(userId) {
     try {
-        const respuesta = await fetch(`http://localhost:8080/user/${userId}`);
+        const respuesta = await fetch(`http://localhost:8080/users/${userId}`);
         if (!respuesta.ok) throw new Error('Error al cargar el usuario');
         const usuario = await respuesta.json();
 
@@ -315,7 +315,7 @@ async function actualizarUsuario(event, userId) {
     };
 
     try {
-        const respuesta = await fetch(`http://localhost:8080/user/${userId}`, {
+        const respuesta = await fetch(`http://localhost:8080/users/${userId}`, {
             method: 'PUT', // O 'PATCH' según la implementación de tu API
             headers: {
                 'Content-Type': 'application/json'
@@ -339,7 +339,7 @@ function buscarUsuario() {
     const input = document.getElementById('inputBusquedaUser').value.trim().toLowerCase();
     const filtro = document.getElementById('filtroBusquedaUser').value;
     // Se asume que 'usuarios' es un array global; en una implementación real podrías almacenar el listado en una variable
-    fetch('http://localhost:8080/user')
+    fetch('http://localhost:8080/users')
         .then(res => res.json())
         .then(usuarios => {
             let filtrados = usuarios;
@@ -364,7 +364,7 @@ async function generarPDFReporteInventario() {
         const userEmail = sessionStorage.getItem("userEmail");
 
         // Get the items
-        const respuestaItems = await fetch("http://localhost:8080/item", {
+        const respuestaItems = await fetch("http://localhost:8080/items", {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -381,7 +381,7 @@ async function generarPDFReporteInventario() {
         }
 
         // Get item types
-        const respuestaTipos = await fetch("http://localhost:8080/item-type", {
+        const respuestaTipos = await fetch("http://localhost:8080/item-types", {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -528,9 +528,9 @@ async function buscarItem() {
     // Build the URL based on the selected filter
     let urlBusqueda;
     if (filtro === "id") {
-        urlBusqueda = `http://localhost:8080/item/searchById?id=${encodeURIComponent(textoBusqueda)}`;
+        urlBusqueda = `http://localhost:8080/items/searchById?id=${encodeURIComponent(textoBusqueda)}`;
     } else {
-        urlBusqueda = `http://localhost:8080/item/searchByName?name=${encodeURIComponent(textoBusqueda)}`;
+        urlBusqueda = `http://localhost:8080/items/searchByName?name=${encodeURIComponent(textoBusqueda)}`;
     }
 
     try {
@@ -557,7 +557,7 @@ async function cargarItems() {
     const userEmail = sessionStorage.getItem("userEmail");
 
     try {
-        const respuesta = await fetch('http://localhost:8080/item', {
+        const respuesta = await fetch('http://localhost:8080/items', {
             method: 'GET',
             headers: {
                 "Content-Type": "application/json",
@@ -673,9 +673,9 @@ async function mostrarDetalleItem(id) {
 
         // Upload the main data WITHOUT the additional costs
         const [item, tiposDeItem, historial] = await Promise.all([
-            fetchData(`http://localhost:8080/item/${id}`, 'Error al cargar el ítem'),
-            fetchData('http://localhost:8080/item-type', 'Error al cargar los tipos de ítem'),
-            fetchData(`http://localhost:8080/historical-item-price/${id}`, 'Error al cargar el historial de precios')
+            fetchData(`http://localhost:8080/items/${id}`, 'Error al cargar el ítem'),
+            fetchData('http://localhost:8080/item-types', 'Error al cargar los tipos de ítem'),
+            fetchData(`http://localhost:8080/historical-item-prices/${id}`, 'Error al cargar el historial de precios')
         ]);
 
         // Variable to avoid multiple additional expense charges
@@ -833,7 +833,7 @@ async function mostrarDetalleItem(id) {
 
                 if (gastosContainer.classList.contains('oculto')) {
                     try {
-                        const respuesta = await fetch('http://localhost:8080/additional-expense', {
+                        const respuesta = await fetch('http://localhost:8080/additional-expenses', {
                             headers: { 'Username': userEmail }
                         });
     
@@ -888,7 +888,7 @@ async function mostrarFormularioAgregarItem() {
 
     try {
         // Fetches item types from the backend
-        const tiposDeItem = await fetch('http://localhost:8080/item-type', {
+        const tiposDeItem = await fetch('http://localhost:8080/item-types', {
             headers: { 'Username': userEmail }
         })
         .then(res => {
@@ -1076,7 +1076,7 @@ async function guardarNuevoItem(event) {
 
     try {
         // Sends the POST request to the backend
-        const respuesta = await fetch('http://localhost:8080/item', {
+        const respuesta = await fetch('http://localhost:8080/items', {
             method: 'POST',
             headers: { 
                       'Content-Type': 'application/json', 
@@ -1182,7 +1182,7 @@ function mostrarFormularioEditarGasto(gastoId, itemId) {
     }
 
         // Fetches additional expense data from the server
-        fetch(`http://localhost:8080/additional-expense/${gastoId}`, {
+        fetch(`http://localhost:8080/additional-expenses/${gastoId}`, {
             headers: {
                 'Username': userEmail
             }
@@ -1306,7 +1306,7 @@ async function actualizarGastoAdicional(event, gastoId) {
 
     try {
         // Send a PUT request to update the additional spend
-        const respuesta = await fetch(`http://localhost:8080/additional-expense/${gastoId}`, {
+        const respuesta = await fetch(`http://localhost:8080/additional-expenses/${gastoId}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json', 'Username': userEmail },
             body: JSON.stringify(datos)
@@ -1331,7 +1331,7 @@ async function eliminarGastoAdicional(id, itemId) {
 
     try {
         // Sends a DELETE request to the backend
-        const respuesta = await fetch(`http://localhost:8080/additional-expense/${id}`, {
+        const respuesta = await fetch(`http://localhost:8080/additional-expenses/${id}`, {
             method: 'DELETE',
             headers: {
                 'Username': userEmail
@@ -1388,7 +1388,7 @@ function guardarGastoAdicional(event, itemId) {
     console.log("JSON enviado al backend:", JSON.stringify(nuevoGasto, null, 2));
 
     // Send the POST request to add the additional expense
-    fetch('http://localhost:8080/additional-expense', {
+    fetch('http://localhost:8080/additional-expenses', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -1509,7 +1509,7 @@ async function actualizarItem(event, id) {
         const userEmail = sessionStorage.getItem("userEmail");
 
         // Sends the PUT request to the backend
-        const respuesta = await fetch(`http://localhost:8080/item/${id}`, {
+        const respuesta = await fetch(`http://localhost:8080/items/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json', 'Username': userEmail },
             body: JSON.stringify(datosActualizados)
@@ -1581,7 +1581,7 @@ async function mostrarDetalleComentario(id) {
     const userEmail = sessionStorage.getItem("userEmail");
     try {
         // Fetch the specific comment by its ID
-        const respuesta = await fetch(`http://localhost:8080/comment/${id}`, {
+        const respuesta = await fetch(`http://localhost:8080/comments/${id}`, {
             headers: {
                 'Username': userEmail
             }
@@ -1642,11 +1642,11 @@ async function buscarCliente() {
     // Build the URL based on the selected filter
     let urlBusqueda;
     if (filtro === "id") {
-        urlBusqueda = `http://localhost:8080/customer/customerID/${encodeURIComponent(textoBusqueda)}`;
+        urlBusqueda = `http://localhost:8080/customers/customerID/${encodeURIComponent(textoBusqueda)}`;
     } else if (filtro === "lastName") {  // Ahora busca por apellido
-        urlBusqueda = `http://localhost:8080/customer/searchByLastName?lastName=${encodeURIComponent(textoBusqueda)}`;
+        urlBusqueda = `http://localhost:8080/customers/searchByLastName?lastName=${encodeURIComponent(textoBusqueda)}`;
     } else {
-        urlBusqueda = `http://localhost:8080/customer/email/${encodeURIComponent(textoBusqueda)}`;
+        urlBusqueda = `http://localhost:8080/customers/email/${encodeURIComponent(textoBusqueda)}`;
     }
 
     try {
@@ -1778,7 +1778,7 @@ async function mostrarDetalleCliente(customerId) {
     try {
         // Obtain customer data and identification types
         const [cliente, tiposDeIdentificacion] = await Promise.all([
-            fetch(`http://localhost:8080/customer/${customerId}`, {
+            fetch(`http://localhost:8080/customers/${customerId}`, {
                 headers: { 'Username': userEmail }
             }).then(res => {
                 if (!res.ok) throw new Error('Error al cargar los datos del cliente');
@@ -1943,7 +1943,7 @@ async function actualizarCliente(event, id) {
         const userEmail = sessionStorage.getItem("userEmail");
 
         // Enviar la solicitud PUT al backend
-        const respuesta = await fetch(`http://localhost:8080/customer/${id}`, { 
+        const respuesta = await fetch(`http://localhost:8080/customers/${id}`, { 
             method: 'PUT',
             headers: { 'Content-Type': 'application/json', 'Username': userEmail },
             body: JSON.stringify(datosActualizados)
@@ -2257,7 +2257,7 @@ async function guardarNuevoCliente(event) {
     }
 
     try {
-        const response = await fetch('http://localhost:8080/customer', {
+        const response = await fetch('http://localhost:8080/customers', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Username': userEmail },
             body: JSON.stringify(customerData)
@@ -2518,7 +2518,7 @@ function mostrarPopUpCita(cita) {
     
         try {
             const userEmail = sessionStorage.getItem("userEmail");
-            const response = await fetch(`http://localhost:8080/appointment/${cita.id}`, {
+            const response = await fetch(`http://localhost:8080/appointments/${cita.id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
