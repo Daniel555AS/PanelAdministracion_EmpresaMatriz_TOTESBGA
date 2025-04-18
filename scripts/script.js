@@ -1,5 +1,11 @@
 // Function to dynamically load sections
 function cargarSeccion(seccion) {
+
+    if (seccion === 'email') {
+        window.open('http://matriztotesbgacorreo/squirrelmail', '_blank');
+        return;
+    }
+
     const contenido = document.getElementById('contenido'); // Gets the container to display the content
 
     // Object storing the HTML content for each section
@@ -201,7 +207,7 @@ function mostrarFormularioAgregarUsuario() {
                     <label for="userStateID">UserStateID:</label>
                     <input type="number" id="userStateID" required>
                 </div>
-                <button type="submit" class="btn-guardar">Guardar Usuario</button>
+                <button type="submit" class="btn-guardar-usuario">Guardar Usuario</button>
             </form>
         </div>
     `;
