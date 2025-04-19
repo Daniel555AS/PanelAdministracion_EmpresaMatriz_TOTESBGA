@@ -17,6 +17,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 const response = await fetch("http://localhost:8080/user-credential-validation", {
                     method: "POST",
                     headers: {
+                        "Username": email,
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({ email: email, password: password }) // Send in the body

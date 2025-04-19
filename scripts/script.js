@@ -1652,7 +1652,7 @@ async function buscarCliente() {
     try {
         const [respuestaClientes, respuestaTipos] = await Promise.all([
             fetch(urlBusqueda, { headers: { 'Username': userEmail } }),
-            fetch('http://localhost:8080/identifier-type', { headers: { 'Username': userEmail } })
+            fetch('http://localhost:8080/identifier-types', { headers: { 'Username': userEmail } })
         ]);
 
         if (!respuestaClientes.ok || !respuestaTipos.ok) throw new Error('Error en la búsqueda');
@@ -1694,7 +1694,7 @@ async function cargarClientes() {
         const clientes = await respuestaClientes.json();
 
         // Get identifier types with the "Username" header
-        const respuestaTipos = await fetch('http://localhost:8080/identifier-type', {
+        const respuestaTipos = await fetch('http://localhost:8080/identifier-types', {
             method: 'GET',
             headers: {
                 "Content-Type": "application/json",
@@ -1784,7 +1784,7 @@ async function mostrarDetalleCliente(customerId) {
                 if (!res.ok) throw new Error('Error al cargar los datos del cliente');
                 return res.json();
             }),
-            fetch('http://localhost:8080/identifier-type', {
+            fetch('http://localhost:8080/identifier-types', {
                 headers: { 'Username': userEmail }
             }).then(res => {
                 if (!res.ok) throw new Error('Error al cargar los tipos de identificación');
@@ -1971,7 +1971,7 @@ async function mostrarFormularioAgregarCliente() {
 
     try {
         // Get ID types from the backend
-        const tiposDeIdentificacion = await fetch('http://localhost:8080/identifier-type', {
+        const tiposDeIdentificacion = await fetch('http://localhost:8080/identifier-types', {
             headers: { 'Username': userEmail }
         })
         .then(res => {
