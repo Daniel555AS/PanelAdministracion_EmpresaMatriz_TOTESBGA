@@ -783,11 +783,13 @@ input:focus, select:focus, textarea:focus {
 /* Styles for appointment blocks with 'true' state (e.g., confirmed) */
 .bloque-cita.estado-true {
     background-color: #8aeaa0; /* Light green to indicate a positive/active state */
+    margin-top: 4px;
 }
 
 /* Styles for appointment blocks with 'false' state (e.g., canceled) */
 .bloque-cita.estado-false {
     background-color: #f9a7b0; /* Light red/pink to indicate a negative/inactive state */
+    margin-top: 4px;
 }
 
 /* Fullscreen popup background overlay */

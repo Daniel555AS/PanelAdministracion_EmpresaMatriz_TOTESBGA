@@ -2712,7 +2712,25 @@ function mostrarPopUpCita(cita) {
     };
 }
 
-// Function for generating Appointment Reports, in PDF format
+// Function to draw the header (text and logo) for the PDF report of appointments
+function dibujarEncabezado(doc, pageWidth, img) {
+    const headerHeight = 25;
+
+    doc.setFillColor(0, 0, 0);
+    doc.rect(0, 10, pageWidth, headerHeight, "F");
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.text("TOTES BGA - Matriz", 15, 20);
+
+    const imgWidth = 60;
+    const imgHeight = 15;
+    const imgX = pageWidth - imgWidth - 15;
+    const imgY = 13;
+    doc.addImage(img, "PNG", imgX, imgY, imgWidth, imgHeight);
+}
+
 async function generarPDFReporteCitas(fechaInicio, fechaFin) {
     try {
         const userEmail = sessionStorage.getItem("userEmail");
@@ -2743,7 +2761,6 @@ async function generarPDFReporteCitas(fechaInicio, fechaFin) {
         const vencidas = citasFiltradas.filter(c => c.state === false).length;
         const total = citasFiltradas.length;
 
-        // Create a chart with Chart.js and datalabels
         const ctx = document.getElementById("graficoCitas").getContext("2d");
 
         if (window.graficoCitasInstance) window.graficoCitasInstance.destroy();
@@ -2778,62 +2795,137 @@ async function generarPDFReporteCitas(fechaInicio, fechaFin) {
             plugins: [ChartDataLabels]
         });
 
-        // Wait for the graphic to render
-        setTimeout(() => {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF({ orientation: "portrait", format: "letter" });
-            const pageWidth = doc.internal.pageSize.getWidth();
+        await new Promise(resolve => setTimeout(resolve, 500));
 
-            const headerHeight = 25;
-            doc.setFillColor(0, 0, 0);
-            doc.rect(0, 10, pageWidth, headerHeight, "F");
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ orientation: "portrait", format: "letter" });
+        const pageWidth = doc.internal.pageSize.getWidth();
 
-            doc.setTextColor(255, 255, 255);
+        // Cargar imagen del logo antes de continuar
+        const imageUrl = "assets/images/logo_totes.png";
+        const img = new Image();
+        img.src = imageUrl;
+
+        await new Promise(resolve => {
+            img.onload = () => resolve();
+        });
+
+        // Encabezado en la primera página
+        dibujarEncabezado(doc, pageWidth, img);
+
+        let y = 45;
+
+        doc.setTextColor(0, 0, 0);
+        doc.setFontSize(14);
+        doc.text("Reporte de Citas por Estado", pageWidth / 2, y, { align: "center" });
+
+        y += 10;
+        doc.setFontSize(10);
+        const fechaGeneracion = new Date().toLocaleString("es-CO");
+        doc.text(`Este reporte fue generado el: ${fechaGeneracion}`, 15, y);
+        y += 8;
+        doc.text(`Rango de fechas: ${fechaInicio.toLocaleDateString()} - ${fechaFin.toLocaleDateString()}`, 15, y);
+        y += 10;
+
+        doc.setFont("helvetica", "normal");
+        doc.text(`Total de citas encontradas: ${total}`, 15, y);
+        y += 7;
+        doc.text(`Citas activas / próximas (color azul): ${activas}`, 15, y);
+        y += 7;
+        doc.text(`Citas vencidas / atendidas (color rojo): ${vencidas}`, 15, y);
+        y += 10;
+
+        const graficoCanvas = document.getElementById("graficoCitas");
+        const graficoDataUrl = graficoCanvas.toDataURL("image/png");
+        doc.addImage(graficoDataUrl, "PNG", 40, y, 130, 120);
+
+        // Obtener tipos de identificación
+        const tiposRespuesta = await fetch("http://localhost:8080/identifier-types", {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Username": userEmail
+            }
+        });
+
+        if (!tiposRespuesta.ok) throw new Error("Error al obtener los tipos de identificación");
+
+        const tiposIdentificacion = await tiposRespuesta.json();
+
+        // Crear un mapa ID => Nombre
+        const mapaTiposIdentificacion = {};
+        tiposIdentificacion.forEach(tipo => {
+            mapaTiposIdentificacion[tipo.id] = tipo.name;
+        });
+
+        // ---------------- One sheet for each appointment ----------------
+        for (const cita of citasFiltradas) {
+            doc.addPage();
+            dibujarEncabezado(doc, pageWidth, img); // Draw header on each new page
+
+            let yDetalle = 45;
             doc.setFont("helvetica", "bold");
+            doc.setFontSize(12);
+            doc.text("Detalle de Cita", pageWidth / 2, yDetalle, { align: "center" });
+
+            yDetalle += 10;
             doc.setFontSize(10);
-            doc.text("TOTES BGA - Matriz", 15, 20);
+            doc.setFont("helvetica", "normal");
 
-            const imageUrl = "assets/images/logo_totes.png";
-            const img = new Image();
-            img.src = imageUrl;
+            const tipoPersona = cita.isBusiness ? "Jurídica" : "Natural";
+            const nombreCompleto = `${cita.customerName} ${cita.lastName}`.trim();
+            const nombreTipoIdentificacion = mapaTiposIdentificacion[cita.identifierTypeId] || "Desconocido";
+            
+            const detalles = [
+                ["ID de Cita:", cita.id?.toString() || "N/A"],
+                ["Tipo Persona:", tipoPersona],
+                ...(tipoPersona === "Natural"
+                    ? [["Nombre Completo:", nombreCompleto]]
+                    : [["Razón Social:", cita.lastName || "N/A"]]
+                ),
+                ["Tipo de Identificación:", nombreTipoIdentificacion],
+                ["Número de Identificación:", cita.customerId?.toString() || "N/A"],
+                ["Correo:", cita.email || "N/A"],
+                ["Teléfono:", cita.phoneNumbers || "N/A"],
+                ["Dirección:", cita.address || "N/A"],
+                ["Estado:", cita.state ? "Activa / Próxima" : "Vencida / Atendida"],
+                ["Fecha y Hora:", new Date(cita.dateTime).toLocaleString("es-CO")]
+            ];
 
-            img.onload = () => {
-                const imgWidth = 60;
-                const imgHeight = 15;
-                const imgX = pageWidth - imgWidth - 15;
-                const imgY = 13;
-                doc.addImage(img, "PNG", imgX, imgY, imgWidth, imgHeight);
+            const cuerpoTabla = detalles.map(([campo, valor]) => [campo, valor]);
 
-                let y = 10 + headerHeight + 10;
-                doc.setTextColor(0, 0, 0);
-                doc.setFontSize(14);
-                doc.text("Reporte de Citas por Estado", pageWidth / 2, y, { align: "center" });
+            doc.autoTable({
+                head: [['Campo', 'Valor']],
+                body: cuerpoTabla,
+                startY: yDetalle,
+                theme: 'grid',
+                styles: { fontSize: 10 },
+                headStyles: { fillColor: [0, 0, 0], textColor: 255 },
+                columnStyles: {
+                    0: { cellWidth: 60 },
+                    1: { cellWidth: 120 }
+                }
+            });
+        }
 
-                y += 10;
-                doc.setFontSize(10);
-                const fechaGeneracion = new Date().toLocaleString("es-CO");
-                doc.text(`Este reporte fue generado el: ${fechaGeneracion}`, 15, y);
-                y += 8;
-                doc.text(`Rango de fechas: ${fechaInicio.toLocaleDateString()} - ${fechaFin.toLocaleDateString()}`, 15, y);
-                y += 10;
+        const fechaHoraColombia = new Intl.DateTimeFormat("es-CO", {
+            timeZone: "America/Bogota",
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit"
+        }).format(new Date());
 
-                // Add summary
-                doc.setFont("helvetica", "normal");
-                doc.text(`Total de citas encontradas: ${total}`, 15, y);
-                y += 7;
-                doc.text(`Citas activas / próximas (color azul): ${activas}`, 15, y);
-                y += 7;
-                doc.text(`Citas vencidas / atendidas (color rojo): ${vencidas}`, 15, y);
-                y += 10;
+        // Format the date and time to be valid in the file name
+        const fechaHoraArchivo = fechaHoraColombia
+            .replace(/\//g, "-")      // Replace / with -
+            .replace(/:/g, "-")       // Replace : with -
+            .replace(/\s/g, "_");     // Replace space with _
 
-                // Add chart image
-                const graficoCanvas = document.getElementById("graficoCitas");
-                const graficoDataUrl = graficoCanvas.toDataURL("image/png");
-                doc.addImage(graficoDataUrl, "PNG", 40, y, 130, 120);
+        doc.save(`reporte_citas_${fechaHoraArchivo}.pdf`);
 
-                doc.save("Reporte_Citas.pdf");
-            };
-        }, 500);
     } catch (error) {
         console.error("Error al generar el PDF:", error);
         alert("Error al generar el reporte de citas: " + error.message);
