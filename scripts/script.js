@@ -100,7 +100,12 @@ function cargarSeccion(seccion) {
             </div>
 
             <canvas id="graficoCitas" width="400" height="400" style="display: none;"></canvas>
-        `
+        `,
+
+        'financiera': `
+        <h1 class="titulo-gestion-financiera">Gestión Financiera</h1>
+        <div id="contenedor-financiera"></div>
+    `
     };
 
     // Updates the content based on the selected section or shows an error message if not found
@@ -117,7 +122,43 @@ function cargarSeccion(seccion) {
         cargarClientes(); // Call the function to load customers
     } else if (seccion === 'citas') {
         cargarCitas(); // Call the function to load appointments
+    } else if(seccion === 'financiera') {
+        cargarFinanciera();
     }
+}
+
+function cargarFinanciera() {
+    const contenedor = document.getElementById("contenedor-financiera");
+    contenedor.innerHTML = `
+        <div class="fila-botones">
+            <div class="bloque-financiero-generacion-facturas" onclick="alert('Ingresos')">
+            Generación de Facturas
+            <img src="assets/images/icono_generar_factura.png" alt="Icono Generar Factura" class="icono-financiero">
+            </div>
+            <div class="bloque-financiero-gestion-facturas" onclick="alert('Egresos')">
+            Gestión de Facturas
+            <img src="assets/images/icono_gestion_facturas.png" alt="Icono Gestión de Facturas" class="icono-financiero">
+            </div>
+            <div class="bloque-financiero-gestion-ordenes-compra" onclick="alert('Facturación')">
+            Gestión de Órdenes de Compra
+            <img src="assets/images/icono_gestion_ordenes_compra.png" alt="Icono Gestión de Órdenes de Compra" class="icono-financiero">
+            </div>
+        </div>
+        <div class="fila-botones">
+            <div class="bloque-financiero-gestion-impuestos" onclick="alert('Impuestos')">
+            Gestión de Impuestos
+            <img src="assets/images/icono_gestion_impuestos.png" alt="Icono Gestión de Impuestos" class="icono-financiero">
+            </div>
+            <div class="bloque-financiero-gestion-descuentos" onclick="alert('Balances')">
+            Gestión de Descuentos
+            <img src="assets/images/icono_descuentos.png" alt="Icono Descuentos" class="icono-financiero">
+            </div>
+            <div class="bloque-financiero-reportes-financieros" onclick="alert('Reportes')">
+            Reportes Financieros
+            <img src="assets/images/icono_reportes_financieros.png" alt="Icono Reportes Financieros" class="icono-financiero">
+            </div>
+        </div>
+    `;
 }
 
 // Asynchronous function to load user data from an API

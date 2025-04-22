@@ -1103,3 +1103,201 @@ input:focus, select:focus, textarea:focus {
 #btn-cerrar-sesion img:hover {
     transform: scale(1.1); /* Enlarges the image slightly on hover */
 }
+
+/* Container for button blocks arranged in a row */
+.fila-botones {
+    display: flex; /* Uses flexbox layout */
+    justify-content: space-between; /* Evenly distributes space between items */
+    gap: 2vw; /* Horizontal spacing between items */
+    margin: 5vh 0; /* Vertical spacing above and below */
+    flex-wrap: wrap; /* Allows items to wrap to the next line */
+}
+
+/* Individual block representing a financial option */
+.bloque-financiero {
+    flex: 1 1 calc(33.33% - 2vw); /* Responsive width with spacing adjustment */
+    background-color: #f0f0f0; /* Light gray background */
+    height: 30vh; /* Fixed height relative to viewport height */
+    text-align: center; /* Centers text horizontally */
+    border-radius: 1.5vw; /* Rounded corners */
+    font-weight: 500; /* Medium font weight */
+    font-size: 1.5vw; /* Responsive font size */
+    cursor: pointer; /* Pointer cursor on hover */
+    transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth hover effects */
+    box-shadow: 0 0.2vh 0.5vh rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+    display: flex; /* Flex layout for centering content */
+    align-items: center; /* Vertically centers content */
+    justify-content: center; /* Horizontally centers content */
+    padding: 0 1vw; /* Horizontal padding for inner spacing */
+}
+
+/* Hover effect for financial blocks */
+.bloque-financiero:hover {
+    background-color: #e0e0e0; /* Slightly darker background on hover */
+    transform: scale(1.03); /* Grows slightly for a zoom effect */
+}
+
+/* Title for the financial management section */
+.titulo-gestion-financiera {
+    margin-bottom: 10vh; /* Adds space below the title */
+    font-size: 2vw; /* Responsive font size */
+}
+
+/* Specific style for the invoice generation block */
+.bloque-financiero-generacion-facturas {
+    flex: 1 1 calc(33.33% - 2vw); /* Responsive width with spacing adjustment */
+    background-color: #2e8fffb4; /* Blue semi-transparent background */
+    height: 30vh; /* Fixed height relative to viewport */
+    text-align: center; /* Center text horizontally */
+    border-radius: 1.5vw; /* Rounded corners */
+    font-weight: 500; /* Medium font weight */
+    color: #ffffff; /* White text */
+    font-size: 1.5vw; /* Responsive font size */
+    cursor: pointer; /* Pointer cursor on hover */
+    transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth hover effects */
+    box-shadow: 0 0.2vh 0.5vh rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+    display: flex; /* Flex layout for centering content */
+    align-items: center; /* Vertically centers content */
+    justify-content: center; /* Horizontally centers content */
+    padding: 0 1vw; /* Horizontal padding */
+}
+
+/* Hover effect for the invoice generation block */
+.bloque-financiero-generacion-facturas:hover {
+    background-color: #2e8fff94; /* Slightly more transparent blue on hover */
+    transform: scale(1.03); /* Slight zoom effect when hovered */
+}
+
+/* Style for the invoice management block */
+.bloque-financiero-gestion-facturas {
+    flex: 1 1 calc(33.33% - 2vw); /* Responsive width with spacing adjustment */
+    background-color: #57ff62d1; /* Green semi-transparent background */
+    height: 30vh; /* Fixed height relative to viewport */
+    text-align: center; /* Center text horizontally */
+    border-radius: 1.5vw; /* Rounded corners */
+    font-weight: 500; /* Medium font weight */
+    color: #ffffff; /* White text color */
+    font-size: 1.5vw; /* Responsive font size */
+    cursor: pointer; /* Pointer cursor to indicate interactivity */
+    transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth hover animations */
+    box-shadow: 0 0.2vh 0.5vh rgba(0, 0, 0, 0.1); /* Light shadow for depth */
+    display: flex; /* Flexbox for centering */
+    align-items: center; /* Vertically center content */
+    justify-content: center; /* Horizontally center content */
+    padding: 0 1vw; /* Horizontal padding */
+}
+
+/* Hover effect for the invoice management block */
+.bloque-financiero-gestion-facturas:hover {
+    background-color: #57ff6290; /* Slightly more transparent green on hover */
+    transform: scale(1.03); /* Zoom effect on hover */
+}
+
+/* Style for the purchase order management block */
+.bloque-financiero-gestion-ordenes-compra {
+    flex: 1 1 calc(33.33% - 2vw); /* Responsive width with spacing between blocks */
+    background-color: #ff5757d1; /* Semi-transparent red background */
+    height: 30vh; /* Fixed height based on viewport height */
+    text-align: center; /* Center text horizontally */
+    border-radius: 1.5vw; /* Rounded corners for smooth design */
+    font-weight: 500; /* Medium-bold text */
+    color: #ffffff; /* White text color for contrast */
+    font-size: 1.5vw; /* Responsive font size */
+    cursor: pointer; /* Indicates the block is clickable */
+    transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth visual feedback */
+    box-shadow: 0 0.2vh 0.5vh rgba(0, 0, 0, 0.1); /* Light shadow for subtle depth */
+    display: flex; /* Use flexbox to align content */
+    align-items: center; /* Vertically center content */
+    justify-content: center; /* Horizontally center content */
+    padding: 0 1vw; /* Optional horizontal padding */
+}
+
+/* Hover effect for the purchase order management block */
+.bloque-financiero-gestion-ordenes-compra:hover {
+    background-color: #fe13137a; /* Darker red tone on hover for visual feedback */
+    transform: scale(1.03); /* Slight zoom-in effect on hover */
+}
+
+/* Style for the tax management block */
+.bloque-financiero-gestion-impuestos {
+    flex: 1 1 calc(33.33% - 2vw); /* Responsive width with spacing between elements */
+    background-color: #ffc72eb1; /* Semi-transparent yellow background */
+    height: 30vh; /* Fixed height relative to viewport */
+    text-align: center; /* Centers text horizontally */
+    border-radius: 1.5vw; /* Rounded corners for visual smoothness */
+    font-weight: 500; /* Medium font weight */
+    color: #ffffff; /* White text for contrast */
+    font-size: 1.5vw; /* Responsive text size */
+    cursor: pointer; /* Indicates the element is clickable */
+    transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth hover animation */
+    box-shadow: 0 0.2vh 0.5vh rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+    display: flex; /* Flexbox layout for content centering */
+    align-items: center; /* Vertically center content */
+    justify-content: center; /* Horizontally center content */
+    padding: 0 1vw; /* Horizontal padding if needed */
+}
+
+/* Hover effect for the tax management block */
+.bloque-financiero-gestion-impuestos:hover {
+    background-color: #ffcc5d88; /* Softer yellow shade on hover */
+    transform: scale(1.03); /* Slight zoom-in to indicate interactivity */
+}
+
+/* Style for the discount management block */
+.bloque-financiero-gestion-descuentos {
+    flex: 1 1 calc(33.33% - 2vw); /* Responsive width with spacing between blocks */
+    background-color: #cd2ed8b1; /* Semi-transparent purple background */
+    height: 30vh; /* Fixed height relative to viewport height */
+    text-align: center; /* Center text horizontally */
+    border-radius: 1.5vw; /* Rounded corners for smoother appearance */
+    font-weight: 500; /* Medium font weight for text */
+    color: #ffffff; /* White text for contrast */
+    font-size: 1.5vw; /* Responsive font size */
+    cursor: pointer; /* Cursor changes to pointer on hover */
+    transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth hover transitions */
+    box-shadow: 0 0.2vh 0.5vh rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
+    display: flex; /* Use flexbox to center content */
+    align-items: center; /* Vertically center content */
+    justify-content: center; /* Horizontally center content */
+    padding: 0 1vw; /* Horizontal padding if needed */
+}
+
+/* Hover effect for the discount management block */
+.bloque-financiero-gestion-descuentos:hover {
+    background-color: #d15dff88; /* Slightly lighter purple on hover */
+    transform: scale(1.03); /* Zoom-in effect for interactivity */
+}
+
+/* Style for the financial reports block */
+.bloque-financiero-reportes-financieros {
+    flex: 1 1 calc(33.33% - 2vw); /* Responsive width with spacing between blocks */
+    background-color: #2ed8d2b1; /* Semi-transparent teal background */
+    height: 30vh; /* Fixed height relative to viewport height */
+    text-align: center; /* Center text horizontally */
+    border-radius: 1.5vw; /* Rounded corners for smoother appearance */
+    font-weight: 500; /* Medium font weight for readability */
+    color: #ffffff; /* White text for better contrast */
+    font-size: 1.5vw; /* Responsive text size */
+    cursor: pointer; /* Indicates the block is clickable */
+    transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth animation on hover */
+    box-shadow: 0 0.2vh 0.5vh rgba(0, 0, 0, 0.1); /* Subtle shadow effect */
+    display: flex; /* Flexbox layout for centering */
+    align-items: center; /* Vertically center content */
+    justify-content: center; /* Horizontally center content */
+    padding: 0 1vw; /* Optional horizontal padding */
+}
+
+/* Hover effect for the financial reports block */
+.bloque-financiero-reportes-financieros:hover {
+    background-color: #5df4ff88; /* Lighter teal tone on hover */
+    transform: scale(1.03); /* Zoom effect for interaction feedback */
+}
+
+/* Style for financial icons within blocks */
+.icono-financiero {
+    margin-top: 1vh; /* Adds space above the icon for visual separation */
+    width: 5vw; /* Responsive width based on viewport width */
+    height: auto; /* Maintains aspect ratio automatically */
+    max-height: 10vh; /* Restricts the icon’s height to prevent it from becoming too large */
+}
+
