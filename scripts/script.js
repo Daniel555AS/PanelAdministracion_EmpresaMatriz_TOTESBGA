@@ -2285,6 +2285,9 @@ async function cargarCitas(offset = 0) {
     // Check if the button already exists before deleting everything
     const botonPrevio = document.querySelector("#boton-reporte");
     if (botonPrevio) botonPrevio.remove();
+
+    const botonPrevioBuscar = document.querySelector("#boton-buscar");
+    if (botonPrevioBuscar) botonPrevioBuscar.remove();
     
     // CLEAN before inserting the button
     contenedorCalendario.innerHTML = "";
@@ -2295,6 +2298,13 @@ async function cargarCitas(offset = 0) {
     botonReporte.textContent = "Generar Reporte (PDF) 📄";
     botonReporte.classList.add("boton-reporte");
     contenedorCalendario.parentNode.insertBefore(botonReporte, contenedorCalendario);
+
+    const botonBuscar = document.createElement("button");
+    botonBuscar.id = "boton-buscar";
+    botonBuscar.textContent = "Buscar Cita 🔍";
+    botonBuscar.classList.add("boton-reporte"); // Usa mismo estilo, o crea una clase diferente si deseas
+    botonBuscar.onclick = () => abrirModalBuscarCita();
+    contenedorCalendario.parentNode.insertBefore(botonBuscar, contenedorCalendario);
     
 
     const diasSemana = ["Lun.", "Mar.", "Mié.", "Jue.", "Vie.", "Sáb.", "Dom."];
@@ -2434,6 +2444,141 @@ async function cargarCitas(offset = 0) {
     }
 }
 
+
+
+////////////////////////////////
+
+function abrirModalBuscarCita() {
+    // Si no existe el modal, créalo
+    if (!document.getElementById("popup-busqueda-cita")) {
+        crearModalBusquedaCita(); // Esto también agrega la lógica
+    }
+
+    // Mostrar el modal y limpiar contenido previo
+    const popup = document.getElementById("popup-busqueda-cita");
+    const input = document.getElementById("input-id-cita");
+    const detalle = document.getElementById("detalle-cita-busqueda");
+
+    input.value = "";
+    detalle.innerHTML = generarTextoCitaNoIdentificada();
+    popup.classList.remove("oculto");
+}
+
+function crearModalBusquedaCita() {
+    const modalHTML = `
+        <div id="popup-busqueda-cita" class="popup-cita oculto">
+            <div class="popup-bucar-cita-contenido">
+                <h3 class="busqueda-cita-id">Búsqueda de Cita por ID</h3>
+                <span id="cerrar-popup-busqueda" class="cerrar-popup-buscar-cita">&times;</span>
+                <!-- Contenedor para la barra de búsqueda y el "ID" -->
+                <div class="contenedor-busqueda-id">
+                    <input type="text" id="input-id-cita" placeholder="Ingrese ID de la cita..." class="barra-busqueda-id" />
+                    <span class="id-cuadrado">ID</span>
+                </div>
+                <div id="detalle-cita-busqueda">
+                    ${generarTextoCitaNoIdentificada()}
+                </div>
+            </div>
+        </div>
+    `;
+
+    const divContenedor = document.createElement("div");
+    divContenedor.innerHTML = modalHTML;
+    document.body.appendChild(divContenedor);
+
+    const inputID = document.getElementById("input-id-cita");
+    inputID.addEventListener("input", (e) => {
+        // Eliminar caracteres no numéricos
+        inputID.value = inputID.value.replace(/\D/g, ''); // \D elimina todo lo que no es un dígito
+    });
+
+    agregarLogicaBusquedaPorID();
+}
+
+function generarTextoCitaNoIdentificada() {
+    return `
+        <p><strong>Nombre:</strong> Cita no identificada</p>
+        <p><strong>Tipo de Persona:</strong> Cita no identificada</p>
+        <p><strong>Correo Electrónico:</strong> Cita no identificada</p>
+        <p><strong>Fecha y Hora:</strong> Cita no identificada</p>
+        <p><strong>Dirección:</strong> Cita no identificada</p>
+        <p><strong>Teléfono:</strong> Cita no identificada</p>
+        <p><strong>Estado de Cita:</strong> Cita no identificada</p>
+    `;
+}
+
+function agregarLogicaBusquedaPorID() {
+    const popupBusqueda = document.getElementById("popup-busqueda-cita");
+    const cerrarBtn = document.getElementById("cerrar-popup-busqueda");
+    const inputID = document.getElementById("input-id-cita");
+    const detalleBusqueda = document.getElementById("detalle-cita-busqueda");
+
+    cerrarBtn.onclick = () => {
+        popupBusqueda.classList.add("oculto");
+    };
+
+    inputID.addEventListener("input", async () => {
+        const id = inputID.value.trim();
+        if (id === "") {
+            detalleBusqueda.innerHTML = generarTextoCitaNoIdentificada();
+            return;
+        }
+
+        try {
+            const userEmail = sessionStorage.getItem("userEmail");
+            const response = await fetch(`http://localhost:8080/appointments/searchByID?id=${id}`, {
+                method: 'GET',
+                headers: {
+                    "Username": userEmail
+                }
+            });
+
+            if (!response.ok) {
+                detalleBusqueda.innerHTML = generarTextoCitaNoIdentificada();
+                return;
+            }
+
+            const data = await response.json();
+            const cita = Array.isArray(data) ? data[0] : data;
+
+            if (!cita) {
+                detalleBusqueda.innerHTML = generarTextoCitaNoIdentificada();
+                return;
+            }
+
+            const date = new Date(cita.dateTime);
+            const dia = String(date.getUTCDate()).padStart(2, '0');
+            const mes = String(date.getUTCMonth() + 1).padStart(2, '0');
+            const año = date.getUTCFullYear();
+            const horas = String(date.getUTCHours()).padStart(2, '0');
+            const minutos = String(date.getUTCMinutes()).padStart(2, '0');
+            const fechaFormateada = `${dia}-${mes}-${año} ${horas}:${minutos}`;
+            const etiquetaNombre = cita.isBusiness ? "Razón Social" : "Nombre Completo";
+
+            detalleBusqueda.innerHTML = `
+                <p><strong>${etiquetaNombre}:</strong> ${cita.customerName || ""} ${cita.lastName || ""}</p>
+                <p><strong>Tipo de Persona:</strong> ${cita.isBusiness ? "Jurídica" : "Natural"}</p>
+                <p><strong>Correo Electrónico:</strong> ${cita.email || "No registrado"}</p>
+                <p><strong>Fecha y Hora:</strong> ${fechaFormateada}</p>
+                <p><strong>Dirección:</strong> ${cita.address || "No registrada"}</p>
+                <p><strong>Teléfono:</strong> ${Array.isArray(cita.phoneNumbers) ? cita.phoneNumbers.join(", ") : cita.phoneNumbers || "No disponibles"}</p>
+                <p><strong>Estado de Cita:</strong> ${cita.state ? "Pendiente Agendada" : "Pasada"}</p>
+            `;
+        } catch (error) {
+            console.error("Error al buscar cita:", error);
+            detalleBusqueda.innerHTML = generarTextoCitaNoIdentificada();
+        }
+    });
+}
+
+
+///////////////////////////////
+
+
+
+
+
+
 // Function to display details of an appointment
 async function mostrarDetalleCita(event) {
     const citaId = event.currentTarget.dataset.citaId;
@@ -2497,7 +2642,7 @@ function mostrarPopUpCita(cita) {
         <p><strong>Estado de Cita:</strong> <span id="estado-cita-texto">${cita.state ? "Pendiente Agendada" : "Pasada"}</span></p>
         <div class="contenedor-botones-modal">
             <button id="cambiar-estado" class="btn-generar-reporte">Cambiar Estado 🔄</button>
-            <button onclick="cerrarModalFechas()" class="btn-cancelar-reporte">Cancelar Cita ❌</button>
+            <button id="cancelar-cita" class="btn-cancelar-reporte">Cancelar Cita ❌</button>
         </div>        
     `;
 
@@ -2538,6 +2683,30 @@ function mostrarPopUpCita(cita) {
             cargarCitas(0);
         } catch (error) {
             alert("No se pudo cambiar el estado de la cita.");
+            console.error(error);
+        }
+    };
+
+    document.getElementById("cancelar-cita").onclick = async () => {
+        const confirmacion = confirm("¿Está seguro de que desea cancelar (eliminar) esta cita?");
+        if (!confirmacion) return;
+    
+        try {
+            const userEmail = sessionStorage.getItem("userEmail");
+            const response = await fetch(`http://localhost:8080/appointments/deleteAppointment/${cita.id}`, {
+                method: "DELETE",
+                headers: {
+                    "Username": userEmail
+                }
+            });
+    
+            if (!response.ok) throw new Error("Error al eliminar cita");
+    
+            alert("Cita cancelada (eliminada) exitosamente.");
+            popup.classList.add("oculto");
+            cargarCitas(0);  // Refresca la lista
+        } catch (error) {
+            alert("No se pudo cancelar (eliminar) esta cita.");
             console.error(error);
         }
     };

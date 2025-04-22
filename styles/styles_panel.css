@@ -551,8 +551,6 @@ input:focus, select:focus, textarea:focus {
     background: #767073; /* Lighter background on hover */
 }
 
-
-
 .btn-confirmar {
     background: #313030; /* Dark background */
     color: white; /* White text */
@@ -676,215 +674,245 @@ input:focus, select:focus, textarea:focus {
     background: #767073; /* Lighter background on hover */
 }
 
+/* Base style for a small circular status indicator */
 .estado-circulo {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    display: inline-block;
+    width: 12px; /* Sets the width of the circle */
+    height: 12px; /* Sets the height of the circle */
+    border-radius: 50%; /* Makes the element perfectly round */
+    display: inline-block; /* Allows the circle to sit inline with text or other elements */
 }
 
+/* Indicates an active status using a green color */
 .activo {
-    background-color: green;
+    background-color: green; /* Green background represents active state */
 }
 
+/* Indicates an inactive status using a red color */
 .inactivo {
-    background-color: red;
+    background-color: red; /* Red background represents inactive state */
 }
 
+/* Container for the calendar with horizontal scroll if content overflows */
 .calendar-container {
-    overflow-x: auto;
-    margin-top: 2vh;
+    overflow-x: auto; /* Enables horizontal scrolling */
+    margin-top: 2vh; /* Adds vertical spacing from the top */
 }
 
+/* Main calendar container settings */
 .calendar-container {
-    width: 75vw;        
-    height: 100vh;       
-    overflow: auto;     
-    margin-top: 2vh;
-    border: 0.2vh solid #ccc;
-    box-sizing: border-box;
+    width: 75vw; /* Sets the width to 75% of the viewport width */
+    height: 100vh; /* Sets the height to full viewport height */
+    overflow: auto; /* Enables both horizontal and vertical scrolling if needed */
+    margin-top: 2vh; /* Adds vertical spacing from the top */
+    border: 0.2vh solid #ccc; /* Adds a light gray border */
+    box-sizing: border-box; /* Includes padding and border in the element's total size */
 }
 
+/* Styles for the calendar table */
 .tabla-calendario {
-    width: 100%;
-    height: 100%;
-    border-collapse: collapse;
-    text-align: center;
-    font-size: 1.8vh;
-    table-layout: fixed;
+    width: 100%; /* Makes the table take full width of the container */
+    height: 100%; /* Makes the table take full height of the container */
+    border-collapse: collapse; /* Merges table borders */
+    text-align: center; /* Centers text in cells */
+    font-size: 1.8vh; /* Sets font size relative to viewport height */
+    table-layout: fixed; /* Ensures equal column widths regardless of content */
 }
 
+/* Shared styles for table headers and cells */
 .tabla-calendario th,
 .tabla-calendario td {
-    border: 0.1vh solid #ccc;
-    padding: 0.5vh;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    border: 0.1vh solid #ccc; /* Adds light gray borders to each cell */
+    padding: 0.5vh; /* Adds spacing inside cells */
+    overflow: hidden; /* Hides overflowed content */
+    text-overflow: ellipsis; /* Adds ellipsis (…) to overflowed text */
 }
 
+/* Header row styling */
 .tabla-calendario thead th {
-    background-color: rgb(48, 47, 47);
-    color: white;
+    background-color: rgb(48, 47, 47); /* Dark gray background for header cells */
+    color: white; /* White text for contrast */
 }
 
+/* Styles the first column of the calendar table */
 .tabla-calendario td:first-child {
-    font-weight: bold;
-    background-color: #f2f2f2;
+    font-weight: bold; /* Makes text bold to highlight the first column */
+    background-color: #f2f2f2; /* Light gray background for visual distinction */
 }
 
+/* Styles for individual calendar cells */
 .celda-calendario {
-    height: 6vh;
-    cursor: pointer;
+    height: 6vh; /* Sets a fixed height relative to viewport */
+    cursor: pointer; /* Changes cursor to pointer to indicate interactivity */
 }
 
+/* Hover effect for calendar cells */
 .celda-calendario:hover {
-    background-color: #e0f7fa;
+    background-color: #e0f7fa; /* Changes background on hover for feedback */
 }
 
+/* Header displaying the week and navigation arrows */
 .encabezado-semana {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 2vw;
-    font-size: 2.2vh;
-    font-weight: bold;
-    margin-bottom: 2vh;
-    color: #2c3e50;
+    display: flex; /* Uses flexbox for layout */
+    justify-content: center; /* Centers content horizontally */
+    align-items: center; /* Centers content vertically */
+    gap: 2vw; /* Horizontal spacing between elements */
+    font-size: 2.2vh; /* Font size relative to viewport height */
+    font-weight: bold; /* Makes text bold for emphasis */
+    margin-bottom: 2vh; /* Adds space below the header */
+    color: #2c3e50; /* Sets a dark blue-gray text color */
 }
 
+/* Style for navigation arrows (e.g., previous/next week) */
 .flecha-navegacion {
-    cursor: pointer;
-    font-size: 3vh;
-    transition: transform 0.2s ease;
+    cursor: pointer; /* Indicates the element is clickable */
+    font-size: 3vh; /* Enlarges icon/text size for visibility */
+    transition: transform 0.2s ease; /* Smooth scaling animation on hover */
 }
 
+/* Hover effect for navigation arrows */
 .flecha-navegacion:hover {
-    transform: scale(1.2);
-    color: #989898;
+    transform: scale(1.2); /* Slightly enlarges the arrow on hover */
+    color: #989898; /* Changes arrow color to light gray */
 }
 
+/* Centers the text of the week title */
 .titulo-semana {
-    text-align: center;
+    text-align: center; /* Aligns the title text to the center */
 }
 
+/* Styles for appointment blocks with 'true' state (e.g., confirmed) */
 .bloque-cita.estado-true {
-    background-color: #8aeaa0;
+    background-color: #8aeaa0; /* Light green to indicate a positive/active state */
 }
 
+/* Styles for appointment blocks with 'false' state (e.g., canceled) */
 .bloque-cita.estado-false {
-    background-color: #f9a7b0; 
+    background-color: #f9a7b0; /* Light red/pink to indicate a negative/inactive state */
 }
 
+/* Fullscreen popup background overlay */
 .popup-cita {
-    position: fixed;
+    position: fixed; /* Stays fixed on the screen */
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.4);
-    display: flex;
+    width: 100%; /* Covers full width */
+    height: 100%; /* Covers full height */
+    background-color: rgba(0, 0, 0, 0.4); /* Semi-transparent black overlay */
+    display: flex; /* Centers popup content using flexbox */
     justify-content: center;
     align-items: center;
-    z-index: 1000;
+    z-index: 1000; /* Ensures it appears above other elements */
 }
 
+/* Hides the popup when not active */
 .popup-cita.oculto {
-    display: none;
+    display: none; /* Completely hides the popup */
 }
 
+/* Styles for the popup content box */
 .popup-contenido {
-    background: white;
-    padding: 2vh 3vw;
-    border-radius: 8px;
-    width: 40vw;
-    max-width: 500px;
-    box-shadow: 0 0 10px rgba(97, 97, 97, 0.3);
-    position: relative;
+    background: white; /* White background for content area */
+    padding: 2vh 3vw; /* Adds spacing inside the box */
+    border-radius: 8px; /* Rounds the corners */
+    width: 40vw; /* Responsive width */
+    max-width: 500px; /* Limits max width */
+    box-shadow: 0 0 10px rgba(97, 97, 97, 0.3); /* Soft shadow around the box */
+    position: relative; /* Enables absolute positioning of inner elements */
 }
 
+/* Close button inside the popup */
 .cerrar-popup {
-    position: absolute;
-    top: 1vh;
-    right: 1vw;
-    cursor: pointer;
-    font-size: 5vh;
-    font-weight: normal;
-    color: rgb(66, 66, 66);
+    position: absolute; /* Positions it inside the popup */
+    top: 1vh; /* Distance from the top */
+    right: 1vw; /* Distance from the right */
+    cursor: pointer; /* Changes cursor on hover */
+    font-size: 5vh; /* Large font for visibility */
+    font-weight: normal; /* Uses normal font weight */
+    color: rgb(66, 66, 66); /* Dark gray color */
 }
 
+/* Changes close button color on hover for visual feedback */
 .cerrar-popup:hover {
-    color: rgb(122, 122, 122);
+    color: rgb(122, 122, 122); /* Lighter gray when hovered */
 }
 
+/* Adds vertical padding to the appointment detail section */
 #detalle-cita {
-    padding-top: 7vh;
-    padding-bottom: 5vh;
+    padding-top: 7vh;     /* Top spacing */
+    padding-bottom: 5vh;  /* Bottom spacing */
 }
 
+/* Styles for the report button */
 .boton-reporte {
-    background: #313030; /* Dark background */
+    background: #313030; /* Dark background color */
     color: white; /* White text */
-    padding: 1.5vh 2vw; /* Responsive padding */
-    border: none; /* No border */
-    border-radius: 1.5vw; /* Rounded corners */
+    padding: 1.5vh 2vw; /* Responsive inner spacing */
+    border: none; /* Removes default border */
+    border-radius: 1.5vw; /* Rounded edges */
     font-size: 1vw; /* Responsive font size */
-    cursor: pointer; /* Changes cursor to pointer */
-    transition: background 0.3s ease; /* Smooth transition for background color */
-    margin-left: 0.5vw; /* Adds left margin */
-    font-weight: normal; /* Default font weight */
-    margin-bottom: 2vh;
+    cursor: pointer; /* Indicates clickable element */
+    transition: background 0.3s ease; /* Smooth background transition */
+    margin-left: 0.5vw; /* Space on the left side */
+    font-weight: normal; /* Standard font weight */
+    margin-bottom: 2vh; /* Space below the button */
 }
 
+/* Changes background color on hover for the report button */
 .boton-reporte:hover {
-    background: #767073; /* Lighter background on hover */
+    background: #767073; /* Lighter shade to indicate hover */
 }
 
+/* Modal overlay styling */
 .modal {
-    position: fixed;
+    position: fixed; /* Fixed position on screen */
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    background: rgba(0,0,0,0.5); /* Semi-transparent black background */
+    display: flex; /* Flex layout for centering */
+    align-items: center; /* Vertical centering */
+    justify-content: center; /* Horizontal centering */
+    z-index: 1000; /* Ensures it's on top */
 }
 
+/* Content box inside the modal */
 .modal-contenido {
-    background: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    width: 55vw;
-    height: 52vh;
-    max-width: 90%; 
+    background: #fff; /* White background */
+    padding: 20px; /* Inner spacing */
+    border-radius: 8px; /* Rounded corners */
+    width: 55vw; /* Responsive width */
+    height: 52vh; /* Responsive height */
+    max-width: 90%; /* Max width to prevent overflow */
 }
 
+/* Duplicate popup style for compatibility */
 .popup-cita {
-    position: fixed;
+    position: fixed; /* Fixed position overlay */
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0,0,0,0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
+    background: rgba(0,0,0,0.5); /* Dark transparent background */
+    display: flex; /* Flex layout for centering */
+    align-items: center; /* Vertical centering */
+    justify-content: center; /* Horizontal centering */
+    z-index: 1000; /* High layer priority */
 }
 
+/* Styles the content box of the popup/modal */
 .popup-contenido {
-    background: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    width: 55vw;
-    height: 65vh;
-    max-width: 90%; 
+    background: #fff; /* White background */
+    padding: 20px; /* Inner spacing */
+    border-radius: 8px; /* Rounded corners */
+    width: 55vw; /* Responsive width */
+    height: 65vh; /* Responsive height */
+    max-width: 90%; /* Prevents excessive width on large screens */
 }
 
+/* Adds top margin to separate modal buttons from content */
 .contenedor-botones-modal {
-    margin-top: 3vh; 
+    margin-top: 3vh; /* Space above the button container */
 }
 
 .btn-generar-reporte {
@@ -923,32 +951,103 @@ input:focus, select:focus, textarea:focus {
     background: #767073; /* Lighter background on hover */
 }
 
-.label-fecha-inicio {
-    margin-top: 2vh;
-    display: block;
+/* Styles for the start date label with top margin */
+.label-fecha-inicio { 
+    margin-top: 2vh; /* Adds space above the label */
+    display: block; /* Makes the label a block element */
 }
 
+/* Styles for the end date label with top margin */
 .label-fecha-fin {
-    margin-top: 2vh;
-    display: block;
+    margin-top: 2vh; /* Adds space above the label */
+    display: block; /* Makes the label a block element */
 }
 
+/* Styles for the date range selection with top margin and font size */
 .seleccione-rango-fechas {
-    margin-top: 2vh;
-    display: block;
-    font-size: 1.5vw;
+    margin-top: 2vh; /* Adds space above the input */
+    display: block; /* Makes the input a block element */
+    font-size: 1.5vw; /* Sets responsive font size */
 }
 
+/* Styles for paragraph text in appointment details */
 #detalle-cita p {
-    margin-bottom: 1vh;
-    font-size: 1.2vw; 
-    margin-left: 1vw;
+    margin-bottom: 1vh; /* Adds space below the paragraph */
+    font-size: 1.2vw; /* Sets responsive font size */
+    margin-left: 1vw; /* Adds left margin */
 }
 
+/* Styles for selected appointment details with spacing and font size */
 .detalles-cita-seleccionada {
-    margin-top: 0vh;
-    margin-bottom: 2vh;
-    display: block;
-    font-size: 1.5vw;
-    margin-left: 1vw;
+    margin-top: 0vh; /* No top margin */
+    margin-bottom: 2vh; /* Adds space below the details */
+    display: block; /* Makes it a block element */
+    font-size: 1.5vw; /* Sets responsive font size */
+    margin-left: 1vw; /* Adds left margin */
+}
+
+/* Styles for paragraph text in appointment search details */
+#detalle-cita-busqueda p {
+    margin-bottom: 1vh; /* Adds space below the paragraph */
+    font-size: 1.2vw; /* Sets responsive font size */
+    margin-left: 1vw; /* Adds left margin */
+}
+
+/* Styles for appointment ID search field with top margin and font size */
+.busqueda-cita-id {
+    margin-top: 8vh; /* Adds larger space above the input */
+    display: block; /* Makes the input a block element */
+    font-size: 1.5vw; /* Sets responsive font size */
+    margin-left: 1vw; /* Adds left margin */
+}
+
+/* Container for the search bar and ID box, aligned horizontally */
+.contenedor-busqueda-id {
+    display: flex; /* Aligns children (search bar and ID box) horizontally */
+    align-items: center; /* Vertically aligns the children in the center */
+}
+
+/* Style for the search input field */
+.barra-busqueda-id {
+    margin-top: 4vh; /* Adds top margin for spacing */
+    margin-bottom: 4vh; /* Adds bottom margin for spacing */
+    width: 50vw; /* Sets the width to 50% of the viewport width */
+}
+
+/* Style for the square containing the "ID" text */
+.id-cuadrado {
+    background-color: #7f7e7e; /* Sets a gray background */
+    color: white; /* White text color */
+    font-weight: bold; /* Makes the text bold */
+    padding: 8px 12px; /* Adds padding inside the box */
+    border-radius: 0.8vw; /* Rounds the corners of the box */
+    font-size: 1.4vw; /* Sets a responsive font size */
+    text-align: center; /* Centers the text horizontally */
+    margin-left: 0.5vw; /* Adds left margin to separate it from the search input */
+}
+
+/* Popup content styling with white background and padding */
+.popup-bucar-cita-contenido {
+    background: #fff; /* White background */
+    padding: 20px; /* Adds inner spacing */
+    border-radius: 8px; /* Rounds the corners of the popup */
+    width: 55vw; /* Sets the width to 55% of the viewport width */
+    height: 75vh; /* Sets the height to 75% of the viewport height */
+    max-width: 90%; /* Limits the maximum width to 90% */
+}
+
+/* Style for the close button (X) */
+.cerrar-popup-buscar-cita {
+    position: absolute; /* Positions the button absolutely within its parent */
+    top: 15vh; /* Positions the button 15% from the top */
+    right: 25vw; /* Positions the button 25% from the right */
+    cursor: pointer; /* Changes the cursor to a pointer on hover */
+    font-size: 5vh; /* Sets the font size to be responsive */
+    font-weight: normal; /* Normal font weight */
+    color: rgb(66, 66, 66); /* Dark gray color for the button */
+}
+
+/* Hover effect for the close button */
+.cerrar-popup-buscar-cita:hover {
+    color: rgb(122, 122, 122); /* Changes color to a lighter gray on hover */
 }
