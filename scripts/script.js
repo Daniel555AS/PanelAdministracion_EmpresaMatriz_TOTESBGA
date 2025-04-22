@@ -11,8 +11,17 @@ function cargarSeccion(seccion) {
     // Object storing the HTML content for each section
     const secciones = {
         'dashboard': `
-            <h1>Inicio</h1>
-            <p>Bienvenido al panel administrativo. Selecciona una opción para continuar.</p>
+        <h1>Bienvenido(a)</h1>
+        <div class="mensaje-inicio">Bienvenido al panel administrativo. Selecciona una opción para continuar.</div>
+        <div class="contenedor-video">
+            <video class="video-inicio" autoplay loop muted playsinline>
+                <source src="assets/videos/video_totes.mp4" type="video/mp4">
+                Tu navegador no soporta la reproducción de video.
+            </video>
+        </div>
+        <div id="btn-cerrar-sesion">
+            <img src="assets/images/logout-icon.png" alt="Cerrar sesión" title="Cerrar sesión" onclick="cerrarSesion()">
+        </div>
         `, // Dashboard section with a welcome message
 
         'items': `

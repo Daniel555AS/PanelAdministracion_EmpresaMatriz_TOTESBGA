@@ -1059,3 +1059,47 @@ input:focus, select:focus, textarea:focus {
 .cerrar-popup-buscar-cita:hover {
     color: rgb(122, 122, 122); /* Changes color to a lighter gray on hover */
 }
+
+/* Container that centers the video horizontally and vertically */
+.contenedor-video {
+    display: flex; /* Enables flex layout */
+    justify-content: center; /* Centers the video horizontally */
+    align-items: center; /* Centers the video vertically */
+    margin-top: 3vh; /* Adds top margin for spacing */
+}
+
+/* Style for the introductory video */
+.video-inicio {
+    width: 80vw; /* Sets video width to 80% of the viewport width */
+    height: 75vh; /* Sets video height to 75% of the viewport height */
+    border-radius: 12px; /* Rounds the corners of the video */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); /* Adds subtle shadow for depth */
+    object-fit: cover; /* Ensures the video covers the area without distortion */
+}
+
+/* Message displayed at the start, with spacing and responsive font */
+.mensaje-inicio {
+    margin-top: 0.5vh; /* Adds small space above the message */
+    font-size: 1.2vw; /* Responsive text size based on viewport width */
+}
+
+/* Logout button container positioned at the top-right corner */
+#btn-cerrar-sesion {
+    position: absolute; /* Removes element from normal flow for precise placement */
+    top: 3vh; /* Distance from the top of the viewport */
+    right: 2vw; /* Distance from the right of the viewport */
+    z-index: 999; /* Ensures it stays on top of other elements */
+}
+
+/* Image inside the logout button */
+#btn-cerrar-sesion img {
+    width: 2.5vw; /* Responsive image width */
+    height: 5vh; /* Responsive image height */
+    cursor: pointer; /* Changes cursor to pointer on hover */
+    transition: transform 0.2s ease; /* Smooth scale effect on hover */
+}
+
+/* Slight zoom effect when hovering over the image */
+#btn-cerrar-sesion img:hover {
+    transform: scale(1.1); /* Enlarges the image slightly on hover */
+}
