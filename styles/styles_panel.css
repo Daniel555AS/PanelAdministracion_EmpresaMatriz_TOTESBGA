@@ -742,12 +742,6 @@ input:focus, select:focus, textarea:focus {
 /* Styles for individual calendar cells */
 .celda-calendario {
     height: 6vh; /* Sets a fixed height relative to viewport */
-    cursor: pointer; /* Changes cursor to pointer to indicate interactivity */
-}
-
-/* Hover effect for calendar cells */
-.celda-calendario:hover {
-    background-color: #e0f7fa; /* Changes background on hover for feedback */
 }
 
 /* Header displaying the week and navigation arrows */
@@ -784,12 +778,24 @@ input:focus, select:focus, textarea:focus {
 .bloque-cita.estado-true {
     background-color: #8aeaa0; /* Light green to indicate a positive/active state */
     margin-top: 4px;
+    cursor: pointer;
+}
+
+/* Hover for active appointment block */
+.bloque-cita.estado-true:hover {
+    background-color: #37cb5a; 
 }
 
 /* Styles for appointment blocks with 'false' state (e.g., canceled) */
 .bloque-cita.estado-false {
     background-color: #f9a7b0; /* Light red/pink to indicate a negative/inactive state */
     margin-top: 4px;
+    cursor: pointer;
+}
+
+/* Hover for inactive appointment block */
+.bloque-cita.estado-false:hover {
+    background-color: #e4606f;
 }
 
 /* Fullscreen popup background overlay */
