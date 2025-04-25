@@ -127,9 +127,108 @@ function cargarSeccion(seccion) {
     }
 }
 
+let descuentosGlobal = [];
+
+async function cargarDescuentos() {
+    const userEmail = sessionStorage.getItem("userEmail");
+
+    try {
+        const respuesta = await fetch('http://localhost:8080/discount-types', {
+            method: 'GET',
+            headers: {
+                "Content-Type": "application/json",
+                "Username": userEmail
+            }
+        });
+
+        if (!respuesta.ok) throw new Error('Error al obtener los descuentos');
+        descuentosGlobal = await respuesta.json(); // Save to global variable
+
+        const tablaBody = document.getElementById('tablaDescuentosBody');
+        if (tablaBody) {
+            tablaBody.innerHTML = generarFilasDescuentos(descuentosGlobal);
+            return;
+        }
+
+        document.getElementById('lista-descuentos').innerHTML = `
+        <div class="contenedor-superior">
+            <button class="btn-agregar-descuento" onclick="mostrarFormularioAgregarDescuento()">+ Agregar Descuento 🏷️</button>
+            <div class="refresh-container-descuento" onclick="cargarDescuentos()">
+                <div class="refresh-logo-descuento">⟳</div>
+            </div>
+        </div>
+
+            <div class="barra-busqueda">
+                <div class="busqueda-container">
+                    <input type="text" id="inputBusquedaDescuento" placeholder="Buscar descuento.." oninput="buscarDescuento()">
+                    <select id="filtroBusqueda" onchange="buscarDescuento()">
+                        <option value="id">Nombre</option>
+                    </select>
+                </div>
+            </div>
+
+            <table class="tabla-clientes">
+                <thead>
+                    <tr>
+                        <th>ID Descuento</th>
+                        <th>Nombre</th>
+                        <th>Unidad</th>
+                        <th>Valor</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaDescuentosBody">
+                    ${generarFilasDescuentos(descuentosGlobal)}
+                </tbody>
+            </table>
+        `;
+    } catch (error) {
+        document.getElementById('lista-descuentos').innerHTML = `<p>Oops... Ha ocurrido un error al cargar los descuentos</p>`;
+        console.error(error);
+    }
+}
+
+function generarFilasDescuentos(descuentos) {
+    if (descuentos.length === 0) {
+        return `<tr><td colspan="4">No se encontraron descuentos</td></tr>`;
+    }
+
+    return descuentos.map(descuento => {
+        const unidad = descuento.is_percentage ? "%" : "$ (COP)";
+        let valorFormateado;
+
+        if (descuento.is_percentage) {
+            // For percentage
+            valorFormateado = descuento.value.toFixed(2).replace('.', ',');
+        } else {
+            // For pesos: format with thousands separators
+            valorFormateado = descuento.value.toLocaleString("es-CO");
+        }
+
+        return `
+            <tr class="fila-cliente" onclick="mostrarDetalleDescuento(${descuento.id})">
+                <td>${descuento.id}</td>
+                <td>${descuento.name}</td>
+                <td>${unidad}</td>
+                <td>${valorFormateado}</td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function buscarDescuento() {
+    const input = document.getElementById('inputBusquedaDescuento').value.trim().toLowerCase();
+
+    const filtrados = descuentosGlobal.filter(descuento =>
+        descuento.name.toLowerCase().includes(input)
+    );
+
+    document.getElementById('tablaDescuentosBody').innerHTML = generarFilasDescuentos(filtrados);
+}
+
 function cargarFinanciera() {
-    const contenedor = document.getElementById("contenedor-financiera");
+    const contenedor = document.getElementById("contenido");
     contenedor.innerHTML = `
+        <h1 class="titulo-gestion-financiera">Gestión Financiera</h1>
         <div class="fila-botones">
             <div class="bloque-financiero-generacion-facturas" onclick="alert('Ingresos')">
             Generación de Facturas
@@ -145,11 +244,11 @@ function cargarFinanciera() {
             </div>
         </div>
         <div class="fila-botones">
-            <div class="bloque-financiero-gestion-impuestos" onclick="alert('Impuestos')">
+            <div class="bloque-financiero-gestion-impuestos" onclick="mostrarVistaImpuestos()">
             Gestión de Impuestos
             <img src="assets/images/icono_gestion_impuestos.png" alt="Icono Gestión de Impuestos" class="icono-financiero">
             </div>
-            <div class="bloque-financiero-gestion-descuentos" onclick="alert('Balances')">
+            <div class="bloque-financiero-gestion-descuentos" onclick="mostrarVistaDescuentos()">
             Gestión de Descuentos
             <img src="assets/images/icono_descuentos.png" alt="Icono Descuentos" class="icono-financiero">
             </div>
@@ -158,8 +257,448 @@ function cargarFinanciera() {
             <img src="assets/images/icono_reportes_financieros.png" alt="Icono Reportes Financieros" class="icono-financiero">
             </div>
         </div>
+        <div id="lista-descuentos" style="margin-top: 30px;"></div>
     `;
 }
+
+function mostrarVistaDescuentos() {
+    const contenedor = document.getElementById("contenido");
+    contenedor.innerHTML = `
+        <button class="btn-retorno" onclick=cargarFinanciera()><</button>
+        <h1 class="titulo-gestion-descuentos">Gestión de Descuentos</h1>
+        <div id="lista-descuentos"></div>
+    `;
+    cargarDescuentos();
+}
+
+// For percentage values: allow numbers with decimal point
+function permitirDecimales(event) {
+    let valor = event.target.value;
+
+    // Allow only numbers and a comma
+    valor = valor.replace(/[^0-9,]/g, '');
+
+    const partes = valor.split(',');
+    if (partes.length > 2) {
+        valor = partes[0] + ',' + partes[1]; // only one comma allowed
+    }
+
+    event.target.value = valor;
+}
+
+function mostrarFormularioAgregarDescuento() {
+    const contenido = document.getElementById('contenido');
+
+    contenido.innerHTML = `
+        <div class="detalle-item-container">
+            <button class="btn-retorno" onclick=mostrarVistaDescuentos()><</button>
+            <h1>Agregar Descuento</h1>
+
+            <form id="form-descuento" onsubmit="guardarDescuento(event)">
+                <div class="campo">
+                    <label for="nombreDescuento">Nombre:</label>
+                    <input type="text" maxlength="90" id="nombreDescuento" required">
+                </div>
+
+                <div class="fila-doble">
+                    <div class="campo">
+                        <label for="unidadDescuento">Unidad:</label>
+                        <select id="unidadDescuento" required>
+                            <option value="$">COP ($)</option>
+                            <option value="%">%</option>
+                        </select>
+                    </div>
+
+                    <div class="campo">
+                        <label for="valorDescuento">Valor:</label>
+                        <input type="text" id="valorDescuento" required>
+                    </div>
+                </div>
+
+                <div class="campo">
+                    <label for="descripcionDescuento">Descripción:</label>
+                    <textarea maxlength="299" id="descripcionDescuento" rows="4" placeholder="Describe brevemente el descuento..." style="resize: none;"></textarea>
+                </div>
+
+                <button type="submit" class="btn-agregar-gasto">Guardar Descuento ➕</button>
+            </form>
+        </div>
+    `;
+
+    setTimeout(() => {
+        const unidadSelect = document.getElementById("unidadDescuento");
+        const valorInput = document.getElementById("valorDescuento");
+
+        function actualizarValidaciones() {
+            valorInput.value = ""; // Clear field when changing unit
+        
+            // Delete both to avoid duplicates
+            valorInput.removeEventListener("input", permitirSoloEnterosFormateados);
+            valorInput.removeEventListener("input", permitirDecimales);
+        
+            if (unidadSelect.value === "$") {
+                valorInput.addEventListener("input", permitirSoloEnterosFormateados);
+            } else {
+                valorInput.addEventListener("input", permitirDecimales);
+            }
+        }
+
+        // For values ​​in pesos: only whole numbers and Colombian format
+        function permitirSoloEnterosFormateados(event) {
+            let valor = event.target.value.replace(/\D/g, '');
+            valor = valor.slice(0, 15); // Limit to 15 numeric characters
+            event.target.value = valor ? Number(valor).toLocaleString("es-CO") : '';
+        }
+        
+
+        function permitirDecimales(event) {
+            let valor = event.target.value.replace(/[^0-9,]/g, ''); // Only numbers and commas
+        
+            // Limit to a single comma
+            const partes = valor.split(',');
+            if (partes.length > 2) {
+                valor = partes[0] + ',' + partes[1];
+            }
+        
+            // Count only numeric characters (without commas)
+            const cantidadNumeros = valor.replace(/,/g, '').length;
+            if (cantidadNumeros > 3) {
+                // Trim to the first 3 numeric digits respecting commas
+                let numeros = '';
+                let comaAgregada = false;
+                for (let i = 0; i < valor.length; i++) {
+                    const char = valor[i];
+                    if (char === ',' && !comaAgregada) {
+                        numeros += ',';
+                        comaAgregada = true;
+                    } else if (/\d/.test(char) && numeros.replace(/,/g, '').length < 3) {
+                        numeros += char;
+                    }
+                }
+                valor = numeros;
+            }
+        
+            // Validate that the numerical value is not greater than 100
+            const valorNumerico = parseFloat(valor.replace(',', '.'));
+            if (!isNaN(valorNumerico) && valorNumerico > 100) {
+                valor = '100';
+            }
+        
+            event.target.value = valor;
+        }
+    
+        unidadSelect.addEventListener("change", actualizarValidaciones);
+        actualizarValidaciones(); // Initialize according to default value
+    }, 0);
+}
+
+async function guardarDescuento(event) {
+    event.preventDefault();
+
+    const nombre = document.getElementById("nombreDescuento").value.trim();
+    const unidad = document.getElementById("unidadDescuento").value;
+    const valorRaw = document.getElementById("valorDescuento").value.trim();
+    const descripcion = document.getElementById("descripcionDescuento").value.trim();
+
+    let valor;
+
+    if (unidad === "$") {
+        // Remove thousands points and parse as integer
+        valor = parseInt(valorRaw.replace(/\./g, ''), 10);
+    } else {
+        // Replace comma with period before parsing as decimal
+        valor = parseFloat(valorRaw.replace(",", "."));
+    }
+
+    const descuento = {
+        name: nombre,
+        is_percentage: unidad === "%",
+        value: valor,
+        description: descripcion
+    };
+
+    try {
+        const userEmail = localStorage.getItem("userEmail");
+
+        const response = await fetch("http://localhost:8080/discount-types", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Username": userEmail
+            },
+            body: JSON.stringify(descuento)
+        });
+
+        if (response.ok) {
+            alert("Descuento guardado correctamente");
+            cargarFinanciera();
+        } else {
+            const err = await response.text();
+            alert("Error al guardar: " + err);
+        }
+    } catch (error) {
+        console.error("Error al guardar descuento:", error);
+        alert("Error en la solicitud");
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////
+
+let impuestosGlobal = [];
+
+async function cargarImpuestos() {
+    const userEmail = sessionStorage.getItem("userEmail");
+
+    try {
+        const respuesta = await fetch('http://localhost:8080/tax-types', {
+            method: 'GET',
+            headers: {
+                "Content-Type": "application/json",
+                "Username": userEmail
+            }
+        });
+
+        if (!respuesta.ok) throw new Error('Error al obtener los impuestos');
+        impuestosGlobal = await respuesta.json();
+
+        const tablaBody = document.getElementById('tablaImpuestosBody');
+        if (tablaBody) {
+            tablaBody.innerHTML = generarFilasImpuestos(impuestosGlobal);
+            return;
+        }
+
+        document.getElementById('lista-impuestos').innerHTML = `
+        <div class="contenedor-superior">
+            <button class="btn-agregar-descuento" onclick="mostrarFormularioAgregarImpuesto()">+ Agregar Impuesto 🧾</button>
+            <div class="refresh-container-descuento" onclick="cargarImpuestos()">
+                <div class="refresh-logo-descuento">⟳</div>
+            </div>
+        </div>
+
+        <div class="barra-busqueda">
+            <div class="busqueda-container">
+                <input type="text" id="inputBusquedaImpuesto" placeholder="Buscar impuesto.." oninput="buscarImpuesto()">
+                <select id="filtroBusqueda" onchange="buscarImpuesto()">
+                    <option value="name">Nombre</option>
+                </select>
+            </div>
+        </div>
+
+        <table class="tabla-clientes">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Unidad</th>
+                    <th>Valor</th>
+                    <th>Descripción</th>
+                </tr>
+            </thead>
+            <tbody id="tablaImpuestosBody">
+                ${generarFilasImpuestos(impuestosGlobal)}
+            </tbody>
+        </table>`;
+    } catch (error) {
+        document.getElementById('lista-impuestos').innerHTML = `<p>Error al cargar impuestos</p>`;
+        console.error(error);
+    }
+}
+
+function generarFilasImpuestos(impuestos) {
+    if (impuestos.length === 0) {
+        return `<tr><td colspan="5">No se encontraron impuestos</td></tr>`;
+    }
+
+    return impuestos.map(impuesto => {
+        const unidad = impuesto.is_percentage ? "%" : "$ (COP)";
+        let valorFormateado;
+
+        if (impuesto.is_percentage) {
+            // For percentages
+            valorFormateado = impuesto.value.toFixed(2).replace('.', ',');
+        } else {
+            // For pesos: points every 3 digits
+            valorFormateado = impuesto.value.toLocaleString("es-CO");
+        }
+
+        return `
+            <tr>
+                <td>${impuesto.id}</td>
+                <td>${impuesto.name}</td>
+                <td>${unidad}</td>
+                <td>${valorFormateado}</td>
+                <td>${impuesto.description || ''}</td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function buscarImpuesto() {
+    const input = document.getElementById('inputBusquedaImpuesto').value.trim().toLowerCase();
+
+    const filtrados = impuestosGlobal.filter(impuesto =>
+        impuesto.name.toLowerCase().includes(input)
+    );
+
+    document.getElementById('tablaImpuestosBody').innerHTML = generarFilasImpuestos(filtrados);
+}
+
+function mostrarVistaImpuestos() {
+    const contenedor = document.getElementById("contenido");
+    contenedor.innerHTML = `
+        <button class="btn-retorno" onclick=cargarFinanciera()><</button>
+        <h1 class="titulo-gestion-descuentos">Gestión de Impuestos</h1>
+        <div id="lista-impuestos"></div>
+    `;
+    cargarImpuestos();
+}
+
+function mostrarFormularioAgregarImpuesto() {
+    const contenido = document.getElementById('contenido');
+
+    contenido.innerHTML = `
+        <div class="detalle-item-container">
+            <button class="btn-retorno" onclick=mostrarVistaImpuestos()><</button>
+            <h1>Agregar Impuesto</h1>
+
+            <form id="form-impuesto" onsubmit="guardarImpuesto(event)">
+                <div class="campo">
+                    <label for="nombreImpuesto">Nombre:</label>
+                    <input type="text" maxlength="90" id="nombreImpuesto" required>
+                </div>
+
+                <div class="fila-doble">
+                    <div class="campo">
+                        <label for="unidadImpuesto">Unidad:</label>
+                        <select id="unidadImpuesto" required>
+                            <option value="$">COP ($)</option>
+                            <option value="%">%</option>
+                        </select>
+                    </div>
+
+                    <div class="campo">
+                        <label for="valorImpuesto">Valor:</label>
+                        <input type="text" id="valorImpuesto" required>
+                    </div>
+                </div>
+
+                <div class="campo">
+                    <label for="descripcionImpuesto">Descripción:</label>
+                    <textarea maxlength="299" id="descripcionImpuesto" rows="4" style="resize: none;" placeholder="Describe el impuesto..."></textarea>
+                </div>
+
+                <button type="submit" class="btn-agregar-gasto">Guardar Impuesto ➕</button>
+            </form>
+        </div>
+    `;
+
+    setTimeout(() => {
+        const unidadSelect = document.getElementById("unidadImpuesto");
+        const valorInput = document.getElementById("valorImpuesto");
+
+        function actualizarValidaciones() {
+            valorInput.value = "";
+
+            valorInput.removeEventListener("input", permitirSoloEnterosFormateados);
+            valorInput.removeEventListener("input", permitirDecimales);
+
+            if (unidadSelect.value === "$") {
+                valorInput.addEventListener("input", permitirSoloEnterosFormateados);
+            } else {
+                valorInput.addEventListener("input", permitirDecimales);
+            }
+        }
+
+        function permitirSoloEnterosFormateados(event) {
+            let valor = event.target.value.replace(/\D/g, '');
+            valor = valor.slice(0, 15);
+            event.target.value = valor ? Number(valor).toLocaleString("es-CO") : '';
+        }
+
+        function permitirDecimales(event) {
+            let valor = event.target.value.replace(/[^0-9,]/g, '');
+            const partes = valor.split(',');
+            if (partes.length > 2) {
+                valor = partes[0] + ',' + partes[1];
+            }
+
+            const cantidadNumeros = valor.replace(/,/g, '').length;
+            if (cantidadNumeros > 3) {
+                let numeros = '';
+                let comaAgregada = false;
+                for (let i = 0; i < valor.length; i++) {
+                    const char = valor[i];
+                    if (char === ',' && !comaAgregada) {
+                        numeros += ',';
+                        comaAgregada = true;
+                    } else if (/\d/.test(char) && numeros.replace(/,/g, '').length < 3) {
+                        numeros += char;
+                    }
+                }
+                valor = numeros;
+            }
+
+            const valorNumerico = parseFloat(valor.replace(',', '.'));
+            if (!isNaN(valorNumerico) && valorNumerico > 100) {
+                valor = '100';
+            }
+
+            event.target.value = valor;
+        }
+
+        unidadSelect.addEventListener("change", actualizarValidaciones);
+        actualizarValidaciones();
+    }, 0);
+}
+
+async function guardarImpuesto(event) {
+    event.preventDefault();
+
+    const nombre = document.getElementById("nombreImpuesto").value.trim();
+    const unidad = document.getElementById("unidadImpuesto").value;
+    const valorRaw = document.getElementById("valorImpuesto").value.trim();
+    const descripcion = document.getElementById("descripcionImpuesto").value.trim();
+
+    let valor;
+    if (unidad === "$") {
+        valor = parseInt(valorRaw.replace(/\./g, ''), 10);
+    } else {
+        valor = parseFloat(valorRaw.replace(",", "."));
+    }
+
+    const impuesto = {
+        name: nombre,
+        is_percentage: unidad === "%",
+        value: valor,
+        description: descripcion
+    };
+
+    try {
+        const userEmail = localStorage.getItem("userEmail");
+
+        const response = await fetch("http://localhost:8080/tax-types", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Username": userEmail
+            },
+            body: JSON.stringify(impuesto)
+        });
+
+        if (response.ok) {
+            alert("Impuesto guardado correctamente");
+            mostrarVistaImpuestos();
+        } else {
+            const err = await response.text();
+            alert("Error al guardar: " + err);
+        }
+    } catch (error) {
+        console.error("Error al guardar impuesto:", error);
+        alert("Error en la solicitud");
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////////
 
 // Asynchronous function to load user data from an API
 async function cargarUsuarios() {

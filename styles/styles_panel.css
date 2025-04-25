@@ -1301,3 +1301,71 @@ input:focus, select:focus, textarea:focus {
     max-height: 10vh; /* Restricts the icon’s height to prevent it from becoming too large */
 }
 
+.fila-doble {
+    display: flex;
+    gap: 2vw;
+    flex-wrap: wrap;
+}
+.fila-doble .campo {
+    flex: 1 1 45%;
+}
+
+/* Button to add a discount */
+.btn-agregar-descuento {
+    background: #313030; /* Dark background */
+    color: white; /* White text */
+    padding: 1.5vh 2vw; /* Responsive padding based on viewport height and width */
+    border: none; /* No border */
+    border-radius: 1.5vw; /* Rounded corners */
+    font-size: 1vw; /* Responsive font size */
+    cursor: pointer; /* Changes cursor to pointer */
+    transition: background 0.3s ease; /* Smooth transition for background color */
+    margin-left: 1vw; /* Adds left margin */
+    font-weight: normal; /* Default font weight */
+}
+
+/* Hover effect for the add discount button */
+.btn-agregar-descuento:hover {
+    background: #767073; /* Lighter background on hover */
+}
+
+/* Title styling for the discounts management section */
+.titulo-gestion-descuentos {
+    margin-bottom: 6vh; /* Adds space below the title to separate it from the content */
+    margin-top: 8vh; /* Adds space above the title for better layout positioning */
+}
+
+/* Top container layout for aligning elements like button and logo */
+.contenedor-superior {
+    display: flex; /* Enables horizontal layout using Flexbox */
+    align-items: center; /* Vertically centers items within the container */
+    gap: 55vw; /* Large horizontal space between the button and the logo */
+    margin-bottom: 3vh; /* Adds vertical spacing below the container */
+}
+
+/* Refresh logo discount container */
+.refresh-container-descuento{
+    display: flex; /* Enables flexbox for alignment */
+    justify-content: flex-end; /* Aligns the refresh logo to the right */
+    margin-bottom: 20px; /* Space below the container */
+}
+
+/* Refresh logo discount styling */
+.refresh-logo-descuento{
+    width: 40px; /* Fixed width */
+    height: 40px; /* Fixed height */
+    display: flex; /* Centers content using flexbox */
+    align-items: center; /* Vertical centering */
+    justify-content: center; /* Horizontal centering */
+    font-size: 30px; /* Icon size */
+    cursor: pointer; /* Pointer cursor on hover */
+    border-radius: 50%; /* Circular shape */
+    background: linear-gradient(145deg, #ffffff, #e6e6e6); /* Soft gradient background */
+    box-shadow: 3px 3px 8px #bebebe, -3px -3px 8px #ffffff; /* Neumorphic shadow effect */
+    transition: transform 0.3s ease; /* Smooth transform animations */
+}
+
+/* Rotate effect on hover for the refresh logo discount */
+.refresh-logo-descuento:hover{
+    transform: rotate(180deg); /* Rotates the logo 180 degrees on hover */
+}
