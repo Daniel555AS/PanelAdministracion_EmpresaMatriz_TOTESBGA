@@ -1312,7 +1312,7 @@ async function mostrarDetalleItem(id) {
                             <div class="campo">
                                 <label for="precioVenta">Precio de venta:</label>
                                 <div class="campo-moneda">
-                                    <span class="prefijo">COP $ | </span>
+                                    <span class="prefijo">COP $ </span>
                                     <input type="text" id="precioVenta" value="${item.selling_price}" required>
                                 </div>
                             </div>
@@ -1513,7 +1513,7 @@ async function mostrarFormularioAgregarItem() {
                             <div class="campo">
                                 <label for="precioCompra">Precio de compra:</label>
                                 <div class="campo-moneda">
-                                    <span class="prefijo">COP $ | </span>
+                                    <span class="prefijo">COP $ </span>
                                     <input type="text" id="precioCompra" required>
                                 </div>
                             </div>
@@ -1531,7 +1531,7 @@ async function mostrarFormularioAgregarItem() {
                             <div class="campo">
                                 <label for="precioVenta">Precio de venta:</label>
                                 <div class="campo-moneda">
-                                    <span class="prefijo">COP $ | </span>
+                                    <span class="prefijo">COP $ </span>
                                     <input type="text" id="precioVenta" required>
                                 </div>
                             </div>
