@@ -160,10 +160,10 @@ async function cargarDescuentos() {
 
             <div class="barra-busqueda">
                 <div class="busqueda-container">
-                    <input type="text" id="inputBusquedaDescuento" placeholder="Buscar descuento.." oninput="buscarDescuento()">
                     <select id="filtroBusqueda" onchange="buscarDescuento()">
                         <option value="id">Nombre</option>
                     </select>
+                    <input type="text" id="inputBusquedaDescuento" placeholder="Buscar descuento.." oninput="buscarDescuento()">
                 </div>
             </div>
 
@@ -477,10 +477,10 @@ async function cargarImpuestos() {
 
         <div class="barra-busqueda">
             <div class="busqueda-container">
-                <input type="text" id="inputBusquedaImpuesto" placeholder="Buscar impuesto.." oninput="buscarImpuesto()">
                 <select id="filtroBusqueda" onchange="buscarImpuesto()">
                     <option value="name">Nombre</option>
                 </select>
+                <input type="text" id="inputBusquedaImpuesto" placeholder="Buscar impuesto.." oninput="buscarImpuesto()">
             </div>
         </div>
 
@@ -1171,11 +1171,11 @@ async function cargarItems() {
 
             <div class="barra-busqueda">
                 <div class="busqueda-container">
-                    <input type="text" id="inputBusqueda" placeholder="Buscar ítem..." oninput="buscarItem()">
                     <select id="filtroBusqueda" onchange="buscarItem()">
                         <option value="id">ID</option>
                         <option value="name">Nombre</option>
                     </select>
+                    <input type="text" id="inputBusqueda" placeholder="Buscar ítem..." oninput="buscarItem()">
                 </div>
             </div>
 
@@ -1298,7 +1298,7 @@ async function mostrarDetalleItem(id) {
                             <div class="campo">
                                 <label for="precioCompra">Precio de compra:</label>
                                 <div class="campo-moneda">
-                                    <span class="prefijo">COP $ | </span>
+                                    <span class="prefijo">COP $ </span>
                                     <input type="text" id="precioCompra" value="${item.purchase_price}" required>
                                 </div>
                             </div>
@@ -2194,9 +2194,7 @@ async function mostrarDetalleComentario(id) {
                     <!-- Display comment information -->
                     <p><strong>Nombre Completo:</strong> ${comentario.name} ${comentario.last_name}</p>
                     <p><strong>Email:</strong> ${comentario.email}</p>
-                    <p><strong>Teléfono:</strong> ${comentario.phone || 'Not provided'}</p>
-                    <p><strong>Departamento de Residencia:</strong> ${comentario.residence_state || 'Not specified'}</p>
-                    <p><strong>Ciudad de Residencia:</strong> ${comentario.residence_city || 'Not specified'}</p>
+                    <p><strong>Teléfono:</strong> ${comentario.phone || 'No Digitado'}</p>
 
                     <div class="separador"></div>
 
@@ -2311,12 +2309,12 @@ async function cargarClientes() {
 
             <div class="barra-busqueda">
                 <div class="busqueda-container">
-                    <input type="text" id="inputBusquedaClientes" placeholder="Buscar cliente..." oninput="buscarCliente()">
                     <select id="filtroBusquedaClientes" onchange="buscarCliente()">
                         <option value="id">No. ID</option>
                         <option value="lastName">Apellidos / R.S.</option> 
                         <option value="email">Email</option>
                     </select>
+                    <input type="text" id="inputBusquedaClientes" placeholder="Buscar cliente..." oninput="buscarCliente()">
                 </div>
             </div>
 
