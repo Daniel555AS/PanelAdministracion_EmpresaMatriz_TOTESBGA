@@ -136,6 +136,707 @@ function cargarSeccion(seccion) {
     }
 }
 
+// - Invoice generation section
+
+let listaClientes = [];
+let listaVehiculos = [];
+let clienteSeleccionado = null;
+let vehiculosSeleccionados = [];
+let descuentosDisponibles = [];
+let impuestosDisponibles = [];
+let descuentosSeleccionados = [];
+let impuestosSeleccionados = [];
+let infoaboutempresa = "";
+
+
+function mostrarVistaGenerarFactura() {
+
+    clienteSeleccionado = null;
+    vehiculosSeleccionados = [];
+
+    const contenedor = document.getElementById("contenido");
+    contenedor.innerHTML = `
+        <div class="detalle-item-container">
+        <button class="btn-retorno" onclick=cargarFinanciera()><</button>
+        <h1>Generar Factura</h1>
+
+        <div>
+            <label for="inputCliente">Buscar Cliente:</label>
+            <input type="text" id="inputCliente" onkeyup="buscarClientesFactura()" placeholder="Ingrese nombre o identificación del cliente">
+            <div id="resultadoClientes" class="resultados"></div>
+        </div>
+
+        <div id="clienteSeleccionado" style="margin-top: 10px;"></div>
+
+        <div style="margin-top: 20px;">
+            <label for="inputVehiculo">Buscar Vehículo:</label>
+            <input type="text" id="inputVehiculo" onkeyup="buscarVehiculosFactura()" placeholder="Ingrese nombre del vehículo">
+            <div id="resultadoVehiculos" class="resultados"></div>
+        </div>
+
+        <div id="vehiculosSeleccionados" style="margin-top: 10px;"></div>
+        <div id="vehiculosSeleccionados" style="margin-top: 10px;"></div>
+        
+        <div class="subtotal-container">
+            <label for="subtotal">Subtotal:</label>
+            <input type="text" id="subtotal" class="subtotal-display" value="$ 0" readonly>
+       </div>
+
+        <!-- Discounts -->
+        <div style="margin-top: 20px;">
+            <label for="inputDescuento">Buscar Descuento:</label>
+            <input type="text" id="inputDescuento" onkeyup="buscarDescuentos()" placeholder="Ingrese nombre del descuento">
+            <div id="resultadoDescuentos" class="resultados"></div>
+        </div>
+        <div id="descuentosSeleccionados" style="margin-top: 10px;"></div>
+
+        <!-- Taxes -->
+        <div style="margin-top: 20px;">
+            <label for="inputImpuesto">Buscar Impuesto:</label>
+            <input type="text" id="inputImpuesto" onkeyup="buscarImpuestos()" placeholder="Ingrese nombre del impuesto">
+            <div id="resultadoImpuestos" class="resultados"></div>
+        </div>
+        <div id="impuestosSeleccionados" style="margin-top: 10px;"></div>
+
+        <!-- Total -->
+        <div class="subtotal-container">
+            <label for="total">Total:</label>
+            <input type="text" id="total" class="subtotal-display" value="$ 0" readonly>
+        </div>
+
+        <!-- Section: Company Information -->
+        <div class="company-info-section">
+        <label for="infoEmpresa">Información de Empresa: </label>
+            <textarea id="company-info" class="company-info-textarea">
+                TOTES BGA - Matriz
+                NIT. 800197268-4
+                Calle 27 # Carrera 19 – 50
+                Bucaramanga, Santander, Colombia
+            </textarea>
+        </div>
+        <button type="submit" class="btn-agregar-gasto">Generar Factura</button>
+        </div>
+    `;
+    obtenerClientes();
+    obtenerVehiculos();
+    obtenerDescuentos();
+    obtenerImpuestos();
+}
+
+async function obtenerClientes() {
+    try {
+        const userEmail = sessionStorage.getItem("userEmail");
+        const res = await fetch("http://localhost:8080/customers", {
+            headers: { "Username": userEmail }
+        });
+        const data = await res.json();
+        listaClientes = data.filter(c => c.customerState);
+    } catch (error) {
+        console.error("Error al obtener clientes:", error);
+    }
+}
+
+async function obtenerVehiculos() {
+    try {
+        const userEmail = sessionStorage.getItem("userEmail");
+        const res = await fetch("http://localhost:8080/items", {
+            headers: { "Username": userEmail }
+        });
+        const data = await res.json();
+        listaVehiculos = data.filter(v => v.item_state && v.stock > 0);
+    } catch (error) {
+        console.error("Error al obtener vehículos:", error);
+    }
+}
+
+function buscarClientesFactura() {
+    const query = document.getElementById("inputCliente").value.trim().toLowerCase();
+    const contenedor = document.getElementById("resultadoClientes");
+
+    if (query === "") {
+        contenedor.innerHTML = "";
+        return;
+    }
+
+    const resultados = listaClientes.filter(c =>
+        c.customerId.toLowerCase().includes(query) ||
+        c.customerName.toLowerCase().includes(query) ||
+        c.lastName.toLowerCase().includes(query)
+    );
+
+    if (resultados.length === 0) {
+        contenedor.innerHTML = "<div class='no-result'>No se encontraron coincidencias.</div>";
+        return;
+    }
+
+    contenedor.innerHTML = resultados.map(c => `
+        <div class="vehiculo-fila opcion" onclick="seleccionarClienteFactura(${c.id}, ${c.identifierTypeId}, '${c.customerId}', '${c.customerName}', '${c.lastName}')">
+            <div class="vehiculo-info">
+                <strong>${c.customerName} ${c.lastName}</strong><br>
+                <span>${c.customerId}</span>
+            </div>
+        </div>
+    `).join("");
+}
+
+function buscarVehiculosFactura() {
+    const query = document.getElementById("inputVehiculo").value.trim().toLowerCase();
+    const contenedor = document.getElementById("resultadoVehiculos");
+
+    if (query === "") {
+        contenedor.innerHTML = "";
+        return;
+    }
+
+    const resultados = listaVehiculos.filter(v =>
+        v.name.toLowerCase().includes(query)
+    );
+
+    if (resultados.length === 0) {
+        contenedor.innerHTML = "<div class='no-result'>No se encontraron coincidencias.</div>";
+        return;
+    }
+
+    contenedor.innerHTML = resultados.map(v => `
+        <div class="opcion" onclick="seleccionarVehiculoFactura(${v.id}, '${v.name}')">
+            ${v.name} - Stock: ${v.stock}
+        </div>
+    `).join("");
+}
+
+function seleccionarClienteFactura(id, tipoID, numeroID, nombre, apellido) {
+    clienteSeleccionado = { id, tipoID, numeroID, nombre, apellido };
+
+    document.getElementById("clienteSeleccionado").innerHTML = `
+        <div class="vehiculo-fila">
+            <div class="vehiculo-info">
+                <strong>Cliente Seleccionado:</strong><br>
+                <span>${nombre} ${apellido} - ${numeroID}</span>
+            </div>
+        </div>
+    `;
+    document.getElementById("resultadoClientes").innerHTML = "";
+    document.getElementById("inputCliente").value = "";
+}
+
+function buscarVehiculosFactura() {
+    const query = document.getElementById("inputVehiculo").value.trim().toLowerCase();
+    const contenedor = document.getElementById("resultadoVehiculos");
+
+    if (query === "") {
+        contenedor.innerHTML = "";
+        return;
+    }
+
+    const vehiculosNoSeleccionados = listaVehiculos.filter(v => 
+        v.name.toLowerCase().includes(query) && 
+        !vehiculosSeleccionados.some(vSeleccionado => vSeleccionado.id === v.id)
+    );
+
+    if (vehiculosNoSeleccionados.length === 0) {
+        contenedor.innerHTML = "<div class='no-result'>No se encontraron coincidencias.</div>";
+        return;
+    }
+
+    contenedor.innerHTML = vehiculosNoSeleccionados.map(v => `
+        <div class="vehiculo-fila">
+            <div class="vehiculo-info">
+                <strong>${v.name}</strong><br>
+                <span>Stock: ${v.stock}</span><br>
+                <span>Precio Unitario: $${v.selling_price.toLocaleString("es-CO")}</span>
+            </div>
+            <div class="vehiculo-acciones">
+                <input type="number" id="cantidad-${v.id}" min="1" max="${v.stock}" placeholder="Cant." class="input-cantidad">
+                <button onclick="agregarVehiculoFactura(${v.id})" class="btn-agregar">+</button>
+            </div>
+        </div>
+    `).join("");
+}
+
+function agregarVehiculoFactura(id) {
+    const vehiculo = listaVehiculos.find(v => v.id === id);
+    if (!vehiculo) return;
+
+    const inputCantidad = document.getElementById(`cantidad-${id}`);
+    const cantidad = parseInt(inputCantidad.value);
+
+    if (isNaN(cantidad) || cantidad < 1) {
+        alert("Cantidad inválida.");
+        return;
+    }
+
+    if (cantidad > vehiculo.stock) {
+        alert(`La cantidad excede el stock disponible (${vehiculo.stock}).`);
+        return;
+    }
+
+    const yaExiste = vehiculosSeleccionados.some(v => v.id === id);
+    if (yaExiste) {
+        alert("Este vehículo ya ha sido agregado.");
+        return;
+    }
+
+    vehiculosSeleccionados.push({
+        id: vehiculo.id,
+        nombre: vehiculo.name,
+        cantidad: cantidad,
+        precioUnitario: vehiculo.selling_price
+    });
+
+    actualizarListaVehiculosSeleccionados();
+    document.getElementById("resultadoVehiculos").innerHTML = "";
+    document.getElementById("inputVehiculo").value = "";
+    actualizarSubtotal();
+
+}
+
+function actualizarListaVehiculosSeleccionados() {
+    const contenedor = document.getElementById("vehiculosSeleccionados");
+    if (vehiculosSeleccionados.length === 0) {
+        contenedor.innerHTML = "";
+        return;
+    }
+
+    contenedor.innerHTML = `
+        <strong>Vehículos seleccionados:</strong><br>
+        ${vehiculosSeleccionados.map(v => `
+            <div class="vehiculo-fila">
+                <div class="vehiculo-info">
+                    <strong>${v.nombre}</strong><br>
+                    <span>Cantidad: ${v.cantidad}</span><br>
+                    <span>Precio Unitario: $${v.precioUnitario.toLocaleString("es-CO")}</span>
+                </div>
+                <div class="vehiculo-acciones">
+                    <button onclick="eliminarVehiculoSeleccionado(${v.id})" class="btn-eliminar">Eliminar</button>
+                </div>
+            </div>
+        `).join("")}
+    `;
+}
+
+function eliminarVehiculoSeleccionado(id) {
+    vehiculosSeleccionados = vehiculosSeleccionados.filter(v => v.id !== id);
+    actualizarListaVehiculosSeleccionados();
+    actualizarSubtotal();
+
+}
+
+function actualizarSubtotal() {
+    const subtotal = vehiculosSeleccionados.reduce((total, item) => {
+        return total + item.precioUnitario * item.cantidad;
+    }, 0);
+
+    document.getElementById("subtotal").value = `$ ${subtotal.toLocaleString("es-CO")}`;
+    actualizarTotal();
+}
+
+async function obtenerDescuentos() {
+    try {
+        const userEmail = sessionStorage.getItem("userEmail");
+        const res = await fetch("http://localhost:8080/discount-types", {
+            headers: { "Username": userEmail }
+        });
+        const data = await res.json();
+        descuentosDisponibles = data;
+    } catch (error) {
+        console.error("Error al obtener descuentos:", error);
+    }
+}
+
+async function obtenerImpuestos() {
+    try {
+        const userEmail = sessionStorage.getItem("userEmail");
+        const res = await fetch("http://localhost:8080/tax-types", {
+            headers: { "Username": userEmail }
+        });
+        const data = await res.json();
+        impuestosDisponibles = data;
+    } catch (error) {
+        console.error("Error al obtener impuestos:", error);
+    }
+}
+
+function buscarDescuentos() {
+    const query = document.getElementById("inputDescuento").value.trim().toLowerCase();
+    const contenedor = document.getElementById("resultadoDescuentos");
+
+    if (query === "") {
+        contenedor.innerHTML = "";
+        return;
+    }
+
+    const resultados = descuentosDisponibles.filter(d =>
+        d.name.toLowerCase().includes(query) &&
+        !descuentosSeleccionados.some(sel => sel.id === d.id)
+    );
+
+    if (resultados.length === 0) {
+        contenedor.innerHTML = "<div class='no-result'>No se encontraron coincidencias.</div>";
+        return;
+    }
+
+    contenedor.innerHTML = resultados.map(d => `
+        <div class="vehiculo-fila opcion" onclick="agregarDescuento(${d.id})">
+            <div class="vehiculo-info">
+                <strong>ID: ${d.id} - ${d.name}</strong><br>
+                <span>${d.is_percentage ? d.value + '%' : '$ ' + d.value.toLocaleString('es-CO')}</span>
+            </div>
+        </div>
+    `).join("");
+}
+
+function agregarDescuento(id) {
+    const descuento = descuentosDisponibles.find(d => d.id === id);
+    if (!descuento) return;
+
+    descuentosSeleccionados.push(descuento);
+    actualizarDescuentosSeleccionados();
+    document.getElementById("resultadoDescuentos").innerHTML = "";
+    document.getElementById("inputDescuento").value = "";
+    actualizarTotal();
+}
+
+function actualizarDescuentosSeleccionados() {
+    const contenedor = document.getElementById("descuentosSeleccionados");
+    contenedor.innerHTML = descuentosSeleccionados.map(d => `
+        <strong>Descuentos seleccionados:</strong><br>
+            <div class="vehiculo-fila">
+                <div class="vehiculo-info">
+                <strong>ID: ${d.id} - ${d.name}</strong><br>
+                <span>${d.is_percentage ? d.value + '%' : '$ ' + d.value.toLocaleString('es-CO')}</span>
+                </div>
+                <div class="vehiculo-acciones">
+                    <button onclick="eliminarDescuento(${d.id})" class="btn-eliminar">Eliminar</button>
+                </div>
+            </div>
+    `).join("");
+}
+
+function eliminarDescuento(id) {
+    descuentosSeleccionados = descuentosSeleccionados.filter(d => d.id !== id);
+    actualizarDescuentosSeleccionados();
+    actualizarTotal();
+}
+
+function buscarImpuestos() {
+    const query = document.getElementById("inputImpuesto").value.trim().toLowerCase();
+    const contenedor = document.getElementById("resultadoImpuestos");
+
+    if (query === "") {
+        contenedor.innerHTML = "";
+        return;
+    }
+
+    const resultados = impuestosDisponibles.filter(t =>
+        t.name.toLowerCase().includes(query) &&
+        !impuestosSeleccionados.some(sel => sel.id === t.id)
+    );
+
+    if (resultados.length === 0) {
+        contenedor.innerHTML = "<div class='no-result'>No se encontraron coincidencias.</div>";
+        return;
+    }
+
+    contenedor.innerHTML = resultados.map(t => `
+
+        <div class="vehiculo-fila opcion" onclick="agregarImpuesto(${t.id})">
+            <div class="vehiculo-info">
+                <strong>ID: ${t.id} - ${t.name}</strong><br>
+                <span>${t.is_percentage ? t.value + '%' : '$ ' + t.value.toLocaleString('es-CO')}</span>
+            </div>
+        </div>
+    `).join("");
+}
+
+function agregarImpuesto(id) {
+    const impuesto = impuestosDisponibles.find(t => t.id === id);
+    if (!impuesto) return;
+
+    impuestosSeleccionados.push(impuesto);
+    actualizarImpuestosSeleccionados();
+    document.getElementById("resultadoImpuestos").innerHTML = "";
+    document.getElementById("inputImpuesto").value = "";
+    actualizarTotal();
+}
+
+function actualizarImpuestosSeleccionados() {
+    const contenedor = document.getElementById("impuestosSeleccionados");
+    contenedor.innerHTML = impuestosSeleccionados.map(t => `
+        <strong>Impuestos seleccionados:</strong><br>
+            <div class="vehiculo-fila">
+                <div class="vehiculo-info">
+                <strong>ID: ${t.id} - ${t.name}</strong><br>
+                <span>${t.is_percentage ? t.value + '%' : '$ ' + t.value.toLocaleString('es-CO')}</span>
+                </div>
+                <div class="vehiculo-acciones">
+                    <button onclick="eliminarImpuesto(${t.id})" class="btn-eliminar">Eliminar</button>
+                </div>
+            </div>
+    `).join("");
+}
+
+function eliminarImpuesto(id) {
+    impuestosSeleccionados = impuestosSeleccionados.filter(t => t.id !== id);
+    actualizarImpuestosSeleccionados();
+    actualizarTotal();
+}
+
+function actualizarTotal() {
+
+    let subtotal = vehiculosSeleccionados.reduce((total, item) => {
+        return total + item.precioUnitario * item.cantidad;
+    }, 0);
+
+    // Apply discounts
+    descuentosSeleccionados.forEach(desc => {
+        if (desc.is_percentage) {
+            subtotal -= (subtotal * (desc.value / 100));
+        } else {
+            subtotal -= desc.value;
+        }
+    });
+
+    // Apply taxes
+    impuestosSeleccionados.forEach(tax => {
+        if (tax.is_percentage) {
+            subtotal += (subtotal * (tax.value / 100));
+        } else {
+            subtotal += tax.value;
+        }
+    });
+
+    document.getElementById("total").value = `$ ${subtotal.toLocaleString("es-CO")}`;
+}
+
+function dibujarEncabezadoFactura(doc, pageWidth, img) {
+    const headerHeight = 25;
+
+    doc.setFillColor(0, 0, 0);
+    doc.rect(0, 10, pageWidth, headerHeight, "F");
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.text("TOTES BGA - Matriz", 15, 20);
+
+    const imgWidth = 60;
+    const imgHeight = 15;
+    const imgX = pageWidth - imgWidth - 15;
+    const imgY = 13;
+    doc.addImage(img, "PNG", imgX, imgY, imgWidth, imgHeight);
+}
+
+const { jsPDF } = window.jspdf;
+
+function generarFacturaPDF() {
+    if (!clienteSeleccionado) {
+        alert("Por favor, seleccione un cliente.");
+        return;
+    }
+
+    const img = new Image();
+    img.src = "assets/images/logo_totes.png";
+
+    img.onload = function () {
+        const doc = new jsPDF();
+        const pageWidth = doc.internal.pageSize.getWidth();
+
+        dibujarEncabezadoFactura(doc, pageWidth, img);
+
+        doc.setTextColor(0, 0, 0);
+        let yOffset = 50;
+
+        // Centered title
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.text("Generación de Factura", pageWidth / 2, yOffset, { align: "center" });
+        yOffset += 10;
+
+        // Company
+        if (infoaboutempresa && infoaboutempresa.trim() !== "") {
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "normal");
+            doc.text(infoaboutempresa.trim(), 10, yOffset);
+        } else {
+            console.warn("La información de empresa (infoaboutempresa) está vacía.");
+        }
+        yOffset += 20;
+
+        // Invoice Generation Date and Time on One Line
+        const fechaGeneracion = new Date().toLocaleString('es-CO', {
+            timeZone: 'America/Bogota',
+            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+            hour: '2-digit', minute: '2-digit'
+        });
+        doc.setFont("helvetica", "bold");
+        doc.text("Fecha de Generación:     ", 10, yOffset);
+        doc.setFont("helvetica", "normal");
+        doc.text(fechaGeneracion, 65, yOffset); 
+        yOffset += 8;
+
+        // Customer
+        doc.setFont("helvetica", "bold");
+        doc.text("Cliente:", 10, yOffset);
+        doc.setFont("helvetica", "normal");
+        doc.text(`${clienteSeleccionado.nombre} ${clienteSeleccionado.apellido} - ${clienteSeleccionado.numeroID}`, 32, yOffset);
+        yOffset += 8;
+
+        // Vehicles
+        const vehiculosTable = [['Vehículo', 'Cantidad', 'Precio Unitario', 'Total']];
+        vehiculosSeleccionados.forEach(v => {
+            const total = v.precioUnitario * v.cantidad;
+            vehiculosTable.push([v.nombre, v.cantidad, `$ ${v.precioUnitario.toLocaleString('es-CO')}`, `$ ${total.toLocaleString('es-CO')}`]);
+        });
+
+        doc.autoTable({
+            head: [vehiculosTable[0]],
+            body: vehiculosTable.slice(1),
+            startY: yOffset,
+            theme: 'grid',
+            styles: { fontSize: 10 },
+            didDrawPage: function (data) {
+                dibujarEncabezado(doc, pageWidth, img);
+            }
+        });
+        yOffset = doc.lastAutoTable.finalY + 6;
+
+        // Discounts
+        const descuentosTable = [['Descuento', 'Valor']];
+        descuentosSeleccionados.forEach(d => {
+            descuentosTable.push([d.name, d.is_percentage ? `${d.value}%` : `$ ${d.value.toLocaleString('es-CO')}`]);
+        });
+
+        doc.autoTable({
+            head: [descuentosTable[0]],
+            body: descuentosTable.slice(1),
+            startY: yOffset,
+            theme: 'grid',
+            styles: { fontSize: 10 },
+            didDrawPage: function (data) {
+                dibujarEncabezado(doc, pageWidth, img);
+            }
+        });
+        yOffset = doc.lastAutoTable.finalY + 6;
+
+        // Taxes
+        const impuestosTable = [['Impuesto', 'Valor']];
+        impuestosSeleccionados.forEach(i => {
+            impuestosTable.push([i.name, i.is_percentage ? `${i.value}%` : `$ ${i.value.toLocaleString('es-CO')}`]);
+        });
+
+        doc.autoTable({
+            head: [impuestosTable[0]],
+            body: impuestosTable.slice(1),
+            startY: yOffset,
+            theme: 'grid',
+            styles: { fontSize: 10 },
+            didDrawPage: function (data) {
+                dibujarEncabezado(doc, pageWidth, img);
+            }
+        });
+        yOffset = doc.lastAutoTable.finalY + 6;
+
+        // Calculations
+        const subtotal = vehiculosSeleccionados.reduce((t, i) => t + i.precioUnitario * i.cantidad, 0);
+        const totalDescuentos = descuentosSeleccionados.reduce((t, d) => t + (d.is_percentage ? subtotal * d.value / 100 : d.value), 0);
+        const totalImpuestos = impuestosSeleccionados.reduce((t, i) => t + (i.is_percentage ? subtotal * i.value / 100 : i.value), 0);
+        const totalFactura = subtotal - totalDescuentos + totalImpuestos;
+
+        doc.setFontSize(10);
+        doc.setTextColor(0, 0, 0);
+
+        doc.setFont("helvetica", "bold");
+        doc.text("Subtotal:", 10, yOffset);
+        doc.setFont("helvetica", "normal");
+        doc.text(`$ ${subtotal.toLocaleString('es-CO')}`, 40, yOffset);
+        yOffset += 6;
+
+        doc.setFont("helvetica", "bold");
+        doc.text("Total Descuentos:", 10, yOffset);
+        doc.setFont("helvetica", "normal");
+        doc.text(`$ ${totalDescuentos.toLocaleString('es-CO')}`, 55, yOffset);
+        yOffset += 6;
+
+        doc.setFont("helvetica", "bold");
+        doc.text("Total Impuestos:", 10, yOffset);
+        doc.setFont("helvetica", "normal");
+        doc.text(`$ ${totalImpuestos.toLocaleString('es-CO')}`, 55, yOffset);
+        yOffset += 6;
+
+        doc.setFont("helvetica", "bold");
+        doc.text("Total:", 10, yOffset);
+        doc.setFont("helvetica", "normal");
+        doc.text(`$ ${totalFactura.toLocaleString('es-CO')}`, 30, yOffset);
+
+        doc.save(`Factura_${clienteSeleccionado.numeroID}.pdf`);
+    };
+
+    img.onerror = function () {
+        alert("No se pudo cargar el logo.");
+    };
+}
+
+document.addEventListener("click", function (e) {
+    if (e.target && e.target.textContent === "Generar Factura") {
+        generarFactura();
+    }
+});
+
+async function generarFactura() {
+    if (!clienteSeleccionado || vehiculosSeleccionados.length === 0) {
+        alert("Debe seleccionar un cliente y al menos un vehículo.");
+        return;
+    }
+
+    const enterprise_data = document.getElementById("company-info").value.trim();
+    const subtotalStr = document.getElementById("subtotal").value.replace(/\D/g, '');
+    const totalStr = document.getElementById("total").value.replace(/\D/g, '');
+
+    const billingItems = vehiculosSeleccionados.map(v => ({
+        ID: v.id,
+        Stock: v.cantidad
+    }));
+
+    const invoiceData = {
+        enterprise_data: enterprise_data,
+        customer_id: clienteSeleccionado.id,
+        Subtotal: parseInt(subtotalStr),
+        Total: parseInt(totalStr),
+        Items: billingItems,
+        Discounts: descuentosSeleccionados.map(d => d.id),
+        Taxes: impuestosSeleccionados.map(t => t.id)
+    };
+    console.log(invoiceData);
+
+    try {
+        const userEmail = sessionStorage.getItem("userEmail");
+        const res = await fetch("http://localhost:8080/invoices", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Username": userEmail
+            },
+            body: JSON.stringify(invoiceData)
+        });
+
+        if (res.ok) {
+            const nuevaFactura = await res.json();
+            infoaboutempresa = invoiceData.enterprise_data;
+            alert("Factura generada exitosamente");
+            generarFacturaPDF();
+            cargarFinanciera(); 
+        } else {
+            const errorData = await res.json();
+            alert("Error al generar la factura: " + (errorData.error || "Desconocido"));
+        }
+    } catch (error) {
+        console.error("Error en la solicitud:", error);
+        alert("Error de red al generar la factura.");
+    }
+}
+
+// - END OF THE INVOICE GENERATION SECTION
+
 let descuentosGlobal = [];
 
 async function cargarDescuentos() {
@@ -169,10 +870,10 @@ async function cargarDescuentos() {
 
             <div class="barra-busqueda">
                 <div class="busqueda-container">
-                    <input type="text" id="inputBusquedaDescuento" placeholder="Buscar descuento.." oninput="buscarDescuento()">
                     <select id="filtroBusqueda" onchange="buscarDescuento()">
                         <option value="id">Nombre</option>
                     </select>
+                    <input type="text" id="inputBusquedaDescuento" placeholder="Buscar descuento.." oninput="buscarDescuento()">
                 </div>
             </div>
 
@@ -239,7 +940,7 @@ function cargarFinanciera() {
     contenedor.innerHTML = `
         <h1 class="titulo-gestion-financiera">Gestión Financiera</h1>
         <div class="fila-botones">
-            <div class="bloque-financiero-generacion-facturas" onclick="alert('Ingresos')">
+            <div class="bloque-financiero-generacion-facturas" onclick="mostrarVistaGenerarFactura()">
             Generación de Facturas
             <img src="assets/images/icono_generar_factura.png" alt="Icono Generar Factura" class="icono-financiero">
             </div>
@@ -486,10 +1187,10 @@ async function cargarImpuestos() {
 
         <div class="barra-busqueda">
             <div class="busqueda-container">
-                <input type="text" id="inputBusquedaImpuesto" placeholder="Buscar impuesto.." oninput="buscarImpuesto()">
                 <select id="filtroBusqueda" onchange="buscarImpuesto()">
                     <option value="name">Nombre</option>
                 </select>
+                <input type="text" id="inputBusquedaImpuesto" placeholder="Buscar impuesto.." oninput="buscarImpuesto()">
             </div>
         </div>
 
@@ -706,6 +1407,7 @@ async function guardarImpuesto(event) {
         alert("Error en la solicitud");
     }
 }
+
 
 
 async function cargarEmpleados() {
@@ -1613,11 +2315,11 @@ async function cargarItems() {
 
             <div class="barra-busqueda">
                 <div class="busqueda-container">
-                    <input type="text" id="inputBusqueda" placeholder="Buscar ítem..." oninput="buscarItem()">
                     <select id="filtroBusqueda" onchange="buscarItem()">
                         <option value="id">ID</option>
                         <option value="name">Nombre</option>
                     </select>
+                    <input type="text" id="inputBusqueda" placeholder="Buscar ítem..." oninput="buscarItem()">
                 </div>
             </div>
 
@@ -1740,7 +2442,7 @@ async function mostrarDetalleItem(id) {
                             <div class="campo">
                                 <label for="precioCompra">Precio de compra:</label>
                                 <div class="campo-moneda">
-                                    <span class="prefijo">COP $ | </span>
+                                    <span class="prefijo">COP $ </span>
                                     <input type="text" id="precioCompra" value="${item.purchase_price}" required>
                                 </div>
                             </div>
@@ -1754,7 +2456,7 @@ async function mostrarDetalleItem(id) {
                             <div class="campo">
                                 <label for="precioVenta">Precio de venta:</label>
                                 <div class="campo-moneda">
-                                    <span class="prefijo">COP $ | </span>
+                                    <span class="prefijo">COP $ </span>
                                     <input type="text" id="precioVenta" value="${item.selling_price}" required>
                                 </div>
                             </div>
@@ -1955,7 +2657,7 @@ async function mostrarFormularioAgregarItem() {
                             <div class="campo">
                                 <label for="precioCompra">Precio de compra:</label>
                                 <div class="campo-moneda">
-                                    <span class="prefijo">COP $ | </span>
+                                    <span class="prefijo">COP $ </span>
                                     <input type="text" id="precioCompra" required>
                                 </div>
                             </div>
@@ -1973,7 +2675,7 @@ async function mostrarFormularioAgregarItem() {
                             <div class="campo">
                                 <label for="precioVenta">Precio de venta:</label>
                                 <div class="campo-moneda">
-                                    <span class="prefijo">COP $ | </span>
+                                    <span class="prefijo">COP $ </span>
                                     <input type="text" id="precioVenta" required>
                                 </div>
                             </div>
@@ -2636,9 +3338,7 @@ async function mostrarDetalleComentario(id) {
                     <!-- Display comment information -->
                     <p><strong>Nombre Completo:</strong> ${comentario.name} ${comentario.last_name}</p>
                     <p><strong>Email:</strong> ${comentario.email}</p>
-                    <p><strong>Teléfono:</strong> ${comentario.phone || 'Not provided'}</p>
-                    <p><strong>Departamento de Residencia:</strong> ${comentario.residence_state || 'Not specified'}</p>
-                    <p><strong>Ciudad de Residencia:</strong> ${comentario.residence_city || 'Not specified'}</p>
+                    <p><strong>Teléfono:</strong> ${comentario.phone || 'No Digitado'}</p>
 
                     <div class="separador"></div>
 
@@ -2753,12 +3453,12 @@ async function cargarClientes() {
 
             <div class="barra-busqueda">
                 <div class="busqueda-container">
-                    <input type="text" id="inputBusquedaClientes" placeholder="Buscar cliente..." oninput="buscarCliente()">
                     <select id="filtroBusquedaClientes" onchange="buscarCliente()">
                         <option value="id">No. ID</option>
                         <option value="lastName">Apellidos / R.S.</option> 
                         <option value="email">Email</option>
                     </select>
+                    <input type="text" id="inputBusquedaClientes" placeholder="Buscar cliente..." oninput="buscarCliente()">
                 </div>
             </div>
 
