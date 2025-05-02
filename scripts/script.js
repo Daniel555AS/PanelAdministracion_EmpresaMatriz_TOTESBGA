@@ -1886,8 +1886,6 @@ function mostrarFormularioAgregarUsuario() {
                     <label for="userStateID">Estado de usuario:</label>
                     <select id="userStateID" required>
                         <option value="1">Activo</option>
-                        <option value="2">Inactivo</option>
-                        <option value="3">Fuera de servicio</option>
                     </select>
                 </div>
                 <button type="submit" class="btn-guardar-usuario">Guardar Usuario</button>
