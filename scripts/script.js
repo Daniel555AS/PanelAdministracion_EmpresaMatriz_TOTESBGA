@@ -35,18 +35,25 @@ function cargarSeccion(seccion) {
                 <p>Cargando ítems...</p>
             </div>
         `, // Items section with a refresh button and placeholder content
-
         'usuarios': `
             <h1>Administrar Usuarios</h1>
-            <!-- Refresh logo -->
             <div class="refresh-container" onclick="cargarUsuarios()">
                 <div class="refresh-logo">⟳</div>
             </div>
-            <!-- Container for the user list -->
             <div id="lista-usuarios" class="user-list">
-                <p>Cargando usuarios...</p>
+            <p>Cargando usuarios...</p>
             </div>
-        `, // Users section with a message for administrators only
+`, // Employees section witha  message for administrator only
+
+        'empleados': `
+            <h1>Administrar Empleados</h1>
+            <div class="refresh-container" onclick="cargarEmpleados()">
+                <div class="refresh-logo">⟳</div>
+            </div>
+                <div id="lista-empleados" class="user-list">
+            <p>Cargando empleados...</p>
+            </div>
+`, // Users section with a message for administrators only
 
         'comentarios': `
             <h1>Comentarios</h1>
@@ -124,6 +131,8 @@ function cargarSeccion(seccion) {
         cargarCitas(); // Call the function to load appointments
     } else if(seccion === 'financiera') {
         cargarFinanciera();
+    } else if (seccion === 'empleados') {
+        cargarEmpleados(); // Call the function to load taxes
     }
 }
 
@@ -698,13 +707,376 @@ async function guardarImpuesto(event) {
     }
 }
 
+
+async function cargarEmpleados() {
+    const userEmail = sessionStorage.getItem("userEmail");
+    try {
+        const respuesta = await fetch('http://localhost:8080/employees', {
+            method: 'GET',
+            headers: {
+                "Content-Type": "application/json",
+                "Username": userEmail
+            }
+        });
+
+        if (!respuesta.ok) throw new Error('Error al obtener los empleados');
+        const empleados = await respuesta.json();
+
+        // Verifica que el contenedor exista en el DOM
+        const listaEmpleadosContainer = document.getElementById('lista-empleados');
+        if (!listaEmpleadosContainer) {
+            console.error("Elemento 'lista-empleados' no encontrado en el DOM.");
+            return;
+        }
+
+        // Si ya existe la tabla, solo actualizamos el tbody
+        const tablaBody = document.getElementById('tablaEmpleadosBody');
+        if (tablaBody) {
+            tablaBody.innerHTML = generarFilasEmpleados(empleados);
+            return;
+        }
+
+        // Si la tabla no existe, creamos la estructura completa
+        listaEmpleadosContainer.innerHTML = `
+            <button class="btn-agregar-empleado" onclick="mostrarFormularioAgregarEmpleado()"> Agregar Empleado</button>
+            <div class="barra-busqueda">
+                <div class="busqueda-container">
+                    <input type="text" id="inputBusquedaEmpleado" placeholder="Buscar empleado..." oninput="buscarEmpleado()">
+                    <select id="filtroBusquedaEmpleado" onchange="buscarEmpleado()">
+                        <option value="id">ID</option>
+                        <option value="names">Nombre</option>
+                        <option value="last_names">Apellido</option>
+                        <option value="personal_id">Identificación</option>
+                        <option value="address">Dirección</option>
+                        <option value="phone_numbers">Teléfono</option>
+                    </select>
+                </div>
+            </div>
+            <table class="tabla-empleados">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Apellido</th>
+                        <th>Identificacion</th>
+                        <th>Dirección</th>
+                        <th>Teléfono</th>
+                        <th>ID de usuario</th>
+                        <th>Tipo de identificacion</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaEmpleadosBody">
+                    ${generarFilasEmpleados(empleados)}
+                </tbody>
+            </table>
+        `;
+    }
+    catch (error) {
+        const listaEmpleadosContainer = document.getElementById('lista-empleados');
+        if (listaEmpleadosContainer) {
+            listaEmpleadosContainer.innerHTML = `<p>Oops... Ha ocurrido un error al cargar los empleados: ${error.message}</p>`;
+        } else {
+            console.error("Elemento 'lista-empleados' no encontrado al mostrar error:", error);
+        }
+    }
+}
+
+function generarFilasEmpleados(empleados) {
+    const tiposIdentificador = {
+        1: "Pasaporte",
+        2: "Licencia de conducción",
+        3: "Cédula",
+        4: "SSN",
+        5: "Permiso de trabajo",
+        6: "Tarjeta de residencia",
+        7: "ID militar",
+        8: "ID estudiante",
+        9: "ID impuestos",
+        10: "Número de registro de compañía",
+        11: "NIT"
+    };
+
+    return empleados.map(empleado => `
+        <tr onclick="mostrarDetalleEmpleado(${empleado.id})">
+            <td>${empleado.id}</td>
+            <td>${empleado.names}</td>
+            <td>${empleado.last_names}</td>
+            <td>${empleado.personal_id}</td>
+            <td>${empleado.address}</td>
+            <td>${empleado.phone_numbers}</td>
+            <td>${empleado.user_id}</td>
+            <td>${tiposIdentificador[empleado.identifier_type_id] || 'Desconocido'}</td>
+        </tr>
+    `).join('');
+}
+
+function mostrarFormularioAgregarEmpleado() {
+    const contenido = document.getElementById('contenido');
+    contenido.innerHTML = `
+        <div class="detalle-empleado-container">
+            <button class="btn-retorno" onclick="cargarSeccion('empleados')"><</button>
+            <form id="form-empleado" onsubmit="guardarEmpleado(event)">
+                <div class="campo">
+                    <label for="Names">Nombre:</label>
+                    <input type="text" id="Names" required>
+                </div>
+                <div class="campo">
+                    <label for="LastNames">Apellido:</label>
+                    <input type="text" id="LastNames" required>
+                </div>
+                <div class="campo">
+                    <label for="PersonalID">ID Personal:</label>
+                    <input type="text" id="PersonalID" required>
+                </div>
+                <div class="campo">
+                    <label for="Address">Dirección:</label>
+                    <input type="text" id="Address" required>
+                </div>
+                <div class="campo">
+                    <label for="PhoneNumbers">Teléfono:</label>
+                    <input type="text" id="PhoneNumbers" required>
+                </div>
+                <div class="campo">
+                    <label for="UserID">ID de usuario:</label>
+                    <input type="text" id="UserID" required>
+                </div>
+                <div class="campo">
+                    <label for="IdType">Tipo de identificación:</label>
+                    <select id="identifier_type_id" required>
+                        <option value="1">Pasaporte</option>
+                        <option value="2">Licencia de conducción</option>
+                        <option value="3">Cédula</option>
+                        <option value="4">SSN</option>
+                        <option value="5">Permiso de trabajo</option>
+                        <option value="6">Tarjeta de residencia</option>
+                        <option value="7">ID militar</option>
+                        <option value="8">ID estudiante</option>
+                        <option value="9">ID impuestos</option>
+                        <option value="10">Número de registro de compañía</option>
+                        <option value="11">NIT</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-guardar-empleado">Guardar Empleado</button>
+            </form>
+        </div>
+    `;
+}
+
+async function mostrarDetalleEmpleado(id) {
+    const userEmail = sessionStorage.getItem("userEmail");
+
+    try {
+        const res = await fetch(`http://localhost:8080/employees/${id}`, {
+            method: 'GET',
+            headers: {
+                "Content-Type": "application/json",
+                "Username": userEmail
+            }
+        });
+
+        if (!res.ok) throw new Error('No se pudo obtener el detalle del empleado');
+        const empleado = await res.json();
+
+        const contenido = document.getElementById('contenido');
+        contenido.innerHTML = `
+            <div class="detalle-empleado-container">
+                <button class="btn-retorno" onclick="cargarSeccion('empleados')"><</button>
+                <form id="form-editar-empleado" onsubmit="actualizarEmpleado(${id}); return false;">
+                    <div class="campo">
+                        <label for="Names">Nombre:</label>
+                        <input type="text" id="Names" value="${empleado.names}" required>
+                    </div>
+                    <div class="campo">
+                        <label for="LastNames">Apellido:</label>
+                        <input type="text" id="LastNames" value="${empleado.last_names}" required>
+                    </div>
+                    <div class="campo">
+                        <label for="PersonalID">ID Personal:</label>
+                        <input type="text" id="PersonalID" value="${empleado.personal_id}" required>
+                    </div>
+                    <div class="campo">
+                        <label for="Address">Dirección:</label>
+                        <input type="text" id="Address" value="${empleado.address}" required>
+                    </div>
+                    <div class="campo">
+                        <label for="PhoneNumbers">Teléfono:</label>
+                        <input type="text" id="PhoneNumbers" value="${empleado.phone_numbers}" required>
+                    </div>
+                    <div class="campo">
+                        <label for="UserID">ID de usuario:</label>
+                        <input type="text" id="UserID" value="${empleado.user_id}" required>
+                    </div>
+                    <div class="campo">
+                        <label for="identifier_type_id">Tipo de identificación:</label>
+                        <select id="identifier_type_id" required>
+                            <option value="1">Pasaporte</option>
+                            <option value="2">Licencia de conducción</option>
+                            <option value="3">Cédula</option>
+                            <option value="4">SSN</option>
+                            <option value="5">Permiso de trabajo</option>
+                            <option value="6">Tarjeta de residencia</option>
+                            <option value="7">ID militar</option>
+                            <option value="8">ID estudiante</option>
+                            <option value="9">ID impuestos</option>
+                            <option value="10">Número de registro de compañía</option>
+                            <option value="11">NIT</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-guardar-empleado">Actualizar Empleado</button>
+                </form>
+            </div>
+        `;
+
+        // Selecciona automáticamente el tipo de identificación actual
+        document.getElementById('identifier_type_id').value = empleado.identifier_type_id;
+
+    } catch (error) {
+        console.error("Error al mostrar detalles:", error);
+        alert("Error al mostrar el detalle del empleado");
+    }
+}
+
+async function guardarEmpleado(event) {
+    event.preventDefault();
+
+    const userEmail = sessionStorage.getItem("userEmail");
+
+    // 1) Recogemos los valores del formulario
+    const Names = document.getElementById('Names').value.trim();
+    const LastNames = document.getElementById('LastNames').value.trim();
+    const PersonalID = document.getElementById('PersonalID').value.trim();
+    const Address = document.getElementById('Address').value.trim();
+    const PhoneNumbers = document.getElementById('PhoneNumbers').value.trim();
+    const UserID = parseInt(document.getElementById('UserID').value);
+    const IdentifierTypeID = parseInt(document.getElementById('identifier_type_id').value);
+
+    // Validación básica
+    if (!Names || !LastNames || !PersonalID || isNaN(UserID) || isNaN(IdentifierTypeID)) {
+        alert("Por favor, completa todos los campos requeridos correctamente.");
+        return;
+    }
+
+    // 2) Creamos el objeto empleado
+    const empleado = {
+        names: Names,
+        last_names: LastNames,
+        personal_id: PersonalID,
+        address: Address,       
+        phone_numbers: PhoneNumbers,
+        user_id: UserID,
+        identifier_type_id: IdentifierTypeID
+    };
+
+    console.log("Empleado a guardar:", empleado); // Debugging line
+
+    try {
+        // 3) Enviamos el objeto al servidor
+        const respuesta = await fetch('http://localhost:8080/employees', {
+            method: 'POST',
+            headers: {
+                "Content-Type": "application/json",
+                "Username": userEmail
+            },
+            body: JSON.stringify(empleado)
+        });
+
+        if (!respuesta.ok) throw new Error('Error al guardar el empleado');
+
+        alert("Empleado guardado correctamente");
+        cargarSeccion('empleados'); // Recargamos la vista de empleados
+    } catch (error) {
+        console.error("Error al guardar empleado:", error);
+        alert("Error en la solicitud");
+    }
+}
+
+async function buscarEmpleado() {
+    const input = document.getElementById('inputBusquedaEmpleado').value.trim().toLowerCase();
+    const filtro = document.getElementById('filtroBusquedaEmpleado').value;
+
+    // Traer empleados (puedes reemplazar esto si ya tienes los datos cargados en memoria)
+    const empleados = await fetch('http://localhost:8080/employees', {
+        method: 'GET',
+        headers: {
+            "Content-Type": "application/json",
+            "Username": sessionStorage.getItem("userEmail")
+        }
+    }).then(res => res.json());
+
+    const filtrados = empleados.filter(empleado => {
+        const valorCampo = (empleado[filtro] || '').toString().toLowerCase();
+        return valorCampo.includes(input);
+    });
+
+    document.getElementById('tablaEmpleadosBody').innerHTML = generarFilasEmpleados(filtrados);
+}
+
+async function actualizarEmpleado(id) {
+    const userEmail = sessionStorage.getItem("userEmail");
+
+    const Names = document.getElementById('Names').value.trim();
+    const LastNames = document.getElementById('LastNames').value.trim();
+    const PersonalID = document.getElementById('PersonalID').value.trim();
+    const Address = document.getElementById('Address').value.trim();
+    const PhoneNumbers = document.getElementById('PhoneNumbers').value.trim();
+    const UserID = parseInt(document.getElementById('UserID').value);
+    const IdentifierTypeID = parseInt(document.getElementById('identifier_type_id').value);
+
+    const bodyPut = {
+        names: Names,
+        last_names: LastNames,
+        personal_id: PersonalID,
+        address: Address,
+        phone_numbers: PhoneNumbers,
+        user_id: UserID,
+        identifier_type_id: IdentifierTypeID
+    };
+
+    console.log("Empleado a actualizar:", bodyPut); // Debugging line
+
+    try {
+        const resPut = await fetch(`http://localhost:8080/employees/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Username': userEmail
+            },
+            body: JSON.stringify(bodyPut)
+        });
+
+        if (!resPut.ok) {
+            const detalle = await resPut.text();
+            throw new Error(`PUT empleado: ${resPut.status} ${resPut.statusText} – ${detalle}`);
+        }
+
+        alert("Empleado actualizado correctamente");
+        cargarSeccion('empleados');
+    } catch (err) {
+        console.error("Error al actualizar empleado:", err);
+        alert("Error al actualizar el empleado");
+    }
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////////
 
 // Asynchronous function to load user data from an API
 async function cargarUsuarios() {
+    const userEmail = sessionStorage.getItem("userEmail");
+
     try {
-        const respuesta = await fetch('http://localhost:8080/users');
-        if (!respuesta.ok) throw new Error('Error al obtener los usuarios');
+        const respuesta = await fetch('http://localhost:8080/users',{
+            method: 'GET',
+            headers: {
+                "Content-Type": "application/json",
+                "Username": userEmail
+            }
+        })
+        
+        if (!respuesta.ok) {
+            const errorData = await respuesta.json();  // Intentar obtener los detalles del error
+            throw new Error(`Error al obtener los usuarios: ${errorData.message || 'Sin detalles'}`);
+        }
         const usuarios = await respuesta.json();
 
         // Verifica que el contenedor exista en el DOM
@@ -738,8 +1110,8 @@ async function cargarUsuarios() {
                     <tr>
                         <th>ID</th>
                         <th>Email</th>
-                        <th>UserTypeID</th>
-                        <th>UserStateID</th>
+                        <th>Tipo de Usuario</th>
+                        <th>Estado</th>
                     </tr>
                 </thead>
                 <tbody id="tablaUsuariosBody">
@@ -750,25 +1122,37 @@ async function cargarUsuarios() {
     } catch (error) {
         const listaUsuariosContainer = document.getElementById('lista-usuarios');
         if (listaUsuariosContainer) {
-            listaUsuariosContainer.innerHTML = `<p>Oops... Ha ocurrido un error al cargar los usuarios</p>`;
+            listaUsuariosContainer.innerHTML = `<p>Oops... Ha ocurrido un error al cargar los usuarios: ${error.message}</p>`;
         } else {
             console.error("Elemento 'lista-usuarios' no encontrado al mostrar error:", error);
         }
     }
 }
 
-
 // Función para generar las filas de la tabla de usuarios
 function generarFilasUsuarios(usuarios) {
-    if (usuarios.length === 0) {
-        return `<tr><td colspan="4">No se encontraron usuarios</td></tr>`;
-    }
     return usuarios.map(usuario => `
-        <tr class="fila-usuario" onclick="mostrarDetalleUsuario(${usuario.id})">
+        <tr onclick="mostrarDetalleUsuario(${usuario.id})">
             <td>${usuario.id}</td>
             <td>${usuario.email}</td>
-            <td>${usuario.userTypeID || usuario.user_type || ''}</td>
-            <td>${usuario.userStateID || usuario.user_state || ''}</td>
+            <td>
+              ${usuario.user_type == 1
+                  ? 'Administrador'
+                  : usuario.user_type == 2
+                    ? 'Inventario'
+                    : usuario.user_type == 3
+                      ? 'Web'
+                      : usuario.user_type}
+            </td>
+            <td>
+              ${usuario.user_state == 1
+                  ? 'Activo'
+                  : usuario.user_state == 2
+                    ? 'Inactivo'
+                    : usuario.user_state == 3
+                      ? 'Fuera de servicio'
+                      : usuario.user_state}
+            </td>
         </tr>
     `).join('');
 }
@@ -789,12 +1173,20 @@ function mostrarFormularioAgregarUsuario() {
                     <input type="password" id="password" required>
                 </div>
                 <div class="campo">
-                    <label for="userTypeID">UserTypeID:</label>
-                    <input type="number" id="userTypeID" required>
+                    <label for="userTypeID">Tipo de usuario:</label>
+                    <select id="userTypeID" required>
+                        <option value="1">Administrador</option>
+                        <option value="2">Inventario</option>
+                        <option value="3">Web</option>
+                    </select>
                 </div>
                 <div class="campo">
-                    <label for="userStateID">UserStateID:</label>
-                    <input type="number" id="userStateID" required>
+                    <label for="userStateID">Estado de usuario:</label>
+                    <select id="userStateID" required>
+                        <option value="1">Activo</option>
+                        <option value="2">Inactivo</option>
+                        <option value="3">Fuera de servicio</option>
+                    </select>
                 </div>
                 <button type="submit" class="btn-guardar-usuario">Guardar Usuario</button>
             </form>
@@ -805,75 +1197,85 @@ function mostrarFormularioAgregarUsuario() {
 // Función para guardar un nuevo usuario (envía datos vía POST)
 async function guardarUsuario(event) {
     event.preventDefault();
+    const userEmail   = sessionStorage.getItem("userEmail");
 
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-    const userTypeID = Number(document.getElementById('userTypeID').value);
-    const userStateID = Number(document.getElementById('userStateID').value);
+    // 1) Recogemos los valores del formulario
+    const email       = document.getElementById('email').value.trim();
+    const password    = document.getElementById('password').value;
+    const userTypeID  = parseInt(document.getElementById('userTypeID').value);
+    const userStateID = parseInt(document.getElementById('userStateID').value);
 
-    const nuevoUsuario = {
-        email,
-        password,
-        //token: "token-ejemplo-123", // Token agregado aquí
-        user_type: userTypeID,
-        user_state: userStateID
-    };
-
-    console.log(nuevoUsuario);
+    // 2) Creamos el objeto para el POST inicial
+    const nuevoUsuario = { email, password, user_type: userTypeID, user_state: userStateID };
 
     try {
-        const respuesta = await fetch('http://localhost:8080/users', {
+        // 3) POST /users
+        const resPost = await fetch('http://localhost:8080/users', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Username': userEmail
             },
             body: JSON.stringify(nuevoUsuario)
         });
-
-        if (!respuesta.ok) {
-            const errorDetalle = await respuesta.text();
-            throw new Error(`Error al agregar el usuario: ${respuesta.status} ${respuesta.statusText} - ${errorDetalle}`);
+        if (!resPost.ok) {
+            const detalle = await resPost.text();
+            throw new Error(`POST usuario: ${resPost.status} ${resPost.statusText} – ${detalle}`);
         }
 
-        // Recargar lista de usuarios después de guardar
         cargarUsuarios();
-    } catch (error) {
-        console.error(error);
-        alert(error.message);
+
+    } catch (err) {
+        console.error(err);
+        alert(err.message);
     }
 }
 // Función para mostrar el detalle de un usuario y permitir su edición
 async function mostrarDetalleUsuario(userId) {
-    try {
-        const respuesta = await fetch(`http://localhost:8080/users/${userId}`);
-        if (!respuesta.ok) throw new Error('Error al cargar el usuario');
-        const usuario = await respuesta.json();
+    const userEmail = sessionStorage.getItem("userEmail");
 
-        const contenido = document.getElementById('contenido');
-        contenido.innerHTML = `
+    try {
+        const res = await fetch(`http://localhost:8080/users/${userId}`, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Username': userEmail
+            }
+        });
+        if (!res.ok) throw new Error('Error al cargar el usuario');
+        const u = await res.json();
+
+        document.getElementById('contenido').innerHTML = `
             <div class="detalle-usuario-container">
-                <button class="btn-retorno" onclick="cargarSeccion('usuarios')"><</button>
+                <button class="btn-retorno" onclick="cargarSeccion('usuarios')">&lt;</button>
                 <h1>Detalles del Usuario</h1>
-                <form id="form-usuario" onsubmit="actualizarUsuario(event, '${usuario.id}')">
+                <form id="form-usuario" onsubmit="actualizarUsuario(event, ${u.id})">
                     <div class="campo">
                         <label>ID:</label>
-                        <div class="campo-no-editable">${usuario.id}</div>
+                        <div class="campo-no-editable">${u.id}</div>
                     </div>
                     <div class="campo">
                         <label for="email">Email:</label>
-                        <input type="email" id="email" value="${usuario.email}" required>
+                        <input type="email" id="email" value="${u.email}" required>
                     </div>
                     <div class="campo">
                         <label for="password">Password:</label>
                         <input type="password" id="password" placeholder="Dejar en blanco para no cambiar">
                     </div>
                     <div class="campo">
-                        <label for="userTypeID">UserTypeID:</label>
-                        <input type="number" id="userTypeID" value="${usuario.userTypeID || usuario.user_type || ''}" required>
+                        <label for="userTypeID">Tipo de usuario:</label>
+                        <select id="userTypeID" required>
+                            <option value="1" ${u.user_type == 1 ? 'selected' : ''}>Usuario Administrador</option>
+                            <option value="2" ${u.user_type == 2 ? 'selected' : ''}>Usuario de inventario</option>
+                            <option value="3" ${u.user_type == 3 ? 'selected' : ''}>Usuario Web</option>
+                        </select>
                     </div>
                     <div class="campo">
-                        <label for="userStateID">UserStateID:</label>
-                        <input type="number" id="userStateID" value="${usuario.userStateID || usuario.user_state || ''}" required>
+                        <label for="userStateID">Estado de usuario:</label>
+                        <select id="userStateID" required>
+                            <option value="1" ${u.user_state == 1 ? 'selected' : ''}>Activo</option>
+                            <option value="2" ${u.user_state == 2 ? 'selected' : ''}>Inactivo</option>
+                            <option value="3" ${u.user_state == 3 ? 'selected' : ''}>Fuera de servicio</option>
+                        </select>
                     </div>
                     <button type="submit" class="btn-actualizar">Actualizar Usuario</button>
                 </form>
@@ -888,63 +1290,102 @@ async function mostrarDetalleUsuario(userId) {
 // Función para actualizar un usuario (envía datos vía PUT o PATCH)
 async function actualizarUsuario(event, userId) {
     event.preventDefault();
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
+    const userEmail   = sessionStorage.getItem("userEmail");
+    const email       = document.getElementById('email').value.trim();
+    const password    = document.getElementById('password').value;
+    const userTypeID  = parseInt(document.getElementById('userTypeID').value, 10);
+    const userStateID = parseInt(document.getElementById('userStateID').value, 10);
 
-    const userTypeID = document.getElementById('userTypeID').value;
-    const userStateID = document.getElementById('userStateID').value;
+    // 1) Preparamos el cuerpo para el PUT (sin estado)
+    const bodyPut = { email };
+    if (password) bodyPut.password = password;
+    bodyPut.user_type = userTypeID;
 
-    // Si no se ingresa un nuevo password, se omite el campo
-    const usuarioActualizado = {
-        email,
-        ...(password && { password }),
-        token: "token-ejemplo-123", // ✅ Token agregado aquí
-        userTypeID,
-        userStateID
-    };
-
+    // 2) Ejecutamos el PUT /users/:id
     try {
-        const respuesta = await fetch(`http://localhost:8080/users/${userId}`, {
-            method: 'PUT', // O 'PATCH' según la implementación de tu API
+        const resPut = await fetch(`http://localhost:8080/users/${userId}`, {
+            method: 'PUT',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Username': userEmail
             },
-            body: JSON.stringify(usuarioActualizado)
+            body: JSON.stringify(bodyPut)
         });
-        if (!respuesta.ok) {
-            const errorDetalle = await respuesta.text();
-            throw new Error(`Error al actualizar el usuario: ${respuesta.status} ${respuesta.statusText} - ${errorDetalle}`);
+        if (!resPut.ok) {
+            const detalle = await resPut.text();
+            throw new Error(`PUT usuario: ${resPut.status} ${resPut.statusText} – ${detalle}`);
         }
-        // Regresar a la lista de usuarios tras actualizar
-        cargarUsuarios();
-    } catch (error) {
-        console.error(error);
-        alert(error.message);
+    } catch (err) {
+        console.error(err);
+        alert(err.message);
+        return; // Salimos sin tocar el estado
     }
+
+    // 3) Ahora actualizamos SOLO el estado con PATCH /users/:id/state
+    try {
+        const resPatch = await fetch(`http://localhost:8080/users/${userId}/state`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'Username': userEmail
+            },
+            body: JSON.stringify({ user_state: userStateID })
+        });
+        if (!resPatch.ok) {
+            const detalle = await resPatch.text();
+            throw new Error(`PATCH estado: ${resPatch.status} ${resPatch.statusText} – ${detalle}`);
+        }
+    } catch (err) {
+        console.error(err);
+        alert(err.message);
+        return;
+    }
+
+    // 4) Si todo salió bien, recargamos la lista
+    cargarUsuarios();
 }
 
 // Ejemplo de función para búsqueda dinámica de usuarios (opcional)
-function buscarUsuario() {
-    const input = document.getElementById('inputBusquedaUser').value.trim().toLowerCase();
+async function buscarUsuario() {
+    const texto = document.getElementById('inputBusquedaUser').value.trim();
     const filtro = document.getElementById('filtroBusquedaUser').value;
-    // Se asume que 'usuarios' es un array global; en una implementación real podrías almacenar el listado en una variable
-    fetch('http://localhost:8080/users')
-        .then(res => res.json())
-        .then(usuarios => {
-            let filtrados = usuarios;
-            if (input !== '') {
-                filtrados = usuarios.filter(usuario => {
-                    if (filtro === 'id') return usuario.id.toString().includes(input);
-                    if (filtro === 'email') return usuario.email.toLowerCase().includes(input);
-                });
-            }
-            document.getElementById('tablaUsuariosBody').innerHTML = generarFilasUsuarios(filtrados);
-        })
-        .catch(error => console.error(error));
+    const tablaBody = document.getElementById('tablaUsuariosBody');
+    const userEmail = sessionStorage.getItem("userEmail");
+
+    if (!texto) {
+        return cargarUsuarios();
+    }
+
+    let url;
+    if (filtro === "id") {
+        url = `http://localhost:8080/users/searchByID?id=${encodeURIComponent(texto)}`;
+    } else {  // email
+        url = `http://localhost:8080/users/searchByEmail?email=${encodeURIComponent(texto)}`;
+    }
+
+    try {
+        const res = await fetch(url, { headers: { 'Username': userEmail } });
+        if (!res.ok) throw new Error('Error en la búsqueda');
+
+        const datos = await res.json();
+        // por si el endpoint devuelve un solo objeto cuando filtras por ID
+        const array = Array.isArray(datos) ? datos : [datos];
+
+        if (array.length === 0) {
+            tablaBody.innerHTML = `<tr><td colspan="4">No se encontraron resultados</td></tr>`;
+        } else {
+            tablaBody.innerHTML = generarFilasUsuarios(array);
+        }
+    } catch (e) {
+        console.error("Error en la búsqueda de usuarios:", e);
+        tablaBody.innerHTML = `<tr><td colspan="4">No se encontraron resultados</td></tr>`;
+    }
 }
 
 // Llama cargarUsuarios cuando la página se carga
 document.addEventListener('DOMContentLoaded', cargarUsuarios);
+
+
 
 // Function to Generate PDF of Inventory Report
 async function generarPDFReporteInventario() {
@@ -1134,12 +1575,13 @@ async function buscarItem() {
         const itemsArray = Array.isArray(itemsEncontrados) ? itemsEncontrados : [itemsEncontrados];
 
         // Update only the `tbody` with the results
-        tablaBody.innerHTML = generarFilasTabla(itemsArray);
+        tablaBody.innerHTML = generarFilasTablaUsuario(itemsArray);
     } catch (error) {
         console.error("Error en la búsqueda:", error);
         tablaBody.innerHTML = `<tr><td colspan="3">No se encontraron resultados</td></tr>`;
     }
 }
+
 
 // Function to load all items in the table
 async function cargarItems() {

@@ -248,7 +248,8 @@ body {
 /* Table styling */
 .tabla-items,
 .tabla-users,
-.tabla-clientes {
+.tabla-clientes,
+.tabla-empleados {
     width: 75vw; /* Table width relative to the viewport */
     margin: 5vh auto; /* Centered with vertical margin */
     border-collapse: collapse; /* Collapse cell borders */
@@ -260,7 +261,8 @@ body {
 /* Table header */
 .tabla-items thead,
 .tabla-users thead,
-.tabla-clientes thead {
+.tabla-clientes thead,
+.tabla-empleados thead {
     background: rgb(49, 48, 48); /* Dark background for headers */
     color: white; /* White text */
 }
@@ -268,7 +270,8 @@ body {
 /* Header cells */
 .tabla-items th,
 .tabla-users th,
-.tabla-clientes th {
+.tabla-clientes th,
+.tabla-empleados th {
     padding: 2vh 2vw; /* Vertical and horizontal padding */
     text-align: left; /* Left-aligns content */
     font-size: 1.2vw; /* Larger text size for headers */
@@ -277,7 +280,8 @@ body {
 /* Table rows */
 .tabla-items td,
 .tabla-users td,
-.tabla-clientes td {
+.tabla-clientes td,
+.tabla-empleados td {
     padding: 2vh 2vw; /* Consistent padding */
     font-size: 1vw; /* Smaller font size for data */
     border-bottom: 0.5vh solid #ddd; /* Bottom border for row separation */
@@ -286,7 +290,8 @@ body {
 /* Hover effect for rows */
 .fila-item:hover,
 .fila-user:hover,
-.fila-cliente:hover {
+.fila-cliente:hover,
+.fila-empleado:hover {
     background: rgba(177, 177, 177, 0.61); /* Light gray background on hover */
     color: black; /* Black text */
     cursor: pointer; /* Pointer cursor */
@@ -295,7 +300,9 @@ body {
 
 /* Main item detail container */
 .detalle-item-container,
-.detalle-user-container {
+.detalle-user-container,
+.detalle-cliente-container,
+.detalle-empleado-container {
     max-width: 80vw; /* Maximum width relative to viewport */
     margin-bottom: 2vh; /* Space below the container */
     padding: 5vh; /* Internal padding */
@@ -515,7 +522,8 @@ input:focus, select:focus, textarea:focus {
     background: #767073; /* Lighter background on hover */
 }
 
-.btn-agregar-usuario  {
+.btn-agregar-usuario,
+.btn-agregar-empleado  {
     background: #313030; /* Dark background */
     color: white; /* White text */
     padding: 1.5vh 2vw; /* Responsive padding based on viewport height and width */
@@ -533,7 +541,8 @@ input:focus, select:focus, textarea:focus {
     background: #767073; /* Lighter background on hover */
 }
 
-.btn-guardar-usuario  {
+.btn-guardar-usuario,
+.btn-guardar-empleado {
     background: #313030; /* Dark background */
     color: white; /* White text */
     padding: 1.5vh 2vw; /* Responsive padding based on viewport height and width */
@@ -1369,3 +1378,4 @@ input:focus, select:focus, textarea:focus {
 .refresh-logo-descuento:hover{
     transform: rotate(180deg); /* Rotates the logo 180 degrees on hover */
 }
+
