@@ -1369,3 +1369,147 @@ input:focus, select:focus, textarea:focus {
 .refresh-logo-descuento:hover{
     transform: rotate(180deg); /* Rotates the logo 180 degrees on hover */
 }
+
+.vehiculo-fila {
+    display: flex; /* Arranges child elements in a horizontal row */
+    justify-content: space-between; /* Distributes space between elements */
+    align-items: center; /* Vertically centers items */
+    background-color: #fff; /* Sets white background */
+    border: 0.1vw solid #ccc; /* Adds light gray border */
+    padding: 1.2vh 2vw; /* Adds vertical and horizontal padding */
+    margin-bottom: 1vh; /* Adds space below each row */
+    border-radius: 0.8vw; /* Rounds the corners */
+    box-shadow: 0 0.2vh 0.5vh rgba(0, 0, 0, 0.05); /* Adds subtle shadow for depth */
+    font-size: 2vh; /* Sets text size relative to viewport height */
+}
+
+.vehiculo-info {
+    flex: 1; /* Takes up remaining horizontal space */
+    font-size: 2vh; /* Matches main row font size */
+}
+
+.vehiculo-acciones {
+    display: flex; /* Arranges actions horizontally */
+    align-items: center; /* Vertically aligns action items */
+    gap: 1vw; /* Adds space between action elements */
+}
+
+.input-cantidad {
+    width: 6vw; /* Sets input width relative to viewport width */
+    padding: 0.5vh 0.5vw; /* Adds inner spacing */
+    font-size: 1.7vh; /* Slightly smaller text than row */
+    border: 0.1vw solid #ccc; /* Matches border styling */
+    border-radius: 0.5vw; /* Slightly rounded corners */
+}
+
+.btn-agregar {
+    padding: 0.6vh 1vw; /* Adds vertical and horizontal spacing */
+    font-weight: bold; /* Makes text bold */
+    cursor: pointer; /* Changes cursor to pointer on hover */
+    background-color: #28a745; /* Sets initial green background */
+    color: white; /* Sets text color to white */
+    border: none; /* Removes default border */
+    border-radius: 0.5vw; /* Rounds the button corners */
+    font-size: 1.7vh; /* Sets text size relative to viewport height */
+    transition: background-color 0.3s ease; /* Smooth color change on hover */
+}
+
+.btn-agregar:hover {
+    background-color: #218838; /* Darker green on hover for visual feedback */
+}
+
+.resultados {
+    margin-top: 2vh; /* Adds space above the results section */
+}
+
+.vehiculo-fila {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #fff;
+    border: 0.1vw solid #ccc;
+    padding: 1.2vh 2vw;
+    margin-bottom: 1vh;
+    border-radius: 0.8vw;
+    box-shadow: 0 0.2vh 0.5vh rgba(0, 0, 0, 0.05);
+    font-size: 2vh;
+}
+
+.vehiculo-info {
+    flex: 1; /* Expands to fill available horizontal space */
+    font-size: 2vh; /* Sets font size relative to viewport height */
+}
+
+.vehiculo-acciones {
+    display: flex; /* Arranges child elements in a row */
+    align-items: center; /* Vertically centers items */
+    gap: 1vw; /* Adds spacing between action elements */
+}
+
+.btn-eliminar {
+    padding: 0.6vh 1vw; /* Adds vertical and horizontal padding */
+    font-weight: bold; /* Makes button text bold */
+    cursor: pointer; /* Shows pointer cursor on hover */
+    background-color: #dc3545; /* Sets initial red background */
+    color: white; /* Sets text color to white */
+    border: none; /* Removes default button border */
+    border-radius: 0.5vw; /* Rounds the corners */
+    font-size: 1.7vh; /* Sets font size relative to viewport height */
+    transition: background-color 0.3s ease; /* Smooth background transition on hover */
+}
+
+.btn-eliminar:hover {
+    background-color: #c82333; /* Darker red on hover for visual feedback */
+}
+
+.resultados {
+    margin-top: 2vh; /* Adds space above the results section */
+}
+
+.subtotal-container {
+    margin-top: 2vh; /* Adds space above the container */
+    display: flex; /* Aligns child elements in a row */
+    align-items: center; /* Vertically centers items */
+    gap: 1vw; /* Adds spacing between label and display */
+}
+
+.subtotal-container label {
+    font-weight: bold; /* Makes label text bold */
+    font-size: 1.2vw; /* Sets label text size relative to viewport width */
+}
+
+.subtotal-display {
+    border: 0.1vw solid #ccc; /* Adds light gray border */
+    border-radius: 1vw; /* Rounds the corners */
+    padding: 0.6vh 1vw; /* Adds inner spacing */
+    font-size: 1.5vw; /* Sets text size relative to viewport width */
+    background-color: #f9f9f9; /* Light gray background for contrast */
+    pointer-events: none; /* Makes element non-interactive */
+    width: 80vw; /* Sets display width to 80% of viewport width */
+    text-align: right; /* Aligns text to the right */
+}
+
+/* Styles for the company section */
+  
+.company-info-title {
+    font-size: 2vh; /* Sets title font size relative to viewport height */
+    margin-bottom: 1vh; /* Adds spacing below the title */
+    font-weight: 600; /* Applies semi-bold weight */
+}
+
+.company-info-textarea {
+    width: 100%; /* Makes the textarea full width */
+    min-height: 15vh; /* Sets minimum height based on viewport */
+    max-height: 25vh; /* Sets maximum height to limit growth */
+    padding: 1vh 1vw; /* Adds inner spacing for better readability */
+    font-size: 1.8vh; /* Sets text size relative to viewport height */
+    border: 1px solid #bbb; /* Light gray border */
+    border-radius: 0.6vw; /* Rounds the corners */
+    resize: vertical; /* Allows vertical resizing only */
+    font-family: sans-serif; /* Sets fallback font */
+    box-sizing: border-box; /* Includes padding and border in total size */
+    font-family: 'Poppins', sans-serif; /* Applies custom font */
+}
+
+  
+  
