@@ -608,6 +608,8 @@ function actualizarTotal() {
     document.getElementById("total").value = `$ ${subtotal.toLocaleString("es-CO")}`;
 }
 
+// PDF Generation Section: 
+
 function dibujarEncabezadoFactura(doc, pageWidth, img) {
     const headerHeight = 25;
 
@@ -944,7 +946,7 @@ function cargarFinanciera() {
             Generación de Facturas
             <img src="assets/images/icono_generar_factura.png" alt="Icono Generar Factura" class="icono-financiero">
             </div>
-            <div class="bloque-financiero-gestion-facturas" onclick="alert('Egresos')">
+            <div class="bloque-financiero-gestion-facturas" onclick="mostrarVistaFacturas()">
             Gestión de Facturas
             <img src="assets/images/icono_gestion_facturas.png" alt="Icono Gestión de Facturas" class="icono-financiero">
             </div>
@@ -1152,7 +1154,272 @@ async function guardarDescuento(event) {
     }
 }
 
-////////////////////////////////////////////////////////////////////////////////////
+// - INVOICE MANAGEMENT SECTION
+
+let facturasGlobal = [];
+
+async function cargarFacturas() {
+    const userEmail = sessionStorage.getItem("userEmail");
+
+    try {
+        const respuesta = await fetch('http://localhost:8080/invoices', {
+            method: 'GET',
+            headers: {
+                "Content-Type": "application/json",
+                "Username": userEmail
+            }
+        });
+
+        if (!respuesta.ok) throw new Error('Error al obtener las facturas');
+        facturasGlobal = await respuesta.json();
+
+        const tablaBody = document.getElementById('tablaFacturasBody');
+        if (tablaBody) {
+            tablaBody.innerHTML = generarFilasFacturas(facturasGlobal);
+            return;
+        }
+
+        document.getElementById('lista-facturas').innerHTML = `
+            <div class="contenedor-superior">
+                <div class="refresh-container-descuento" onclick="cargarFacturas()">
+                    <div class="refresh-logo-descuento">⟳</div>
+                </div>
+            </div>
+
+            <div class="barra-busqueda-facturas">
+                <div class="busqueda-container-facturas">
+                    <input type="text" id="inputBusquedaFactura" placeholder="Buscar por Nombre de Cliente, Nro. Identificación o ID de Factura" oninput="buscarFactura()">
+                </div>
+            </div>
+
+            <table class="tabla-clientes">
+                <thead>
+                    <tr>
+                        <th>ID Factura</th>
+                        <th>ID Cliente</th>
+                        <th>Cliente</th>
+                        <th>Fecha</th>
+                        <th>Subtotal</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaFacturasBody">
+                    ${generarFilasFacturas(facturasGlobal)}
+                </tbody>
+            </table>`;
+    } catch (error) {
+        document.getElementById('lista-facturas').innerHTML = `<p>Error al cargar facturas</p>`;
+        console.error(error);
+    }
+}
+
+function generarFilasFacturas(facturas) {
+    if (facturas.length === 0) {
+        return `<tr><td colspan="6">No se encontraron facturas</td></tr>`;
+    }
+
+    return facturas.map(factura => {
+        const fecha = new Date(factura.date_time).toLocaleString('es-CO');
+        return `
+            <tr class="fila-cliente" onclick="mostrarDetalleFactura(${factura.id})" style="cursor: pointer;">
+                <td>${factura.id}</td>
+                <td>${obtenerIdentificacionCliente(factura.customer_id)}</td>
+                <td>${obtenerNombreCliente(factura.customer_id)}</td>
+                <td>${fecha}</td>
+                <td>$ ${factura.subtotal.toLocaleString('es-CO')}</td>
+                <td>$ ${factura.total.toLocaleString('es-CO')}</td>
+            </tr>
+        `;
+    }).join(''); 
+}
+
+function buscarFactura() {
+    const input = document.getElementById('inputBusquedaFactura').value.trim().toLowerCase();
+    const filtradas = facturasGlobal.filter(f =>
+        f.id.toString().includes(input) ||
+        obtenerNombreCliente(f.customer_id).toLowerCase().includes(input) ||
+        obtenerIdentificacionCliente(f.customer_id).toLowerCase().includes(input) 
+    );
+
+    document.getElementById('tablaFacturasBody').innerHTML = generarFilasFacturas(filtradas);
+}
+
+function obtenerNombreCliente(clienteId) {
+    const cliente = listaClientes.find(c => c.id === clienteId);
+    return cliente ? `${cliente.customerName} ${cliente.lastName}` : 'Desconocido';
+}
+
+function obtenerIdentificacionCliente(clienteId) {
+    const cliente = listaClientes.find(c => c.id === clienteId);
+    return cliente ? `${cliente.customerId}` : 'Desconocido';
+}
+
+function mostrarVistaFacturas() {
+    const contenedor = document.getElementById("contenido");
+    contenedor.innerHTML = `
+        <button class="btn-retorno" onclick=cargarFinanciera()><</button>
+        <h1 class="titulo-gestion-descuentos">Gestión de Facturas</h1>
+        <div id="lista-facturas"></div>
+    `;
+    obtenerClientes();
+    cargarFacturas();
+}
+
+async function mostrarDetalleFactura(facturaId) {
+    const factura = facturasGlobal.find(f => f.id === facturaId);
+    if (!factura) return;
+
+    const userEmail = sessionStorage.getItem("userEmail");
+
+    const cliente = listaClientes.find(c => c.id === factura.customer_id);
+    const nombreCliente = cliente ? `${cliente.customerName} ${cliente.lastName}` : 'Desconocido';
+    const identificacionCliente = cliente ? cliente.customerId : 'Desconocido';
+
+    const fecha = new Date(factura.date_time).toLocaleString('es-CO');
+    const fechaFactura = new Date(factura.date_time);
+
+    const itemsDetalle = [];
+
+    for (const item of (factura.items || [])) {
+        try {
+            const resHist = await fetch(`http://localhost:8080/historical-item-prices/${item.id}`, {
+                method: 'GET',
+                headers: {
+                    "Content-Type": "application/json",
+                    "Username": userEmail
+                }
+            });
+
+            if (!resHist.ok) throw new Error("Error al buscar historial de precios");
+            const historial = await resHist.json();
+
+            const precioAplicable = historial
+                .filter(p => new Date(p.modified_at) <= fechaFactura)
+                .sort((a, b) => new Date(b.modified_at) - new Date(a.modified_at))[0];
+
+            const precioFinal = precioAplicable ? precioAplicable.price : 0;
+            const cantidad = item.stock || 1;
+
+            const respItem = await fetch(`http://localhost:8080/items/searchById?id=${item.id}`, {
+                method: 'GET',
+                headers: {
+                    "Content-Type": "application/json",
+                    "Username": userEmail
+                }
+            });
+
+            if (!respItem.ok) throw new Error("Error al buscar ítem");
+            const itemData = await respItem.json();
+
+            for (const i of itemData) {
+                itemsDetalle.push({
+                    nombre: i.name || `Ítem ${i.id}`,
+                    valorUnitario: precioFinal,
+                    cantidad: cantidad,
+                    valorTotal: precioFinal * cantidad
+                });
+            }
+
+        } catch (err) {
+            console.error(`Error al cargar ítem ${item.id}:`, err);
+            itemsDetalle.push({
+                nombre: `Ítem ${item.id}`,
+                valorUnitario: 0,
+                cantidad: item.stock || 1,
+                valorTotal: 0
+            });
+        }
+    }
+
+    const itemsHtml = itemsDetalle.map(item =>
+        `<li>${item.nombre} - Cantidad: ${item.cantidad} - Valor Unitario: $ ${item.valorUnitario.toLocaleString('es-CO')} - Total: $ ${item.valorTotal.toLocaleString('es-CO')}</li>`
+    ).join('');
+
+    const impuestosDetalle = await Promise.all((factura.taxes || []).map(async id => {
+        try {
+            const res = await fetch(`http://localhost:8080/tax-types/${id}`, {
+                method: 'GET',
+                headers: {
+                    "Content-Type": "application/json",
+                    "Username": userEmail
+                }
+            });
+            if (!res.ok) throw new Error("Error al obtener impuesto");
+            const data = await res.json();
+            const valor = data.is_percentage ? `${data.value}%` : `$ ${data.value.toLocaleString('es-CO')}`;
+            return `<li>${data.name} - ${valor}</li>`;
+        } catch (err) {
+            console.error(`Error al obtener impuesto ${id}:`, err);
+            return `<li>Impuesto ID ${id} (Error al cargar)</li>`;
+        }
+    }));
+
+    const descuentosDetalle = await Promise.all((factura.discounts || []).map(async id => {
+        try {
+            const res = await fetch(`http://localhost:8080/discount-types/${id}`, {
+                method: 'GET',
+                headers: {
+                    "Content-Type": "application/json",
+                    "Username": userEmail
+                }
+            });
+            if (!res.ok) throw new Error("Error al obtener descuento");
+            const data = await res.json();
+            const valor = data.is_percentage ? `${data.value}%` : `$ ${data.value.toLocaleString('es-CO')}`;
+            return `<li>${data.name} - ${valor}</li>`;
+        } catch (err) {
+            console.error(`Error al obtener descuento ${id}:`, err);
+            return `<li>Descuento ID ${id} (Error al cargar)</li>`;
+        }
+    }));
+
+    const contenedor = document.getElementById("contenido");
+    contenedor.innerHTML = `
+    <div class="detalle-item-container">
+        <button class="btn-retorno" onclick=mostrarVistaFacturas()><</button>
+        <h1>Detalle de Factura #${factura.id}</h1>
+        <p><strong>Fecha:</strong> ${fecha}</p>
+
+        <div style="border: 1px solid #ccc; padding: 10px; border-radius: 8px; margin-top: 10px;">
+            <h3>👤 Información del Cliente</h3>
+            <p><strong>Cliente:</strong> ${nombreCliente}</p>
+            <p><strong>Identificación:</strong> ${identificacionCliente}</p>
+        </div>
+
+        <div style="border: 1px solid #ccc; padding: 10px; border-radius: 8px; margin-top: 20px;">
+            <h3>🚗 Vehículos Facturados</h3>
+            <p>${itemsHtml}</p>
+        </div>
+
+        <div class="subtotal-container">
+            <label>Subtotal:</label>
+            <input type="text" class="subtotal-display" value="$ ${factura.subtotal.toLocaleString('es-CO')}" readonly>
+        </div>
+
+        <div style="border: 1px solid #ccc; padding: 10px; border-radius: 8px; margin-top: 20px;">
+            <h3>🏷️ Descuentos Aplicados</h3>
+            <p>${descuentosDetalle.length ? descuentosDetalle.join('') : '<li>Ninguno</li>'}</p>
+        </div>
+
+        <div style="border: 1px solid #ccc; padding: 10px; border-radius: 8px; margin-top: 20px;">
+            <h3>🧾 Impuestos Aplicados</h3>
+            <p>${impuestosDetalle.length ? impuestosDetalle.join('') : '<li>Ninguno</li>'}</p>
+        </div>
+
+        <div class="subtotal-container">
+            <label>Total:</label>
+            <input type="text" class="subtotal-display" value="$ ${factura.total.toLocaleString('es-CO')}" readonly>
+        </div>
+
+        <div class="company-info-section">
+            <label>Información de Empresa:</label>
+            <textarea class="company-info-textarea" readonly>${factura.enterprise_data}</textarea>
+        </div>
+    </div>
+    `;
+}
+
+// - END OF INVOICE MANAGEMENT SECTION
 
 let impuestosGlobal = [];
 
